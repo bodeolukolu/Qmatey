@@ -120,7 +120,11 @@ fi
 
 # Initial questions before running walkaway
 ###########################################
-cd ${Qmatey_dir}/tools/
+cd ${Qmatey_dir}
+if [[ ! -d "./tools" ]]; then
+  mkdir tools
+fi
+cd ./tools
 
 # check rankedlineage. Perform update?
 file=rankedlineage.dmp*
