@@ -1,57 +1,76 @@
 #!/usr/bin/env Rscript
 
 args <- commandArgs(TRUE)
-percent <- unlist(strsplit(args[2],","))
-minc <- args[3]; minc <- as.numeric(minc)
-maxc <- args[4]; maxc <- as.numeric(maxc)
+perc <- args[2]
+mincorr <- unlist(strsplit(args[3],","))
+maxcorr <- unlist(strsplit(args[4],","))
 libdir <- args[5]
 
 .libPaths( c( .libPaths(), libdir) )
 library(ggplot2)
 library(ggcorrplot)
 library(reshape2)
+library(ccrepe)
 
 
+perc <- as.numeric(perc)
+metag <- read.delim(args[1], header=T, sep="\t", check.names=FALSE, quote="", fill=TRUE)
+metag <- subset(metag, select=-c(genus,family,order,class,phylum,kingdom,domain))
+metag <- subset(metag, select=c(ncol(metag),1:(ncol(metag)-1)))
+metag <- setNames(data.frame(t(metag[,-1])), metag[,1])
+metag <- data.frame(t(metag))
+for (k in 1:ncol(metag)){
+  metag[,k] <- as.numeric(as.character(metag[,k]))
+}
+metag$percent <- (rowSums(metag[,1:ncol(metag)] > "0")/ncol(metag))*100
+metag <- subset(metag, percent >= perc)
+metag <- subset(metag, select=-c(percent))
+metag <- data.frame(t(metag))
 
-for (i in c(percent)) {
-      i <- as.numeric(i)
-      metag <- read.delim(args[1], header=T, sep="\t", check.names=FALSE, fill=TRUE)
-      metag <- subset(metag, select=-c(genus,family,order,class,phylum,kingdom,domain))
-      metag <- setNames(data.frame(t(metag[,-1])), metag[,1])
-      metag <- data.frame(t(metag))
-      for (k in 1:ncol(metag)){
-        metag[,k] <- as.numeric(as.character(metag[,k]))
-      }
-      metag$percent <- (rowSums(metag[,1:ncol(metag)] > "0")/ncol(metag))*100
-      metag <- subset(metag, percent >= i)
-      metag <- subset(metag, select=-c(percent))
-      metag <- data.frame(t(metag))
-      
-      metag_corr <- cor(metag, method ="spearman"); axis_density <- 2000/nrow(metag_corr)
-      metag_pmat <- cor_pmat(metag, method ="spearman", exact=TRUE)
-      metag_corr[is.na(metag_corr)] <- 0
-      metag_pmat[is.na(metag_pmat)] <- 1
-      ordering <- hclust(dist(metag_corr), method = "average", members = NULL)
-      ordered <- as.data.frame(ordering[["labels"]]); ordered <- ordered[ordering[["order"]],]
-      metag_corr <- metag_corr[,ordered]; metag_corr <- metag_corr[ordered,]
-      metag_corr1 <- data.frame()
-      for ( j in 1:ncol(metag_corr)) {
-        metag_corr0 <- as.data.frame(metag_corr[,j]); colnames(metag_corr0)[1] <- c("coeff")
-        metag_corr0$Var1 <- colnames(metag_corr)[j]; metag_corr0$Var2 <- rownames(metag_corr0)
-        metag_corr0 <- subset(metag_corr0, select=c(2,3,1))
-        metag_corr1 <- rbind(metag_corr1, metag_corr0); metag_corr0 <- NULL
-      }
-      metag_pmat <- metag_pmat[,ordered]; metag_pmat <- metag_pmat[ordered,]
-      metag_pmat1 <- data.frame()
-      for ( j in 1:ncol(metag_pmat)) {
-        metag_pmat0 <- as.data.frame(metag_pmat[,j]); colnames(metag_pmat0)[1] <- c("pvalue")
-        metag_pmat0$Var1 <- colnames(metag_pmat)[j]; metag_pmat0$Var2 <- rownames(metag_pmat0)
-        metag_pmat0 <- subset(metag_pmat0, select=c(2,3,1))
-        metag_pmat1 <- rbind(metag_pmat1, metag_pmat0); metag_pmat0 <- NULL
-      }
-      corr <- cbind(metag_corr1, metag_pmat1)
-      corr <- subset(corr, select=-c(4:5))
-      write.table(corr,paste("Metagenome_",i,"perc_species_corr_spearman.txt",sep=""), sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
+metag_ccrepe <- ccrepe(x = metag, sim.score = nc.score)
+
+dir.create("FDR", showWarnings = FALSE)
+dir.create("FDR", showWarnings = FALSE)
+for (fdr in c(TRUE,FALSE)){
+  metag_corr <- metag_ccrepe[["sim.score"]]
+  metag_pmat <- metag_ccrepe[["p.values"]]
+  metag_qmat <- metag_ccrepe[["q.values"]]
+  if (fdr == TRUE) {
+    metag_pmat <- replace(metag_pmat, metag_qmat > 0.05, NA)
+    dirdes <- "FDR"
+  }
+  if (fdr == TRUE) {
+    dirdes <- "noFDR"
+  }
+  axis_density <- 2000/nrow(metag_corr)
+  
+  
+  metag_corr[is.na(metag_corr)] <- 0
+  metag_pmat[is.na(metag_pmat)] <- 1
+  ordering <- hclust(dist(metag_corr), method = "average", members = NULL)
+  ordered <- as.data.frame(ordering[["labels"]]); ordered <- ordered[ordering[["order"]],]
+  metag_corr <- metag_corr[,ordered]; metag_corr <- metag_corr[ordered,]
+  metag_corr1 <- data.frame()
+  for ( j in 1:ncol(metag_corr)) {
+    metag_corr0 <- as.data.frame(metag_corr[,j]); colnames(metag_corr0)[1] <- c("coeff")
+    metag_corr0$Var1 <- colnames(metag_corr)[j]; metag_corr0$Var2 <- rownames(metag_corr0)
+    metag_corr0 <- subset(metag_corr0, select=c(2,3,1))
+    metag_corr1 <- rbind(metag_corr1, metag_corr0); metag_corr0 <- NULL
+  }
+  metag_pmat <- metag_pmat[,ordered]; metag_pmat <- metag_pmat[ordered,]
+  metag_pmat1 <- data.frame()
+  for ( j in 1:ncol(metag_pmat)) {
+    metag_pmat0 <- as.data.frame(metag_pmat[,j]); colnames(metag_pmat0)[1] <- c("pvalue")
+    metag_pmat0$Var1 <- colnames(metag_pmat)[j]; metag_pmat0$Var2 <- rownames(metag_pmat0)
+    metag_pmat0 <- subset(metag_pmat0, select=c(2,3,1))
+    metag_pmat1 <- rbind(metag_pmat1, metag_pmat0); metag_pmat0 <- NULL
+  }
+  corr <- cbind(metag_corr1, metag_pmat1)
+  corr <- subset(corr, select=-c(4:5))
+  write.table(corr,paste("./",dirdes,"/Metagenome_",perc,"perc_species_corr_spearman.txt",sep=""), sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
+  
+  for (minc in (as.numeric(mincorr))) {
+    for (maxc in (as.numeric(maxcorr))) {
       corr[,3][corr[,4] > 0.05] <- NA; corr[,4][corr[,4] > 0.05] <- NA
       corr[,4][corr[,3] < minc & corr[,3] > -maxc ] <- NA; corr[,3][corr[,3] < minc & corr[,3] > -maxc ] <- NA
       corr[,3][corr[,1] == corr[,2] ] <- NA
@@ -68,7 +87,8 @@ for (i in c(percent)) {
               axis.text.y=element_text(size=axis_density, margin=margin(0,0,0,0)), panel.grid.major=element_line(colour = "grey95"),
               legend.title=element_text(size=0.5*axis_density), legend.text=element_text(size=20),legend.key.size = unit(0.5, "in"),
               plot.title = element_text(size=axis_density)) +
-        labs(title= paste("Species-Level Correlogram (",i,"% missingness threshold, ",ntaxa," taxa)",sep=""))
-      ggsave(filename=paste("Metagenome_species_",i,"perc_","neg",maxc,"_pos",minc,"_corr_spearman.tiff",sep=""), plot=plot, width=35, height=35, dpi=600, compression = "lzw", limitsize = FALSE)
+        labs(title= paste("Species-Level Correlogram (",perc,"% missingness threshold, ",ntaxa," taxa)",sep=""))
+      ggsave(filename=paste("./",dirdes,"/Metagenome_species_",perc,"perc_","neg",maxc,"_pos",minc,"_corr_spearman.tiff",sep=""), plot=plot, width=35, height=35, dpi=600, compression = "lzw", limitsize = FALSE)
     }
-
+  }
+}

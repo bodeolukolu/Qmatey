@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# While the installation of samtools and bcftools are automated, the installation requires some dependencies.
+# Consider typing the commands below in terminal, delete samtools and bcftools (from within ./GBSapp/tools/), and then re-run GBSapp in terminal:
+
+
+sudo apt-get update
+sudo apt-get install gcc
+sudo apt-get install make
+sudo apt-get install libbz2-dev
+sudo apt-get install zlib1g-dev
+sudo apt-get install libncurses5-dev
+sudo apt-get install libncursesw5-dev
+sudo apt-get install liblzma-dev
+sudo apt-get install libcurl4-gnutls-dev
+sudo apt-get install libssl-dev

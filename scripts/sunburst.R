@@ -1,0 +1,56 @@
+#!/usr/bin/env Rscript
+
+args <- commandArgs(TRUE)
+perc <- args[2]
+nlayers <- unlist(strsplit(args[3],","))
+layers <- args[3]
+libdir <- args[5]
+
+.libPaths( c( .libPaths(), libdir) )
+library(dplyr)
+library(stringi)
+library(plotme)
+library(htmlwidgets)
+
+
+perc <- as.numeric(perc)
+sunburst <- read.delim(args[1], header=T, sep="\t", check.names=FALSE, quote="", fill=TRUE)
+sunburst <- subset(sunburst, select=-c(tax_id,kingdom,domain))
+colnames(sunburst) <- gsub("_mean","",colnames(sunburst))
+sunburst <- data.frame(sunburst)
+for (k in 1:(ncol(sunburst)-7)){
+  sunburst[,k] <- as.numeric(as.character(sunburst[,k]))
+}
+sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunburst)-7))*100
+sunburst <- subset(sunburst, percent >= perc)
+sunburst <- subset(sunburst, select=-c(percent))
+
+sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
+sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
+sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
+sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
+for (i in 1:nrow(sunburst)){
+  if(is.na(sunburst$species[i])){
+    sunburst$species[i] <- sunburst$taxname[i]
+  }
+}
+sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7))
+
+layers <- gsub(",","_",layers)
+dir.create("sunburst")
+rel_abun <- sunburst %>%
+  count(sunburst[,(match(nlayers,names(sunburst)))], wt=average) %>%
+  count_to_sunburst()
+htmlwidgets::saveWidget(rel_abun, paste("./sunburst/taxa_profile_rel_abundance_",perc,"perc_",layers,".html",sep=""), selfcontained=T)
+diversity <- sunburst %>%
+  count(sunburst[,(match(nlayers,names(sunburst)))],wt=NULL) %>%
+  count_to_sunburst()
+htmlwidgets::saveWidget(diversity, paste("./sunburst/taxa_profile_diversity_",perc,"perc_",layers,".html",sep=""), selfcontained=T)
+
+
+
+
+
+
+
