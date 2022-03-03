@@ -1,7 +1,7 @@
 # Initial Testing
-Qmatey is undergoing testing and will be available for public use. If you have any feedback pertaining to Qmatey's operation, please contact Brandon Kristy or Bode Olukolu (bkristy@vols.utk.edu or bolukolu@utk.edu).
+Qmatey is undergoing testing and will be available for public use. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
-![alt text](https://github.com/B-Kristy/logo/blob/master/Qmatey_logo.PNG)
+![alt text](https://github.com/bodeolukolu/logo/blob/master/Qmatey_logo.PNG)
 
 # Qmatey
 A taxonomic profiler capable of robust microbiome analysis
@@ -15,7 +15,7 @@ A taxonomic profiler capable of robust microbiome analysis
 Clone or download the git repository to a desired location
 
 ```
-$ git clone https://github.com/B-Kristy/Qmatey.git
+$ git clone https://github.com/bodeolukolu/Qmatey.git
 ```
 
 ## Dependencies
