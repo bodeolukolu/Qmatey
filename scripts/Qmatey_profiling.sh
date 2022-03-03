@@ -285,7 +285,7 @@ if [[ -z "$(ls -A ./norm_ref 2> /dev/null)" ]]; then
 	echo -e "$1 \e[31m reference/normalization genome folder is empty   ${WHITE}"
 else
 	cd norm_ref
-	#Index ref genomes using bbmap, samtool, and java dependencies -- concatenate all reference genomes into a master reference file
+	#Index ref genomes using BWA, samtool, and java dependencies -- concatenate all reference genomes into a master reference file
 	file=*.dict
 	if test -f $file; then
 		echo -e "${YELLOW}- indexed genome already available ${WHITE}\n"
@@ -327,9 +327,9 @@ else
 			done
 			rm Chr*
 		fi
+			$bwa index -a bwtsw master_ref.fasta
 			$samtools faidx master_ref.fasta
 			$java -jar $picard CreateSequenceDictionary REFERENCE=master_ref.fasta    OUTPUT=master_ref.dict
-			$bbmap ref=master_ref.fasta k=4 threads=$threads
 	fi
 fi
 
@@ -393,7 +393,7 @@ ref_norm () {
 		for i in $(ls *_compressed.fasta); do (
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta}_summ.txt; then
 				cd $projdir/norm_ref
-				$bbmap fast=f threads=$gthreads maxindel=$maxindel local=t ambiguous=best ref=master_ref.fasta in1=${projdir}/samples/$i out=${projdir}/metagenome/${i%_compressed.fasta}.sam  && \
+				$bwa mem -t $gthread ../norm_ref/master_ref.fasta $i > ${projdir}/metagenome/${i%_compressed.fasta}.sam && \
 				cd $projdir/samples
 				$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta}.sam O= ${projdir}/metagenome/${i%_compressed.fasta}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta}_summ.txt && \
@@ -516,7 +516,7 @@ no_norm () {
 		for i in $(ls *_compressed.fasta); do (
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta}_summ.txt; then
 				cd ${projdir}/norm_ref/
-				$bbmap fast=f threads=$gthreads maxindel=$maxindel local=t ambiguous=best ref=master_ref.fasta in1=$i out=${projdir}/metagenome/${i%_compressed.fasta}.sam && \
+				$bwa mem -t $gthread ../norm_ref/master_ref.fasta $i > ${projdir}/metagenome/${i%_compressed.fasta}.sam && \
 				$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta}.sam O= ${projdir}/metagenome/${i%_compressed.fasta}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta}_summ.txt && \
 				$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta}_summ.txt && \

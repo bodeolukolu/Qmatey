@@ -12,7 +12,7 @@ pop=${pop##*/}
 
 ######################################################################################################################################################
 # tools
-export bbmap=${Qmatey_dir}/tools/bbmap/bbmap.sh
+export bwa=${Qmatey_dir}/tools/bwa*/bwa && bwa=${bwa//'//'/'/'}
 export samtools=${Qmatey_dir}/tools/samtools*/samtools && samtools=${samtools//'//'/'/'}
 export picard=${Qmatey_dir}/tools/picard.jar && picard=${picard//'//'/'/'}
 export java=${Qmatey_dir}/tools/jdk8*/bin/java && java=${java//'//'/'/'}

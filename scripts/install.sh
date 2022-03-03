@@ -5,18 +5,20 @@ white='\e[97m'
 orange='\e[38;5;210m'
 
 
+######################################################################################################################################################
 main () {
-  echo -e "${blue}\n############################################## ${yellow}\n- downloading and installing BBmap ${blue}\n##############################################${white}"
-  wget https://sourceforge.net/projects/bbmap/files/latest/download &&
-  tar -xvzf download*; rm download*
+  echo -e "${white}\n############################################## ${orange}\n- downloading and installing BWA ${white}\n##############################################${white}"
+  wget https://sourceforge.net/projects/bio-bwa/files/latest/download &&
+  tar -vxjf download*; rm download*; cd bwa*; make; cd ..
 }
-dirtool=bbmap
+dirtool=bwa*
 if [ -d $dirtool ]; then
   :
 else
-  echo -e "${white}- Performing installation of dependency (BBmap) ${white}"
+  echo -e "${white}- Performing installation of dependency (bwa) ${white}"
   main &>> ./log.out
 fi
+
 
 
 main () {
