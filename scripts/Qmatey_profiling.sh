@@ -343,7 +343,7 @@ ref_norm () {
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
-		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null)
+		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
 		for i in $(ls -S *.f* | grep -v R2.f); do (
 
@@ -407,10 +407,14 @@ ref_norm () {
 		wait
 		#sample read depth is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
-		for i in $(ls -S *_compressed.fasta); do
+		for i in $(ls -S *_compressed.fasta); do (
 			awk '{print $1}' $i | awk -v sample=${i%_compressed.fasta} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta}_microbiome_coverage.txt && \
 			cat ${projdir}/metagenome/${i%_compressed.fasta}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 			rm ${projdir}/metagenome/${i%_compressed.fasta}_microbiome_coverage.txt
+			)&
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				wait
+			fi
 		done
 		wait
 		maximum=$(sort -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
@@ -420,7 +424,7 @@ ref_norm () {
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
-		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null)
+		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
 		for i in $(ls -S *.f* | grep -v R2.f); do (
 
