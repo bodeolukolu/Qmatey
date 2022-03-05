@@ -481,7 +481,7 @@ else
 fi
 cd ${Qmatey_dir}/tools
 if test -f "rankedlineage.dmp.gz"; then
-	$gunzip rankedlineage.dmp.gz
+	gunzip rankedlineage.dmp.gz
 fi
 if [[ "$threads" -le 4 ]]; then
 	gthreads=threads

@@ -99,7 +99,7 @@ fi
 
 cd ${Qmatey_dir}/tools
 if test -f "rankedlineage.dmp.gz"; then
-	$gunzip rankedlineage.dmp.gz
+	gunzip rankedlineage.dmp.gz
 fi
 if [[ "$threads" -le 4 ]]; then
 	gthreads=threads
@@ -348,21 +348,21 @@ ref_norm () {
 			if test ! -f ${i%.f*}_compressed.fasta && [[ $(head -n1 /media/sdc/samples/G244_uniq_R1.fasta | cut -c1-1) == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
 				fi
 				if test -f ${i%.f*}_R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | cat - <($gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						cat $i ${i%.f*}_R2.f* | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
 				fi
 				if test -f ${i%.f*}.R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | cat - <($gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
@@ -371,21 +371,21 @@ ref_norm () {
 			if test ! -f ${i%.f*}_compressed.fasta && [[ $(head -n1 /media/sdc/samples/G244_uniq_R1.fasta | cut -c1-1) == ">" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						awk 'NR%2==0' $i | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
 				fi
 				if test -f ${i%.f*}_R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | cat - <($gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						cat $i ${i%.f*}_R2.f* | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
 				fi
 				if test -f ${i%.f*}.R2.f*; then
 					if gzip -t $i; then
-						$gunzip -c $i | cat - <($gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					else
 						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
 					fi
@@ -415,7 +415,7 @@ ref_norm () {
 		for i in $(ls -S *.f*); do (
 			if test ! -f ${i%.f*}_compressed.fasta; then
 				if gzip -t $i; then
-					$gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
+					gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
 				else
 					awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
 				fi
@@ -521,7 +521,7 @@ no_norm () {
 		for i in $(ls -S *.f*); do (
 			if test ! -f ${projdir}/metagenome/haplotig/${i%.f*}_metagenome.fasta; then
 				if gzip -t $i; then
-					$gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${projdir}/metagenome/haplotig/${i%.f*}_metagenome.fasta
+					gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${projdir}/metagenome/haplotig/${i%.f*}_metagenome.fasta
 				else
 					awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${projdir}/metagenome/haplotig/${i%.f*}_metagenome.fasta
 				fi
@@ -538,7 +538,7 @@ no_norm () {
 		for i in $(ls -S *.f*); do (
 			if test ! -f ${i%.f*}_compressed.fasta; then
 				if gzip -t $i; then
-					$gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
+					gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
 				else
 					awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
 				fi
@@ -3435,7 +3435,7 @@ if [[ "$run_sunburst" == true ]]; then
 fi
 
 cd ${Qmatey_dir}/tools
-$gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
+gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
