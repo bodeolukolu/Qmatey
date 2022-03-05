@@ -348,9 +348,9 @@ ref_norm () {
 		for i in $(ls -S *.f* | grep -v R2.f); do (
 
 			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
-				fa_fq=$(zcat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
 			fi
 
 			if test ! -f ${i%.f*}_compressed.fasta && [[ "${fa_fq}" == "@" ]]; then
@@ -429,9 +429,9 @@ ref_norm () {
 		for i in $(ls -S *.f* | grep -v R2.f); do (
 
 			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
-				fa_fq=$(zcat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
 			fi
 
 			if test ! -f ${i%.f*}_compressed.fasta && [[ "${fa_fq}" == "@" ]]; then
