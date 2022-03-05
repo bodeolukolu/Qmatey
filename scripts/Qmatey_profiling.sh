@@ -412,14 +412,54 @@ ref_norm () {
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
-		for i in $(ls -S *.f*); do (
-			if test ! -f ${i%.f*}_compressed.fasta; then
-				if gzip -t $i; then
-					gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
-				else
-					awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' > ${i%.f*}_compressed.fasta
+		for i in $(ls -S *.f* | grep -v R2.f); do (
+			if test ! -f ${i%.f*}_compressed.fasta && [[ $(head -n1 /media/sdc/samples/G244_uniq_R1.fasta | cut -c1-1) == "@" ]]; then
+				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						awk 'NR%2==0' $i | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
 				fi
-			fi )&
+				if test -f ${i%.f*}_R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						cat $i ${i%.f*}_R2.f* | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
+				fi
+				if test -f ${i%.f*}.R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
+				fi
+			fi
+			if test ! -f ${i%.f*}_compressed.fasta && [[ $(head -n1 /media/sdc/samples/G244_uniq_R1.fasta | cut -c1-1) == ">" ]]; then
+				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						awk 'NR%2==0' $i | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
+				fi
+				if test -f ${i%.f*}_R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						cat $i ${i%.f*}_R2.f* | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
+				fi
+				if test -f ${i%.f*}.R2.f*; then
+					if gzip -t $i; then
+						gunzip -c $i | cat - <(gunzip -c ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					else
+						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' > ${i%.f*}_compressed.fasta
+					fi
+				fi
+			fi
+			)&
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
