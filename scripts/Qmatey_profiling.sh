@@ -343,7 +343,8 @@ ref_norm () {
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
-		rm ${projdir}/metagenome/microbiome_coverage.txt
+		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null)
+
 		for i in $(ls -S *.f* | grep -v R2.f); do (
 
 			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
@@ -419,7 +420,16 @@ ref_norm () {
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
+		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null)
+
 		for i in $(ls -S *.f* | grep -v R2.f); do (
+
+			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
+				fa_fq=$(zcat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+			else
+				fa_fq=$(cat /media/sdc/samples/$i | head -n1 | cut -c1-1)
+			fi
+
 			if test ! -f ${i%.f*}_compressed.fasta && [[ "${fa_fq}" == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
 					if gzip -t $i; then
