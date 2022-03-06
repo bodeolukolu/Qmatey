@@ -991,7 +991,7 @@ rm *_temp*
 
 cd $projdir/metagenome/results/strain_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
-	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_strain/rankedlineage_subhits.txt strain_taxainfo_${i}.txt | \
+	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_strain/rankedlineage_subhits.txt strain_taxa_${i}.txt | \
 	awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > strain_taxainfo_${i}.txt &&
 	wait
 done
@@ -1011,8 +1011,7 @@ for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta); do (
 	fi
 	awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" strain_taxainfo_mean.txt | \
 	paste - strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_buildnorm0.txt &&
-	cat strain_taxainfo_mean_buildnorm0.txt > strain_taxainfo_mean_buildnorm.txt &&
-	rm strain_taxainfo_mean_buildnorm0.txt )&
+	mv strain_taxainfo_mean_buildnorm0.txt strain_taxainfo_mean_buildnorm.txt )&
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	  wait
 	fi
