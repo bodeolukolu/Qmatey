@@ -941,7 +941,7 @@ else
 	wait
 	cd $projdir/metagenome/haplotig
 	for i in $(ls -S *_metagenome.fasta); do
-		awk '{ print ; nextfile}' ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt
+		awk '{ print ; nextfile}' ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt &&
 		ls ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt &&
 		rm ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast
 	done
