@@ -858,7 +858,7 @@ fi
 }
 cd $projdir
 metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta 2> /dev/null | wc -l)
-mblastout=$(ls $projdir/metagenome/alignment/haplotig.megablast 2> /dev/null | wc -l)
+mblastout=$(ls $projdir/metagenome/alignment/*haplotig.megablast 2> /dev/null | wc -l)
 if [[ "$metagout" -eq "$mblastout" ]]; then
 	echo -e "${YELLOW}- Qmatey has already performed ncbi megablast ${WHITE}"
 else
@@ -941,9 +941,9 @@ else
 	wait
 	cd $projdir/metagenome/haplotig
 	for i in $(ls -S *_metagenome.fasta); do
-		awk '{ print ; nextfile}' ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt
-		ls ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt &&
-		rm ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast
+		awk '{ print ; nextfile}' ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt
+		ls ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt &&
+		rm ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast
 	done
 fi
 
