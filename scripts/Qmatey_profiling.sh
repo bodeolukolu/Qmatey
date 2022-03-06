@@ -932,7 +932,7 @@ else
 		uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast}_exactmatch.txt
 		awk '$5==100' $i | awk '$3==1' | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
-		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i}
+		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i} &&
 		rm ${i%_haplotig.megablast}_exactmatch.txt )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		  wait
@@ -942,7 +942,7 @@ else
 	cd $projdir/metagenome/haplotig
 	for i in $(ls -S *_metagenome.fasta); do
 		awk '{ print ; nextfile}' ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt
-		ls ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt
+		ls ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta}_sighits.txt &&
 		rm ../sighits/sighits_strain/*${i%_metagenome.fasta}_haplotig.megablast
 	done
 fi
@@ -974,7 +974,7 @@ for i in $(ls *_sighits.txt);do
 	id=${i%_sighits*}_rel_stderr && awk -v id=$id '{gsub(/rel_stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$5}' > holdrelstderr.txt
 	awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}'  holdrelstderr.txt strain_taxa_rel_quantification_accuracy_temp.txt > holdrelstderr2.txt && cat holdrelstderr2.txt > strain_taxa_rel_quantification_accuracy_temp.txt
 	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $1,"\t",$2,"\t",$3,"\t",$4,"\t",$5,"\t", a[$1]}'  rankedlineage_subhits.txt stats2.txt > stats3.txt
-	awk '{print $1,$2,$3,$4,$5,$7,$8,$9,$10,$11,$12,$13,$14,$15 }' stats3.txt | awk '{gsub(/ /,"\t"); print }' > ${i%_sighits*}_taxastats.txt
+	awk '{print $1,$2,$3,$4,$5,$7,$8,$9,$10,$11,$12,$13,$14,$15 }' stats3.txt | awk '{gsub(/ /,"\t"); print }' > ${i%_sighits*}_taxastats.txt &&
 	rm *stats1* *stats2* *stats3* *hold*
 done
 
@@ -985,14 +985,15 @@ awk '{gsub(/ /,"\t"); print}' strain_taxa_unique_sequences_temp2.txt > ../../res
 awk '{gsub(/ /,"\t"); print}' strain_taxa_quantification_accuracy_temp.txt > strain_taxa_quantification_accuracy_temp2.txt
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/strain_level/strain_taxa_mean.txt strain_taxa_quantification_accuracy_temp2.txt > ../../results/strain_level/strain_taxa_quantification_accuracy.txt
 awk '{gsub(/ /,"\t"); print}' strain_taxa_rel_quantification_accuracy_temp.txt > strain_taxa_rel_quantification_accuracy_temp2.txt
-awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/strain_level/strain_taxa_mean.txt strain_taxa_rel_quantification_accuracy_temp2.txt > ../../results/strain_level/strain_taxa_rel_quantification_accuracy.txt
+awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/strain_level/strain_taxa_mean.txt strain_taxa_rel_quantification_accuracy_temp2.txt > ../../results/strain_level/strain_taxa_rel_quantification_accuracy.txt &&
 rm *_temp*
 
 
 cd $projdir/metagenome/results/strain_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
 	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_strain/rankedlineage_subhits.txt strain_taxainfo_${i}.txt | \
-	awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > strain_taxainfo_${i}.txt
+	awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > strain_taxainfo_${i}.txt &&
+	wait
 done
 rm *_taxa_*
 
@@ -1009,8 +1010,8 @@ for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta); do (
 		normfactor=$( awk -v sample=$sample '$1 == sample' ../../coverage_normalization_factor.txt | awk '{print $2}' )
 	fi
 	awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" strain_taxainfo_mean.txt | \
-	paste - strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_buildnorm0.txt
-	cat strain_taxainfo_mean_buildnorm0.txt > strain_taxainfo_mean_buildnorm.txt
+	paste - strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_buildnorm0.txt &&
+	cat strain_taxainfo_mean_buildnorm0.txt > strain_taxainfo_mean_buildnorm.txt &&
 	rm strain_taxainfo_mean_buildnorm0.txt )&
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	  wait
@@ -1021,7 +1022,7 @@ paste strain_taxainfo_mean_norm0.txt strain_taxainfo_mean_holdingtaxinfo.txt | a
 rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt strain_taxainfo_mean_holdingtaxinfo.txt strain_taxainfo_mean_norm0.txt
 
 for i in *.txt; do (
-	awk '{gsub(/-/,"_"); print}' $i > temp.txt
+	awk '{gsub(/-/,"_"); print}' $i > temp.txt &&
 	mv temp.txt $i )&
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	  wait
@@ -1033,10 +1034,10 @@ Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain $genome_sca
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
-	cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt
-	cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt
-	cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt
-	cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt
+	cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt &&
+	cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt &&
+	cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt &&
+	cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt &&
 	while read -r line; do
 		for i in $( ls *filtered.txt ); do (
 			awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i )&
