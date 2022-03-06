@@ -705,10 +705,9 @@ if [[ "$blast_location" == "local" ]]; then
 				fi
 			done
 			wait
-			find *_out.blast | xargs cat > ${ccf}.blast && \
-			rm *_out.blast
-			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast
-			rm ${ccf}.blast; rm subfile*; rm $ccf
+			find *_out.blast | xargs cat > ${ccf}.blast &&
+			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
+			rm ${ccf}.blast; rm subfile*; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
@@ -817,10 +816,9 @@ if [[ "$blast_location" == "custom" ]]; then
 				fi
 			done
 			wait
-			find *_out.blast | xargs cat > ${ccf}.blast
-			rm *_out.blast
-			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast
-			rm ${ccf}.blast; rm subfile*; rm $ccf
+			find *_out.blast | xargs cat > ${ccf}.blast &&
+			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
+			rm ${ccf}.blast; rm subfile*; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
