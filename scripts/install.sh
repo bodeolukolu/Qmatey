@@ -50,8 +50,8 @@ fi
 
 main () {
   echo -e "${white}\n############################################## ${orange}\n- installing java 1.8. It will be run in manual mode ${white}\n##############################################${white}"
-  wget https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jre_x64_linux_hotspot_8u222b10.tar.gz &&
-  tar -xvf OpenJDK8U-jre_x64_linux_hotspot_8u222b10.tar.gz; rm *tar.gz
+  wget https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u322-b06/OpenJDK8U-jdk_x64_linux_hotspot_8u322b06.tar.gz
+  tar -xvf OpenJDK8U-jdk_x64_linux_hotspot_8u322b06.tar.gz; rm *tar.gz
 }
 dirtool=jdk*
 if [ -d $dirtool ]; then
