@@ -673,15 +673,18 @@ blast () {
 
 cd $projdir/metagenome/haplotig
 if test ! -f combined_compressed_metagenomes.fasta; then
-				find *.fasta | xargs cat | awk NF | awk 'NR%2==0' > hold_metagenomes.fasta &&
-				awk -F, '!seen[$0]++' hold_metagenomes.fasta | awk '{print ">seq"NR"\n"$1}' > combined_compressed_metagenomes.fasta &&
-				rm hold_metagenomes.fasta
+	for compfa in *.fasta; do
+		cat $compfa |  awk NF | awk 'NR%2==0' >> hold_metagenomes.fasta
+	done
+	wait
+	awk -F, '!seen[$0]++' hold_metagenomes.fasta | awk '{print ">seq"NR"\n"$1}' > combined_compressed_metagenomes.fasta &&
+	rm hold_metagenomes.fasta
 fi
 
 if [[ "$blast_location" == "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 
-	file=${projdir}/alignment/combined_compressed.megablast
+	file=${projdir}/metagenome/alignment/combined_compressed.megablast
 	if test -f $file; then
 		echo -e "${YELLOW}- Primary BLAST (nt database) ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
@@ -705,7 +708,10 @@ if [[ "$blast_location" == "local" ]]; then
 				fi
 			done
 			wait
-			find *_out.blast | xargs cat > ${ccf}.blast &&
+			for subfile in *_out.blast; do
+				cat $subfile >> ${ccf}.blast
+			done
+			wait
 			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
 			rm ${ccf}.blast; rm subfile*; rm $ccf &&
 			cd ../haplotig/splitccf/
@@ -717,12 +723,13 @@ if [[ "$blast_location" == "local" ]]; then
 	for i in $(ls -S *metagenome.fasta); do (
 	  if test ! -f ../alignment/${i%_metagenome.fasta}_haplotig.megablast; then
 		  awk NF=NF RS= OFS=@ $i | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 > ../alignment/${i%_metagenome.fasta}.txt &&
+			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' combined_compressed_metagenomes.fasta | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta}.txt - | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
 		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast  &&
-		  rm ../alignment/${i%_metagenome.fasta}.txt
+			wait
 		  if [[ "$taxids" == true ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
@@ -734,19 +741,17 @@ if [[ "$blast_location" == "local" ]]; then
 		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast &&
 		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast
 		  fi
+			rm ../alignment/${i%_metagenome.fasta}.txt
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
-	find ../alignment/ -size 0 -delete
-	rm combined_compressed_metagenomes.fasta
 fi
-
 
 if [[ "$blast_location" == "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	file=../alignment/combined_compressed.megablast
+	file=${projdir}/metagenome/alignment/combined_compressed.megablast
 	if test -f $file; then
 		echo -e "${YELLOW}- BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
@@ -764,12 +769,13 @@ if [[ "$blast_location" == "remote" ]]; then
 	for i in $(ls -S *metagenome.fasta); do (
 	  if test ! -f ../alignment/${i%_metagenome.fasta}_haplotig.megablast; then
 		  awk NF=NF RS= OFS=@ $i | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 > ../alignment/${i%_metagenome.fasta}.txt &&
+			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' combined_compressed_metagenomes.fasta | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta}.txt - | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
 		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast  &&
-		  rm ../alignment/${i%_metagenome.fasta}.txt
+			wait
 		  if [[ "$taxids" == true ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
@@ -781,18 +787,17 @@ if [[ "$blast_location" == "remote" ]]; then
 		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast &&
 		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast
 		  fi
+			rm ../alignment/${i%_metagenome.fasta}.txt
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
-	find ../alignment/ -size 0 -delete
-	rm combined_compressed_metagenomes.fasta
 fi
 
 if [[ "$blast_location" == "custom" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
-	file=../alignment/combined_compressed.megablast
+	file=${projdir}/metagenome/alignment/combined_compressed.megablast
 	if test -f $file; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
@@ -816,7 +821,10 @@ if [[ "$blast_location" == "custom" ]]; then
 				fi
 			done
 			wait
-			find *_out.blast | xargs cat > ${ccf}.blast &&
+			for subfile in *_out.blast; do
+				cat $subfile >> ${ccf}.blast
+			done
+			wait
 			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
 			rm ${ccf}.blast; rm subfile*; rm $ccf &&
 			cd ../haplotig/splitccf/
@@ -829,12 +837,13 @@ if [[ "$blast_location" == "custom" ]]; then
 	for i in $(ls -S *metagenome.fasta); do (
 	  if test ! -f ../alignment/${i%_metagenome.fasta}_haplotig.megablast; then
 		  awk NF=NF RS= OFS=@ $i | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 > ../alignment/${i%_metagenome.fasta}.txt &&
+			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' combined_compressed_metagenomes.fasta | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta}.txt - | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
 		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast  &&
-		  rm ../alignment/${i%_metagenome.fasta}.txt
+			wait
 		  if [[ "$taxids" == true ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
@@ -846,15 +855,16 @@ if [[ "$blast_location" == "custom" ]]; then
 		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast &&
 		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast
 		  fi
+			rm ../alignment/${i%_metagenome.fasta}.txt
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
-	find ../alignment/ -size 0 -delete
-	rm combined_compressed_metagenomes.fasta
 fi
 
+wait
+find ../alignment/ -size 0 -delete
 }
 cd $projdir
 metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta 2> /dev/null | wc -l)
