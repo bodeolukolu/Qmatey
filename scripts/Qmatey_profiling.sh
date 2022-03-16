@@ -702,18 +702,20 @@ if [[ "$blast_location" == "local" ]]; then
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				${Qmatey_dir}/tools/ncbi-blast-2.12.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 90 -max_target_seqs 1000000 \
-				-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast )&
+				-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 					wait
 				fi
 			done
 			wait
-			for subfile in *_out.blast; do
-				cat $subfile >> ${ccf}.blast
+			for subfile in *_out.blast.gz; do
+				cat $subfile >> ${ccf}.blast.gz
+				rm $subfile
 			done
 			wait
-			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
-			rm ${ccf}.blast; rm subfile*; rm $ccf &&
+			zcat ${ccf}.blast.gz | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | gzip >> combined_compressed.megablast.gz &&
+			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
@@ -726,20 +728,20 @@ if [[ "$blast_location" == "local" ]]; then
 			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' combined_compressed_metagenomes.fasta | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta}.txt - | \
-		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
+		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - <( zcat ../alignment/combined_compressed.megablast.gz) | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
-		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast  &&
+		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz  &&
 			wait
 		  if [[ "$taxids" == true ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
 		      taxid=${taxid/*\/}
-		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
+		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
 		    done
 		    wait
-		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast
-		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast &&
-		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast
+		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz
+		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast.gz &&
+		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast.gz
 		  fi
 			rm ../alignment/${i%_metagenome.fasta}.txt
 		fi )&
@@ -815,18 +817,21 @@ if [[ "$blast_location" == "custom" ]]; then
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				${Qmatey_dir}/tools/ncbi-blast-2.12.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 90  -max_target_seqs 1000000 \
-				-outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast )&
+				-outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast &&
+				wait
+				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 					wait
 				fi
 			done
 			wait
-			for subfile in *_out.blast; do
-				cat $subfile >> ${ccf}.blast
+			for subfile in *_out.blast.gz; do
+				cat $subfile >> ${ccf}.blast.gz
+				rm $subfile
 			done
 			wait
-			awk '$4 <= 6{print}' ${ccf}.blast | awk '$3 >= 32{print}' >> combined_compressed.megablast &&
-			rm ${ccf}.blast; rm subfile*; rm $ccf &&
+			zcat ${ccf}.blast.gz | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | gzip >> combined_compressed.megablast.gz &&
+			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
@@ -840,20 +845,20 @@ if [[ "$blast_location" == "custom" ]]; then
 			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' combined_compressed_metagenomes.fasta | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta}.txt - | \
-		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
+		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - <( zcat ../alignment/combined_compressed.megablast.gz) | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
-		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast  &&
+		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz  &&
 			wait
 		  if [[ "$taxids" == true ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
 		      taxid=${taxid/*\/}
-		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
+		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
 		    done
 		    wait
-		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast
-		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast &&
-		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast
+		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz
+		    find ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta}_haplotig.megablast.gz &&
+		    rm ../alignment/${i%_metagenome.fasta}_haplotig_taxid*.megablast.gz
 		  fi
 			rm ../alignment/${i%_metagenome.fasta}.txt
 		fi )&
@@ -937,8 +942,8 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast); do (
-		awk '$5==100' $i | awk '$3<=10' | awk -F'\t' '{print $1"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t"); print $1}' | \
+	for i in $(ls -S *_haplotig.megablast.gz); do (
+		zcat $i | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $1"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t"); print $1}' | \
 		uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast}_exactmatch.txt
 		awk '$5==100' $i | awk '$3==1' | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
