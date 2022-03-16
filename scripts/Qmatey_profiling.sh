@@ -736,7 +736,7 @@ if [[ "$blast_location" == "local" ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
 		      taxid=${taxid/*\/}
-		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
+		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast.gz
 		    done
 		    wait
 		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz
@@ -853,7 +853,7 @@ if [[ "$blast_location" == "custom" ]]; then
 		    for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		      taxid=${taxid_files%*.txids}
 		      taxid=${taxid/*\/}
-		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast
+		      awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz) | gzip > ../alignment/${i%_metagenome.fasta}_haplotig_taxid${taxid}.megablast.gz
 		    done
 		    wait
 		    rm ../alignment/${i%_metagenome.fasta}_haplotig_temp.megablast.gz
@@ -944,11 +944,11 @@ if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 else
 	for i in $(ls -S *_haplotig.megablast.gz); do (
 		zcat $i | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $1"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t"); print $1}' | \
-		uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast}_exactmatch.txt
-		awk '$5==100' $i | awk '$3==1' | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
+		uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
+		awk '$5==100' $i | awk '$3==1' | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
-		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i} &&
-		rm ${i%_haplotig.megablast}_exactmatch.txt )&
+		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i%.gz} &&
+		rm ${i%_haplotig.megablast.gz}_exactmatch.txt )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		  wait
 		fi

@@ -228,9 +228,10 @@ if test -f $file; then
   	:
   else
     lineage_update() {
-      rm rankedlineage.dmp.gz && rm rankedlineage.dmp
-      wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
-      tar -zxvf new_taxdump.tar.gz; rm *tar.gz
+      rm rankedlineage.dmp*
+      wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
+      gunzip -c new_taxdump.tar.gz | tar xf -
+      rm *tar.gz
       rm citations.dmp; rm delnodes.dmp; rm division.dmp; rm fullnamelineage.dmp; rm gencode.dmp; rm host.dmp; rm merged.dmp; rm names.dmp; rm nodes.dmp
       rm taxidlineage.dmp; rm typematerial.dmp; rm typeoftype.dmp
       gzip rankedlineage.dmp
