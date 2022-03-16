@@ -684,7 +684,7 @@ fi
 if [[ "$blast_location" == "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 
-	file=${projdir}/metagenome/alignment/combined_compressed.megablast
+	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	if test -f $file; then
 		echo -e "${YELLOW}- Primary BLAST (nt database) ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
