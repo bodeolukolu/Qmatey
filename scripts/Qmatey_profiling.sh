@@ -1122,9 +1122,9 @@ else
 	wait
 	cd $projdir/metagenome/haplotig
 	for i in $(ls -S *_metagenome.fasta.gz); do
-		awk '{ print ; nextfile}' <(zcat ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast.gz) | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
-		ls <(zcat ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast.gz) | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
-		rm ../sighits/sighits_strain/${i%_metagenome.fasta}_haplotig.megablast.gz
+		awk '{ print ; nextfile}' <(zcat ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast) | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
+		ls <(zcat ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast) | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
+		rm ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast
 	done
 fi
 
@@ -1183,7 +1183,7 @@ awk '{print $1}' strain_taxainfo_mean.txt > strain_taxainfo_mean_holdingtaxid.tx
 awk -F '\t' -v OFS='\t' 'FNR==1{for(i=1;i<=NF;++i)if($i!~/_mean/)k[i]=1}{n=split($0,f,FS);$0=j="";for(i=1;i<=n;++i)if(i in k)$(++j)=f[i]}1' \
 strain_taxainfo_mean.txt | awk '!($1="")' | awk 'BEGIN{OFS="\t"} {$1=$1};1' > strain_taxainfo_mean_holdingtaxinfo.txt
 touch strain_taxainfo_mean_buildnorm.txt
-for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta.gz); do (
+for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta.gz); do
 	sample=${i%_metagenome.fasta.gz}; sample=${sample##*/}
 	if [[ -z "$(ls -A ${projdir}/metagenome/coverage_normalization_factor.txt &> /dev/null)" ]]; then
 		normfactor=1
@@ -1192,18 +1192,15 @@ for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta.gz); do (
 	fi
 	awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" strain_taxainfo_mean.txt | \
 	paste - strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_buildnorm0.txt &&
-	mv strain_taxainfo_mean_buildnorm0.txt strain_taxainfo_mean_buildnorm.txt )&
-	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-	  wait
-	fi
+	mv strain_taxainfo_mean_buildnorm0.txt strain_taxainfo_mean_buildnorm.txt
 done
 paste strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_norm0.txt
 paste strain_taxainfo_mean_norm0.txt strain_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > strain_taxainfo_mean_normalized.txt
 rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt strain_taxainfo_mean_holdingtaxinfo.txt strain_taxainfo_mean_norm0.txt
 
 for i in *.txt; do (
-	awk '{gsub(/-/,"_"); print}' $i > temp.txt &&
-	mv temp.txt $i )&
+	awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
+	mv ${i%.txt}.temp $i )&
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	  wait
 	fi
