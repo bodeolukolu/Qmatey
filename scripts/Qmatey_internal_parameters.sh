@@ -19,12 +19,8 @@ export java=${Qmatey_dir}/tools/jdk8*/bin/java && java=${java//'//'/'/'}
 export blast=${Qmatey_dir}/tools/ncbi-blast*/bin/blastn && blast=${blast//'//'/'/'}
 if command -v pigz &>/dev/null; then
   export gzip=pigz
-  export gunzip=unpigz
-  export zcat="unpigz -c"
 else
   export gzip=gzip
-  export gunzip=gunzip
-  export zcat=zcat
 fi
 
 samtoolsout=$($samtools --version | head -n 3)
