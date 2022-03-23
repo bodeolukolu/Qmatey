@@ -556,7 +556,7 @@ ref_norm () {
 		echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 		for i in $(ls -S *_compressed.fasta.gz); do
 			normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
-			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' $i | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
+			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat $i) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 		done
 		wait
 		rm ${projdir}/samples/*_compressed.fasta.gz
