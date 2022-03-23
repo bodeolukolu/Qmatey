@@ -347,7 +347,7 @@ ref_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == $gzip ]]; then
+			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -356,7 +356,7 @@ ref_norm () {
 
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -366,7 +366,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -376,7 +376,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -388,7 +388,7 @@ ref_norm () {
 			fi
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 					else
 						awk 'NR%2==0' $i | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
@@ -396,7 +396,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -406,7 +406,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -437,7 +437,7 @@ ref_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == $gzip ]]; then
+			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -446,7 +446,7 @@ ref_norm () {
 
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -456,7 +456,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -466,7 +466,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -478,7 +478,7 @@ ref_norm () {
 			fi
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -488,7 +488,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -498,7 +498,7 @@ ref_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -597,7 +597,7 @@ no_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == $gzip ]]; then
+			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -606,7 +606,7 @@ no_norm () {
 
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -616,7 +616,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -626,7 +626,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -638,7 +638,7 @@ no_norm () {
 			fi
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -648,7 +648,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -658,7 +658,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -676,7 +676,7 @@ no_norm () {
 		#Increased the spead of reference genome alignment -- especially if read depth is high
 		for i in $(ls -S *.f* | grep -v R2.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == $gzip ]]; then
+			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -685,7 +685,7 @@ no_norm () {
 
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -695,7 +695,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -705,7 +705,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | awk 'NR%2==1' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -717,7 +717,7 @@ no_norm () {
 			fi
 			if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
 				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -727,7 +727,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}_R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}_R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -737,7 +737,7 @@ no_norm () {
 					wait
 				fi
 				if test -f ${i%.f*}.R2.f*; then
-					if $gzip -t $i; then
+					if gzip -t $i; then
 						zcat $i | cat - <(zcat ${i%.f*}.R2.f*) | awk 'NR%2==0' | sort | uniq -c | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz &&
 						wait
 					else
@@ -837,7 +837,7 @@ if [[ "$blast_location" == "local" ]]; then
 			for sub in $(ls subfile* | sort -V); do (
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 90 -max_target_seqs 1000000 \
 				-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
-				$gzip ${sub}_out.blast )&
+				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 					wait
 				fi
@@ -948,7 +948,7 @@ if [[ "$blast_location" == "custom" ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 90  -max_target_seqs 1000000 \
 				-outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast &&
 				wait
-				$gzip ${sub}_out.blast )&
+				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 					wait
 				fi
@@ -3623,7 +3623,7 @@ if [[ "$run_sunburst" == true ]]; then
 fi
 
 cd ${Qmatey_dir}/tools
-$gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
+gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
