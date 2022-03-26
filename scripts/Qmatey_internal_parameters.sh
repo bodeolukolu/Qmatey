@@ -18,7 +18,7 @@ export picard=${Qmatey_dir}/tools/picard.jar && picard=${picard//'//'/'/'}
 export java=${Qmatey_dir}/tools/jdk8*/bin/java && java=${java//'//'/'/'}
 export blast=${Qmatey_dir}/tools/ncbi-blast*/bin/blastn && blast=${blast//'//'/'/'}
 if command -v pigz &>/dev/null; then
-  export gzip=pigz
+  export gzip=gzip
 else
   export gzip=gzip
 fi
