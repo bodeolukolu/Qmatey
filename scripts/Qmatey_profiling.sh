@@ -815,10 +815,12 @@ if test ! -f combined_compressed_metagenomes.fasta.gz; then
 	rm hold_metagenomes.fasta.gz
 fi
 
+if [[ "$taxids" == true ]]; then
+	for i in ${projdir}/taxids/*.txids; do
+		cat $i >> ${projdir}/metagenome/All.txids
+	done
+fi
 
-for i in ${projdir}/taxids/*.txids; do
-	cat $i >> ${projdir}/metagenome/All.txids
-done
 
 if [[ "$blast_location" == "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
@@ -840,8 +842,16 @@ if [[ "$blast_location" == "local" ]]; then
 			awk 'NR%200==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 90 -max_target_seqs 1000000 \
-				–taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+				if [[ "$taxids" == true ]]; then
+					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 90 -max_target_seqs 1000000 \
+					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					wait
+				else
+					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 90 -max_target_seqs 1000000 \
+					-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					wait
+				fi
+				wait
 				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 					wait
@@ -950,8 +960,15 @@ if [[ "$blast_location" == "custom" ]]; then
 			awk 'NR%200==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 90  -max_target_seqs 1000000 \
-				–taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast &&
+				if [[ "$taxids" == true ]]; then
+					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 90  -max_target_seqs 1000000 \
+					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					wait
+				else
+					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 90  -max_target_seqs 1000000 \
+					-outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					wait
+				fi
 				wait
 				gzip ${sub}_out.blast )&
 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
