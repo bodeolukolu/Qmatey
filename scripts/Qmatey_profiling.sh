@@ -826,13 +826,13 @@ if [[ "$blast_location" == "local" ]]; then
 		if [[ -d splitccf ]]; then rm -r splitccf; fi
 		mkdir splitccf; cd splitccf
 		awk -v RS=">" -v FS="\n" -v ORS="\n" -v OFS="" '$0 {$1=">"$1"\n"; print}' <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) | $gzip > combined_compressed_metagenomes.fasta.gz
-		awk 'NR%2000000==1{x="F"++i;}{print > x}' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+		awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 		wait $PIDsplit1
 		rm combined_compressed_metagenomes.fasta.gz
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
-			awk 'NR%200==1{x="subfile"++i;}{print > x}' $ccf & PIDsplit2=$!
+			awk 'NR%200==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity 95 -max_target_seqs 1000000 \
@@ -936,13 +936,13 @@ if [[ "$blast_location" == "custom" ]]; then
 		if [[ -d splitccf ]]; then rm -r splitccf; fi
 		mkdir splitccf; cd splitccf
 		awk -v RS=">" -v FS="\n" -v ORS="\n" -v OFS="" '$0 {$1=">"$1"\n"; print}' <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) | $gzip > combined_compressed_metagenomes.fasta.gz
-		awk 'NR%2000000==1{x="F"++i;}{print > x}' <(zcat combined_compressed_metagenomes.fasta 2> /dev/null) & PIDsplit1=$!
+		awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 		wait $PIDsplit1
 		rm combined_compressed_metagenomes.fasta.gz
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
-			awk 'NR%200==1{x="subfile"++i;}{print > x}' $ccf & PIDsplit2=$!
+			awk 'NR%200==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity 95  -max_target_seqs 1000000 \
