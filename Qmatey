@@ -183,7 +183,7 @@ else
 	fi
 fi
 
-taxids="$(grep taxids config.sh)"
+taxids="$(grep taxids config.sh | grep -v "map")"
 taxids=${taxids//*=}
 if [[ -z $taxids ]]; then
 	$taxids=true

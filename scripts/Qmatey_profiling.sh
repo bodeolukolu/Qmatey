@@ -803,14 +803,14 @@ echo -e "\e[97m########################################################\n \e[38;
 cd ${Qmatey_dir}
 local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
 percid=90
-if [[ "$local_db" ~= "nt" ]]; then
-	percid=90
+if (echo $local_db | grep -q 'nt'); then
+        percid=90
 fi
-if [[ "$local_db" ~= "16S" || "$local_db" ~= "18S" || "$local_db" ~= "28S" || "$local_db" ~= "ITS" || "$local_db" ~= "16S" ]]; then
-	percid=97
+if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
+        percid=97
 fi
-if [[ "$local_db" ~= "16s" || "$local_db" ~= "18s" || "$local_db" ~= "28s" || "$local_db" ~= "its" || "$local_db" ~= "16s" ]]; then
-	percid=97
+if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
+        percid=97
 fi
 
 
