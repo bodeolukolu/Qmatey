@@ -1,4 +1,4 @@
-ls -S *.f* | grep -v R2.f | grep -v _compressed.f)if R --version; then
+if R --version; then
 	:
 else
 	module add R
