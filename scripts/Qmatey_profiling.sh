@@ -670,6 +670,9 @@ no_norm () {
 			fi
 		done
 		wait
+		for i in $(ls *_compressed.fasta.gz); do
+			zcat $i | awk '{gsub(/\t/,"\n");}1' | gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz)}_metagenome.fasta.gz
+		done
 	else
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
@@ -833,7 +836,7 @@ if [[ "$taxids" == true ]]; then
 fi
 
 
-if [[ "$blast_location" == "local" ]]; then
+if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 
 	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
@@ -908,17 +911,24 @@ if [[ "$blast_location" == "local" ]]; then
 	done
 fi
 
-if [[ "$blast_location" == "remote" ]]; then
+if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
 	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	if test -f $file; then
 		echo -e "${YELLOW}- BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs 1000000 \
-		–taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" \
-		-out ../alignment/combined_compressed.megablast -remote &&
-		wait
+		if [[ "$taxids" == true ]]; then
+			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs 1000000 \
+			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" \
+			-out ../alignment/combined_compressed.megablast -remote &&
+			wait
+		else
+			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs 1000000 \
+			-outfmt "6 qseqid sseqid length qstart qcovs pident gapopen qseq sseq staxids stitle" \
+			-out ../alignment/combined_compressed.megablast -remote &&
+			wait
+		fi
 	fi
 	wait
 	cat ../alignment/combined_compressed.megablast > ../alignment/temp.megablast
@@ -952,7 +962,7 @@ if [[ "$blast_location" == "remote" ]]; then
 	done
 fi
 
-if [[ "$blast_location" == "custom" ]]; then
+if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	if test -f $file; then
