@@ -428,7 +428,13 @@ else
   :
 fi
 
-if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
+
+normzalization="$(grep normlization config.sh)"
+normzalization=${normzalization//*=}
+if [[ -z "${normzalization}" ]]; then
+  normzalization=true
+fi
+if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]] && [[ "${normzalization}" == true ]]; then
   echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
   echo -e "${yellow} \e[31m Method-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
   echo -e "${yellow} \e[31m Method-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
