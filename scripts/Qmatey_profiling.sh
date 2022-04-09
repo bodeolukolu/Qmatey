@@ -347,7 +347,7 @@ ref_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
+			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -437,7 +437,7 @@ ref_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
+			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -597,7 +597,7 @@ no_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
+			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
@@ -671,7 +671,7 @@ no_norm () {
 		done
 		wait
 		for i in $(ls *_compressed.fasta.gz); do
-			zcat $i | awk '{gsub(/\t/,"\n");}1' | gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz)}_metagenome.fasta.gz
+			zcat $i | awk '{gsub(/\t/,"\n");}1' | gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 		done
 	else
 		cd $projdir/samples
@@ -679,7 +679,7 @@ no_norm () {
 		#Increased the spead of reference genome alignment -- especially if read depth is high
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
-			if [[ $(file $i | awk -F' ' '{print $2}') == gzip ]]; then
+			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
