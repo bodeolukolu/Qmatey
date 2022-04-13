@@ -32,6 +32,7 @@ order_level=true
 class_level=true
 phylum_level=true
 
+run_corr=true
 sunburst_taxlevel=strain
 sunburst_nlayers=phylum,genus,species
 ####################################################
