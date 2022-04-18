@@ -1,21 +1,27 @@
 <p align="right">
-<img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
+<img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/Qmatey_logo.PNG" width="273" height="162">
 </p>
 
 # Introduction
-Qmatey (0.4.0) is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+Qmatey (0.40) is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet).
+
+## Features
+* Exact-matching (and exact-matching of consensus) sequence.
+* User-friendly and fully automated: “walk-away” and “walk-through” mode
+* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and 16S/ITS amplicon sequencing.
+* User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
+* Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read multiple times).
+* Optimization of parallelized MegaBLAST jobs.
+* Allows for various types of normalization.
+* QC-plots to evaluate the predictive accuracy of profiles.
+* visualization of results
+
+
+Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
 Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
 
 
-
-# Qmatey
-A taxonomic profiler capable of robust microbiome analysis
-## Features
-* Automated pipeline starting with QC-filtered sequencing data and ending with microbiome quantification and visualization
-* Supports all Next-Generation Sequencing strategies, including 16S/ITS amplicon sequencing, Whole-Genome shotgun sequencing, and reduced representation sequencing.
-* User-defined parameters for strain-level, species-level, genus-level, and family-level taxonomic analysis
-* QC-plots to evaluate the predictive accuracy of quantified metagenomic data
 
 ## Installation
 Clone or download the git repository to a desired location
@@ -25,11 +31,13 @@ git clone https://github.com/bodeolukolu/Qmatey.git
 ```
 
 ## Dependencies
+* NCBI MegaBLAST
+* bwa
+* samtools
+* picard tools
+* java
 * R version 3.5 or above
-* Java
-  * Try 'sudo apt install default-jre'
-* Datamash
-  * Try 'sudo apt install datamash'
+* R dependencies (dependencies of packages not listed): plotme, ggplot, plotly, reshape2, ggcorrplot, ccrepe
 * If you are performing a **local BLAST**, you will require an NCBI sequencing database compiled into one directory
 
 ## Setting Up a Project Directory
