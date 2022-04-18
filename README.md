@@ -1,5 +1,6 @@
 # Initial Testing
-Qmatey is undergoing testing and will be available for public use. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
 
 ![alt text](https://github.com/bodeolukolu/logo/blob/master/Qmatey_logo.PNG)
 

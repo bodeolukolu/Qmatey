@@ -1117,20 +1117,25 @@ if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $1"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t"); print $1}' | \
-		uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3==1' | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		sort | uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
 		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i%.gz} &&
 		rm ${i%_haplotig.megablast.gz}_exactmatch.txt
 	done
 	wait
 	cd $projdir/metagenome/haplotig
+	mkdir combined
+	mv combined_compressed_metagenomes.fasta.gz ./combined &&
+	wait
 	for i in $(ls -S *_metagenome.fasta.gz); do
 		awk '{ print ; nextfile}' ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
 		ls ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
 		rm ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast
 	done
+	mv ./combined/combined_compressed_metagenomes.fasta.gz ./ &&
+	rmdir combined
 fi
 
 echo -e "${YELLOW}- compiling taxonomic information"
