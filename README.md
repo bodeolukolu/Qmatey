@@ -1,8 +1,13 @@
-# Initial Testing
-Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
-*Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
+<p align="right">
+<img src="https://github.com/bodeolukolu/logo/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
+</p>
 
-![alt text](https://github.com/bodeolukolu/logo/blob/master/misc/Qmatey_logo.PNG)
+# Introduction
+Qmatey () is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+
+Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
+
+
 
 # Qmatey
 A taxonomic profiler capable of robust microbiome analysis
