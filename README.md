@@ -1,5 +1,5 @@
 <p align="right">
-<img src="https://github.com/bodeolukolu/Qmatey/logo/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
+<img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
 </p>
 
 # Introduction
