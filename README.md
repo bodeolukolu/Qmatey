@@ -1,9 +1,9 @@
 <p align="right">
-<img src="https://github.com/bodeolukolu/logo/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
+<img src="https://github.com/bodeolukolu/Qmatey/logo/blob/master/misc/Qmatey_logo.PNG" width="182" height="108">
 </p>
 
 # Introduction
-Qmatey () is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+Qmatey (0.4.0) is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
 Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
 
