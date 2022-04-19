@@ -121,7 +121,7 @@ fi
 cd $projdir
 echo -e "${white}\n#########################################################################################"
 echo -e "${yellow}\t- Program:\tQmatey"
-echo -e "${yellow}\t- Version:\t0.3.0"
+echo -e "${yellow}\t- Version:\t0.4.0"
 echo -e "${yellow}\t- Description:\tQuantitative Metagenomic Alignment and Taxonomic Exact-Matching"
 echo -e "${yellow}\t\t\t * Exact-Matching of sequences at strain-level"
 echo -e "${yellow}\t\t\t * Exact-Matching of Consensus sequences (EMC) at higher taxonomic levels\n"
@@ -660,17 +660,17 @@ fi
 
 if [[ "$string" == true ]]; then
 if [[ "$cluster" == true ]]; then
-  if [ -z "$thread_node" ]; then
+  if [ -z "$nthread" ]; then
     echo -e "${magenta}- Please provide number of threads config.sh (for cluster node)? ${white}"
     echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}"
     sleep 5
     exit 1
   fi
   echo -e "${magenta}- Qmatey will run in walkaway mode? ${white}"
-  printf "#""!""/bin/bash \n#SBATCH -c ${thread_node} \n\n" > cluster_header.sh
+  printf "#""!""/bin/bash \n#SBATCH -c ${nthread} \n\n" > cluster_header.sh
   printf "walkaway=true \n\n" > walkaway.txt
-  cat cluster_header.sh steps.txt config.sh walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
-  rm fetchdir.txt cluster_header.sh header.txt steps.txt walkaway.txt
+  cat cluster_header.sh config.sh walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
+  rm fetchdir.txt cluster_header.sh header.txt walkaway.txt
 
   echo -e "${magenta}- Qmatey is ready to submit job ${white}"
   echo -e "${magenta}- Do you want to continue? ${white}"
