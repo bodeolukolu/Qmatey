@@ -258,6 +258,62 @@ if [[ "$sampno" == "0" ]]; then
 	echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
 	exit 0
 fi
+
+
+if [[ "$WGS" == "true" ]]; then
+  mkdir -p WGS_data
+  for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
+    if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
+      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+    else
+      fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+    fi
+    wait
+
+    if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
+      if [[ "${fa_fq}" == "@" ]]; then
+        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R1.fasta.gz
+        mv $i ./WGS_data/
+        awk 'NR%2==0' <(zcat ${i%R1.f*}R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R2.fasta.gz
+        mv ${i%R1.f*}R2.fastq.gz ./WGS_data/
+      fi
+      if [[ "${fa_fq}" == ">" ]]; then
+        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R1.tmp.gz
+        mv $i ./WGS_data/
+        mv ${i%R1.f*}R1.tmp.gz ${i%R1.f*}R1.fasta.gz
+        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%R1.f*}R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R2.tmp.gz
+        mv ${i%R1.f*}R2.fasta.gz ./WGS_data/
+        mv ${i%R1.f*}R2.tmp.gz ${i%R1.f*}R2.fasta.gz
+      fi
+    else
+      if [[ "${fa_fq}" == "@" ]]; then
+        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R1.fasta.gz
+        mv $i ./WGS_data/
+        awk 'NR%2==0' ${i%R1.f*}R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R2.fasta.gz
+        mv ${i%R1.f*}R2.fastq ./WGS_data/
+      fi
+      if [[ "${fa_fq}" == ">" ]]; then
+        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R1.tmp.gz
+        mv $i ./WGS_data/
+        mv ${i%R1.f*}R1.tmp.gz ${i%R1.f*}R1.fasta.gz
+        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%R1.f*}R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | gzip > ${i%R1.f*}R2.tmp.gz
+        mv ${i%R1.f*}R2.fasta ./WGS_data/
+        mv ${i%R1.f*}R2.tmp.gz ${i%R1.f*}R2.fasta.gz
+      fi
+    fi
+  done
+fi
+
+
+
 find . -type d -empty -delete
 }
 cd $projdir
@@ -335,6 +391,8 @@ else
 			$java -jar $picard CreateSequenceDictionary REFERENCE=master_ref.fasta    OUTPUT=master_ref.dict
 	fi
 fi
+
+
 
 #################################################################################################################
 echo -e "\e[97m########################################################\n \e[38;5;210m Read Compression, Normalization, and exclusion of reads from reference genomes \n\e[97m########################################################\n"
@@ -675,6 +733,7 @@ no_norm () {
 		wait
 		for i in $(ls *_compressed.fasta.gz); do
 			zcat $i | awk '{gsub(/\t/,"\n");}1' | gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
+			rm $i
 		done
 	else
 		cd $projdir/samples
@@ -808,15 +867,29 @@ echo -e "\e[97m########################################################\n \e[38;
 
 cd ${Qmatey_dir}
 local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
-percid=90
 if (echo $local_db | grep -q 'nt'); then
-        percid=90
+	if [[ -z $percid ]]; then
+		export percid=90
+	fi
+	if [[ -z $filter_qcovs ]]; then
+		export filter_qcovs=80
+	fi
 fi
 if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
-        percid=97
+	if [[ -z $percid ]]; then
+		export percid=97
+	fi
+	if [[ -z $filter_qcovs ]]; then
+		export filter_qcovs=90
+	fi
 fi
 if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
-        percid=97
+	if [[ -z $percid ]]; then
+		export percid=97
+	fi
+	if [[ -z $filter_qcovs ]]; then
+		export filter_qcovs=90
+	fi
 fi
 
 
@@ -890,7 +963,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 	fi
 
 	for i in $(ls -S *metagenome.fasta.gz); do
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast; then
+	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 		  awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 | $gzip > ../alignment/${i%_metagenome.fasta.gz}.txt.gz &&
 			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
@@ -935,20 +1008,21 @@ if [[ "$blast_location" =~ "remote" ]]; then
 		fi
 	fi
 	wait
-	cat ../alignment/combined_compressed.megablast > ../alignment/temp.megablast
+
+	cat ../alignment/combined_compressed.megablast | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
-	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast > ../alignment/combined_compressed.megablast
+	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast
 	rm ../alignment/temp.megablast
 
 	for i in $(ls -S *metagenome.fasta.gz); do
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast; then
+	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 		  awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 > ../alignment/${i%_metagenome.fasta.gz}.txt &&
 			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
 		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' ../alignment/${i%_metagenome.fasta.gz}.txt - | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' - ../alignment/combined_compressed.megablast | \
 		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | \
-		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast  &&
+		  awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' |$gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 		  # if [[ "$taxids" == true ]]; then
 		  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
@@ -1017,7 +1091,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast; then
+	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 		  awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 | $gzip > ../alignment/${i%_metagenome.fasta.gz}.txt.gz &&
 			wait
 		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
@@ -1116,32 +1190,26 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
-		sort | uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
-		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
-		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' > ../sighits/sighits_strain/${i%.gz} &&
-		rm ${i%_haplotig.megablast.gz}_exactmatch.txt
-	done
-	wait
-	cd $projdir/metagenome/haplotig
 	mkdir combined
 	mv combined_compressed_metagenomes.fasta.gz ./combined &&
 	wait
-	for i in $(ls -S *_metagenome.fasta.gz); do
-		awk '{ print ; nextfile}' ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast | head -n 1 > ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
-		ls ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast | xargs -n 1 tail -n +2 >> ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_sighits.txt &&
-		rm ../sighits/sighits_strain/${i%_metagenome.fasta.gz}_haplotig.megablast
+	for i in $(ls -S *_haplotig.megablast.gz); do
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}'  | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		sort | uniq -c | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
+		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
+		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' | gzip > ../sighits/sighits_strain/../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
+		rm ${i%_haplotig.megablast.gz}_exactmatch.txt
 	done
+	wait
 	mv ./combined/combined_compressed_metagenomes.fasta.gz ./ &&
 	rmdir combined
 fi
 
 echo -e "${YELLOW}- compiling taxonomic information"
 cd $projdir/metagenome/sighits/sighits_strain
-find . -type f -name '*_sighits.txt' -exec cat {} + > sighits.txt
-awk '{print $8}' sighits.txt | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt
+find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
@@ -1153,8 +1221,10 @@ awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_rel_quantification_accu
 
 strain_level=strain
 for i in $(ls *_sighits.txt);do
-	Rscript "${Qmatey_dir}/scripts/stats_summary.R" $i $min_unique_seqs $strain_level "${Qmatey_dir}/tools/R"
+	gunzip $i
+	Rscript "${Qmatey_dir}/scripts/stats_summary.R" ${i%.gz} $min_unique_seqs $strain_level "${Qmatey_dir}/tools/R"
 	wait
+	gzip ${i%.gz}
 	echo $'tax_id\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
 	id=${i%_sighits*}_mean && awk -v id=$id '{gsub(/mean/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$2}' > holdmean.txt
 	awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}'  holdmean.txt strain_taxa_mean_temp.txt > holdmean2.txt && cat holdmean2.txt > strain_taxa_mean_temp.txt

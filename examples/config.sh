@@ -5,6 +5,7 @@ threads=24
 walkaway=true
 cluster=false
 samples_alt_dir=false
+WGS=true
 
 
 # Normalization
@@ -21,6 +22,7 @@ remote_db=NA
 input_dbfasta=NA
 taxids=true
 map_taxids=NA
+
 
 # Taxonomic Filtering
 ####################################################
@@ -39,6 +41,8 @@ sunburst_nlayers=phylum,genus,species
 
 # Filtering Parameters
 ####################################################
+percid=90
+filter_qcovs=80
 min_unique_seqs=1
 min_percent_sample=5,10,20
 min_pos_corr=0.1,0.2,0.3

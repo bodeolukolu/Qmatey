@@ -53,7 +53,7 @@ if (args[3] == "species"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,13))
+    stats1 <- subset(stats1, select=c(1,2,13))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]
@@ -88,7 +88,7 @@ if (args[3] == "genus"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,14))
+    stats1 <- subset(stats1, select=c(1,2,13))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]
@@ -123,7 +123,7 @@ if (args[3] == "family"){
 fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,15))
+    stats1 <- subset(stats1, select=c(1,2,13))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]
@@ -158,7 +158,7 @@ if (args[3] == "order"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,16))
+    stats1 <- subset(stats1, select=c(1,2,13))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]
@@ -193,7 +193,7 @@ if (args[3] == "class"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,17))
+    stats1 <- subset(stats1, select=c(1,2,13))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]
@@ -228,7 +228,7 @@ if (args[3] == "phylum"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
-    stats1 <- subset(stats1, select=c(1,3,18))
+    stats1 <- subset(stats1, select=c(1,2,13s))
     stats1 <- subset(stats1, grepl("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$", stats1$abundance))
     stats1$abundance <- as.numeric(as.character(stats1$abundance))
     stats1 <- stats1[!is.na(stats1$abundance),]

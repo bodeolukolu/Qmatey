@@ -24,7 +24,7 @@ if [[ "$1" == "" ]]; then
 fi
 if [[ "$1" == "-v" || "$1" == "--version" ]]; then
   echo -e "${yellow}\n\tProgram:	Qmatey"
-  echo -e "${yellow}\tVersion:	0.4.0"
+  echo -e "${yellow}\tVersion:	0.5.0"
   echo -e "${yellow}\tDescription:	Quantitative Metagenomic Alignment and Taxonomic Exact-matching"
   echo -e "${yellow}\tDevelopers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)\n"
   echo -e "${yellow}\tContact:	Bode Olukolu <bolukolu@utk.edu>\n"
@@ -121,7 +121,7 @@ fi
 cd $projdir
 echo -e "${white}\n#########################################################################################"
 echo -e "${yellow}\t- Program:\tQmatey"
-echo -e "${yellow}\t- Version:\t0.4.0"
+echo -e "${yellow}\t- Version:\t0.5.0"
 echo -e "${yellow}\t- Description:\tQuantitative Metagenomic Alignment and Taxonomic Exact-Matching"
 echo -e "${yellow}\t\t\t * Exact-Matching of sequences at strain-level"
 echo -e "${yellow}\t\t\t * Exact-Matching of Consensus sequences (EMC) at higher taxonomic levels\n"
@@ -435,25 +435,27 @@ normzalization=${normzalization//*=}
 if [[ -z "${normzalization}" ]]; then
   normzalization=true
 fi
-if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]] && [[ "${normzalization}" == true ]]; then
-  echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
-  echo -e "${yellow} \e[31m Method-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
-  echo -e "${yellow} \e[31m Method-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
-  echo -e "${yellow} \e[31m Method-3: Use sample total read coverage (relative abundance between samples)"
+if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
+  if [[ "${normzalization}" == true ]]; then
+    echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
+    echo -e "${yellow} \e[31m Method-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
+    echo -e "${yellow} \e[31m Method-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
+    echo -e "${yellow} \e[31m Method-3: Use sample total read coverage (relative abundance between samples)"
 
-  echo -e "${magenta} \e[31m normalization reference folder is empty (required for normalization methods 1 and 2)"
-  echo -e "${magenta} \e[31m also, Qmatey will not subtract/eliminate reads derived from host genome/transciptome\n\n"
-  echo -e "${magenta} \e[31m Qmatey can explore an alternative approach (below) for normzalization:\n"
-  echo -e "${magenta}- would you like to use read coverage of samples for normalization (method-3, assumes normalized conc. of input DNA) ${white}"
-  read -p "- y(YES) or n(NO) " -n 1 -r
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${magenta}- normalization will not be performed (skipping normalization) ${white}"
-    awk '{gsub(/normalization=true/,"normalization=false"); print}' config.sh > temp.txt
-    mv temp.txt config.sh
-  else
-    echo -e "${magenta}- normalization will be perfromed based on read coverage of samples (method-3, assumes normalized conc. of input DNA) ${white}"
-    awk '{gsub(/normalization=false/,"normalization=true"); print}' config.sh > temp.txt
-    mv temp.txt config.sh
+    echo -e "${magenta} \e[31m normalization reference folder is empty (required for normalization methods 1 and 2)"
+    echo -e "${magenta} \e[31m also, Qmatey will not subtract/eliminate reads derived from host genome/transciptome\n\n"
+    echo -e "${magenta} \e[31m Qmatey can explore an alternative approach (below) for normzalization:\n"
+    echo -e "${magenta}- would you like to use read coverage of samples for normalization (method-3, assumes normalized conc. of input DNA) ${white}"
+    read -p "- y(YES) or n(NO) " -n 1 -r
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${magenta}- normalization will not be performed (skipping normalization) ${white}"
+      awk '{gsub(/normalization=true/,"normalization=false"); print}' config.sh > temp.txt
+      mv temp.txt config.sh
+    else
+      echo -e "${magenta}- normalization will be perfromed based on read coverage of samples (method-3, assumes normalized conc. of input DNA) ${white}"
+      awk '{gsub(/normalization=false/,"normalization=true"); print}' config.sh > temp.txt
+      mv temp.txt config.sh
+    fi
   fi
 fi
 
