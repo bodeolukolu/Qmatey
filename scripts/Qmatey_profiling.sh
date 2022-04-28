@@ -263,14 +263,14 @@ fi
 if [[ "$WGS" == "true" ]]; then
   mkdir -p WGS_data
   for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f 2> /dev/null); do
-    if [[ $(file $i 2> /dev/null =~ gzip ]]; then
+    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
       fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
     else
       fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
     fi
     wait
 
-    if [[ $(file $i 2> /dev/null =~ gzip ]]; then
+    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
       if [[ "${fa_fq}" == "@" ]]; then
         awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
         grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
@@ -408,7 +408,7 @@ ref_norm () {
 
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
-			if [[ $(file $i 2> /dev/null 2> /dev/null =~ gzip ]]; then
+			if [[ $(file $i 2> /dev/null 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
 				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
