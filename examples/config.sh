@@ -5,7 +5,7 @@ threads=24
 walkaway=true
 cluster=false
 samples_alt_dir=false
-WGS=true
+library_type=qRRS
 
 
 # Normalization
