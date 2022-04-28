@@ -302,22 +302,22 @@ if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$libra
 
 	  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	    if [[ "${fa_fq}" == "@" ]]; then
-	      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v min=min_seqread_len -v max=max_seqread_len 'length >= min && length <= max' | \
+	      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v min=$min_seqread_len -v max=$max_seqread_len 'length >= min && length <= max' | \
 	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
 	    fi
 	    if [[ "${fa_fq}" == ">" ]]; then
 	      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
-	      awk -v min=min_seqread_len -v max=max_seqread_len 'length >= min && length <= max' | \
+	      awk -v min=$min_seqread_len -v max=$max_seqread_len 'length >= min && length <= max' | \
 	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	    fi
 	  else
 	    if [[ "${fa_fq}" == "@" ]]; then
-	      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v min=min_seqread_len -v max=max_seqread_len 'length >= min && length <= max' | \
+	      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v min=$min_seqread_len -v max=$max_seqread_len 'length >= min && length <= max' | \
 	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
 	    fi
 	    if [[ "${fa_fq}" == ">" ]]; then
 	      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
-	      awk -v min=min_seqread_len -v max=max_seqread_len 'length >= min && length <= max' | \
+	      awk -v min=$min_seqread_len -v max=$max_seqread_len 'length >= min && length <= max' | \
 	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	    fi
 	  fi
