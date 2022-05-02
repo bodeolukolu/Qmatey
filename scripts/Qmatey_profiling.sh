@@ -259,132 +259,132 @@ if [[ "$sampno" == "0" ]]; then
 	exit 0
 fi
 
-
-if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$library_type" =~ "amplicon"]] || [["$library_type" =~ "Amplicon"]] || [["$library_type" =~ "AMPLICON"]] || [["$library_type" =~ "16S"]] || [["$library_type" =~ "16s"]]|| [["$library_type" =~ "ITS"]] || [["$library_type" =~ "its"]]; then
-	:> length_distribution.txt
-	for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
-		if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-		else
-			fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
-		fi
-
-		if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			if [[ "${fa_fq}" == "@" ]]; then
-				awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+if test -f "flushed_reads.txt"; then
+	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$library_type" =~ "amplicon"]] || [["$library_type" =~ "Amplicon"]] || [["$library_type" =~ "AMPLICON"]] || [["$library_type" =~ "16S"]] || [["$library_type" =~ "16s"]]|| [["$library_type" =~ "ITS"]] || [["$library_type" =~ "its"]]; then
+		:> length_distribution.txt
+		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
+			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+			else
+				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
 			fi
-			if [[ "${fa_fq}" == ">" ]]; then
-				awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' <(zcat $i) | \
-				awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
-			fi
-		else
-			if [[ "${fa_fq}" == "@" ]]; then
-				awk 'NR%2==0' $i | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
-			fi
-			if [[ "${fa_fq}" == ">" ]]; then
-				awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' $i | \
-				awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
-			fi
-		fi
-	done
 
-	awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
-	min_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}' length_distribution.txt)
-	max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
-	rm length_distribution.txt
+			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+				if [[ "${fa_fq}" == "@" ]]; then
+					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+				fi
+				if [[ "${fa_fq}" == ">" ]]; then
+					awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' <(zcat $i) | \
+					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+				fi
+			else
+				if [[ "${fa_fq}" == "@" ]]; then
+					awk 'NR%2==0' $i | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+				fi
+				if [[ "${fa_fq}" == ">" ]]; then
+					awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' $i | \
+					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+				fi
+			fi
+		done
 
-	for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
-	  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-	    fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-	  else
-	    fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
-	  fi
+		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
+		min_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}' length_distribution.txt)
+		max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
+		rm length_distribution.txt
 
-	  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-	    if [[ "${fa_fq}" == "@" ]]; then
-	      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
+		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
+		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+		    fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+		  else
+		    fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+		  fi
+
+		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+		    if [[ "${fa_fq}" == "@" ]]; then
+		      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
+		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
+		    fi
+		    if [[ "${fa_fq}" == ">" ]]; then
+		      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
+		      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
+		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+		    fi
+		  else
+		    if [[ "${fa_fq}" == "@" ]]; then
+		      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
+		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
+		    fi
+		    if [[ "${fa_fq}" == ">" ]]; then
+		      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
+		      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
+		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+		    fi
+		  fi
+		done
+	fi
+
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	  mkdir -p WGS_original_data
+	  for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f 2> /dev/null); do
+	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+	      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+	    else
+	      fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
 	    fi
-	    if [[ "${fa_fq}" == ">" ]]; then
-	      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
-	      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+	    wait
+
+	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+	      if [[ "${fa_fq}" == "@" ]]; then
+	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+	        mv $i ./WGS_original_data/
+					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+						awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+						mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+					fi
+	      fi
+	      if [[ "${fa_fq}" == ">" ]]; then
+	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        mv $i ./WGS_original_data/
+	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+						mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
+						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+					fi
+	      fi
+	    else
+	      if [[ "${fa_fq}" == "@" ]]; then
+	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+	        mv $i ./WGS_original_data/
+					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+						awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+						mv ${i%.f*}_R2.fastq ./WGS_original_data/
+					fi
+	      fi
+	      if [[ "${fa_fq}" == ">" ]]; then
+	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        mv $i ./WGS_original_data/
+	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+						mv ${i%.f*}_R2.fasta ./WGS_original_data/
+						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+					fi
+	      fi
 	    fi
-	  else
-	    if [[ "${fa_fq}" == "@" ]]; then
-	      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
-	    fi
-	    if [[ "${fa_fq}" == ">" ]]; then
-	      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
-	      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-	      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-	    fi
-	  fi
-	done
+	  done
+	fi
+	touch flushed_reads.txt
 fi
-
-if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-  mkdir -p WGS_original_data
-  for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f 2> /dev/null); do
-    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-    else
-      fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
-    fi
-    wait
-
-    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-      if [[ "${fa_fq}" == "@" ]]; then
-        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-        mv $i ./WGS_original_data/
-				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-					grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-					mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
-				fi
-      fi
-      if [[ "${fa_fq}" == ">" ]]; then
-        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-        mv $i ./WGS_original_data/
-        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-					awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-					mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
-					mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-				fi
-      fi
-    else
-      if [[ "${fa_fq}" == "@" ]]; then
-        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-        mv $i ./WGS_original_data/
-				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-					grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-					mv ${i%.f*}_R2.fastq ./WGS_original_data/
-				fi
-      fi
-      if [[ "${fa_fq}" == ">" ]]; then
-        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-        mv $i ./WGS_original_data/
-        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-				if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-					awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-					mv ${i%.f*}_R2.fasta ./WGS_original_data/
-					mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-				fi
-      fi
-    fi
-  done
-fi
-
-
 
 find . -type d -empty -delete
 }
@@ -924,7 +924,7 @@ cd $projdir
 if [[ "$normalization" == false ]]; then
 	metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
 	samplein=$(ls $projdir/samples/*.f 2> /dev/null | grep compressed | wc -l)
-	if [[ "$samplein" -eq "$metagout" ]]; then
+	if [[ "$samplein" -eq "$metagout" ]] && [[ "$metagout" -gt 0 ]]; then
 		echo -e "${YELLOW}- Qmatey is skipping normalization and only performing file compression ${WHITE}"
 		time no_norm &>> $projdir/log.out
 	else
@@ -1194,7 +1194,7 @@ find ../alignment/ -size 0 -delete
 cd $projdir
 metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
 mblastout=$(ls $projdir/metagenome/alignment/*haplotig.megablast.gz 2> /dev/null | wc -l)
-if [[ "$metagout" -eq "$mblastout" ]]; then
+if [[ "$metagout" -eq "$mblastout" ]] && [[ "$mblastout" -gt 0 ]]; then
 	echo -e "${YELLOW}- Qmatey has already performed ncbi megablast ${WHITE}"
 else
 	echo -e "${YELLOW}- Qmatey is performing sequence alignment using ncbi megablast ${WHITE}"
