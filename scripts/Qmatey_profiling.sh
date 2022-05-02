@@ -1253,7 +1253,7 @@ fi
 #################################################################################################################
 strain_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for strain-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_strain
 cd $projdir/metagenome/results
@@ -1281,7 +1281,7 @@ fi
 echo -e "${YELLOW}- compiling taxonomic information"
 cd $projdir/metagenome/sighits/sighits_strain
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
