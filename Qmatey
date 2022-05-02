@@ -125,6 +125,7 @@ echo -e "${yellow}\t- Version:\t0.5.0"
 echo -e "${yellow}\t- Description:\tQuantitative Metagenomic Alignment and Taxonomic Exact-Matching"
 echo -e "${yellow}\t\t\t * Exact-Matching of sequences at strain-level"
 echo -e "${yellow}\t\t\t * Exact-Matching of Consensus sequences (EMC) at higher taxonomic levels\n"
+echo -e "${yellow}\t- Developers:\tBrandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)\n"
 echo -e "${yellow}\t- Contact:\tBode Olukolu <bolukolu@utk.edu>"
 echo -e "${white}\n#########################################################################################"
 
