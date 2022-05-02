@@ -259,7 +259,7 @@ if [[ "$sampno" == "0" ]]; then
 	exit 0
 fi
 
-if test -f "flushed_reads.txt"; then
+if [[ -z "flushed_reads.txt" ]]; then
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$library_type" =~ "amplicon"]] || [["$library_type" =~ "Amplicon"]] || [["$library_type" =~ "AMPLICON"]] || [["$library_type" =~ "16S"]] || [["$library_type" =~ "16s"]]|| [["$library_type" =~ "ITS"]] || [["$library_type" =~ "its"]]; then
 		:> length_distribution.txt
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
