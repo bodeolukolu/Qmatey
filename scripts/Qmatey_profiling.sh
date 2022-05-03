@@ -1380,6 +1380,18 @@ if test -f $file; then
 	strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/strain_level/boxplots/
+	mv *.html $projdir/metagenome/results/strain_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -1389,16 +1401,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots/
-	mv *.html $projdir/metagenome/results/strain_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating strain-level visualizations"
 	cd $projdir/metagenome/results/strain_level
@@ -1416,6 +1419,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/strain_level/boxplots
+	mv *.html $projdir/metagenome/results/strain_level/boxplots
+
 	if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -1425,16 +1440,6 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots
-	mv *.html $projdir/metagenome/results/strain_level/boxplots
 fi
 
 }
@@ -1737,6 +1742,18 @@ if test -f $file; then
 	species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/species_level/boxplots/
+	mv *.html $projdir/metagenome/results/species_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -1746,16 +1763,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/
-	mv *.html $projdir/metagenome/results/species_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating species-level visualizations"
 	cd $projdir/metagenome/results/species_level
@@ -1773,6 +1781,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/species_level/boxplots/
+	mv *.html $projdir/metagenome/results/species_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -1782,16 +1802,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/
-	mv *.html $projdir/metagenome/results/species_level/boxplots/
+
 fi
 
 }
@@ -2095,6 +2106,18 @@ if test -f $file; then
 	genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/genus_level/boxplots/
+	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2104,16 +2127,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating genus-level visualizations"
 	cd $projdir/metagenome/results/genus_level
@@ -2131,6 +2145,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/genus_level/boxplots/
+	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2140,16 +2166,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+
 fi
 
 }
@@ -2436,6 +2453,18 @@ if test -f $file; then
 	family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/family_level/boxplots/
+	mv *.html $projdir/metagenome/results/family_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2445,16 +2474,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/
-	mv *.html $projdir/metagenome/results/family_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating family-level visualizations"
 	cd $projdir/metagenome/results/family_level
@@ -2472,6 +2492,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/family_level/boxplots/
+	mv *.html $projdir/metagenome/results/family_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2481,16 +2513,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/
-	mv *.html $projdir/metagenome/results/family_level/boxplots/
+
 fi
 
 }
@@ -2777,6 +2800,18 @@ if test -f $file; then
 	order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/order_level/boxplots/
+	mv *.html $projdir/metagenome/results/order_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2786,16 +2821,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/
-	mv *.html $projdir/metagenome/results/order_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating order-level visualizations"
 	cd $projdir/metagenome/results/order_level
@@ -2813,6 +2839,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/order_level/boxplots/
+	mv *.html $projdir/metagenome/results/order_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -2822,16 +2860,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/
-	mv *.html $projdir/metagenome/results/order_level/boxplots/
+
 fi
 
 }
@@ -3119,6 +3148,18 @@ if test -f $file; then
 	class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/class_level/boxplots/
+	mv *.html $projdir/metagenome/results/class_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -3128,16 +3169,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/
-	mv *.html $projdir/metagenome/results/class_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating class-level visualizations"
 	cd $projdir/metagenome/results/class_level
@@ -3155,6 +3187,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/class_level/boxplots/
+	mv *.html $projdir/metagenome/results/class_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -3164,16 +3208,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/
-	mv *.html $projdir/metagenome/results/class_level/boxplots/
+
 fi
 
 }
@@ -3459,6 +3494,18 @@ if test -f $file; then
 	phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy_filtered.txt
 
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
+	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -3468,16 +3515,7 @@ if test -f $file; then
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+
 else
 	echo -e "${YELLOW}- creating phylum-level visualizations"
 	cd $projdir/metagenome/results/phylum_level
@@ -3495,6 +3533,18 @@ else
 		min_percent_sample=5,10,20
 	fi
 
+	for min_perc in $min_percent_sample; do (
+		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		)&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mkdir -p boxplots
+	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
+	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+
 	if [[ "$total_no_samples" -ge 24 ]]; then
 		for min_perc in $min_percent_sample; do (
 			Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
@@ -3504,16 +3554,7 @@ else
 		 fi
 		done
 	fi
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+
 fi
 
 }
