@@ -1450,7 +1450,7 @@ fi
 #################################################################################################################
 species() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for species-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_species
 cd $projdir/metagenome/results
@@ -1813,7 +1813,7 @@ fi
 ###########################################################################################
 genus() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for genus-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_genus
 cd $projdir/metagenome/results
@@ -2177,7 +2177,7 @@ fi
 ############################################################################
 family() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for family-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_family
 cd $projdir/metagenome/results
@@ -2524,7 +2524,7 @@ fi
 #######################################################################333
 order() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_order
 cd $projdir/metagenome/results
@@ -2872,7 +2872,7 @@ fi
 #######################################################################333
 class() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing class-Level Classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_class
 cd $projdir/metagenome/results
@@ -3218,7 +3218,7 @@ fi
 #######################################################################333
 phylum() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level phylumification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm"
+echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_phylum
 cd $projdir/metagenome/results
