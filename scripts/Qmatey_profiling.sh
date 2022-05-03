@@ -1252,7 +1252,7 @@ fi
 
 #################################################################################################################
 strain_level() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for strain-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_strain
@@ -1430,7 +1430,7 @@ fi
 
 #################################################################################################################
 species() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for species-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_species
@@ -1771,7 +1771,7 @@ fi
 
 ###########################################################################################
 genus() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for genus-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_genus
@@ -2113,7 +2113,7 @@ fi
 
 ############################################################################
 family() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for family-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_family
@@ -2438,7 +2438,7 @@ fi
 
 #######################################################################333
 order() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_order
@@ -2764,7 +2764,7 @@ fi
 #######################################################################333
 #######################################################################333
 class() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing class-Level Classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing class-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_class
@@ -3088,7 +3088,7 @@ if [[ "$class_level" == "true" ]]; then
 fi
 #######################################################################333
 phylum() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level phylumification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_phylum
@@ -3447,15 +3447,6 @@ if [[ "$run_sunburst" == true ]]; then
 	time sunburst &>> $projdir/log.out
 fi
 
-cd ${Qmatey_dir}/tools
-gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
-if [[ "$normalization" == true ]]; then
-	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
-fi
-if [[ "$normalization" == false ]]; then
-	mv ${projdir}/metagenome ${projdir}/metagenome_no_normalize
-fi
-
 
 ######################################################################################################################################################
 correlogram() {
@@ -3794,7 +3785,19 @@ correlogram sunburst &>> $projdir/log.out
 
 ######################################################################################################################################################
 echo -e "${blue}\n############################################################################## ${white}\n"
+
 cd $projdir
+find . -depth -type d -exec rmdir {} + 2> /dev/null &&
+
+cd ${Qmatey_dir}/tools
+gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
+if [[ "$normalization" == true ]]; then
+	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
+fi
+if [[ "$normalization" == false ]]; then
+	mv ${projdir}/metagenome ${projdir}/metagenome_no_normalize
+fi
+
 if [[ -z $samples_alt_dir ||  $samples_alt_dir == false ]]; then
  	:
 else
