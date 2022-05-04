@@ -129,11 +129,8 @@ echo -e "${blue}\n############################################## \n- installing 
      R -e 'install.packages("infotheo", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
-  dirtool=ccrepe; if [ ! -d $dirtool ]; then
-    wget https://www.bioconductor.org/packages/release/bioc/src/contrib/ccrepe_1.30.0.tar.gz
-    gunzip ccrepe_1.30.0.tar.gz
-    R -e 'install.packages("ccrepe_1.30.0.tar", dependencies = TRUE, repos = NULL, type="source", lib="./")'
-    rm ccrepe_1.30.0.tar
+  dirtool=gtools; if [ ! -d $dirtool ]; then
+    R -e 'install.packages("gtools", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   dirtool=plotme; if [ ! -d $dirtool ]; then
     wget https://github.com/yogevherz/plotme/archive/refs/heads/master.tar.gz -O plotme.tar.gz
@@ -141,6 +138,9 @@ echo -e "${blue}\n############################################## \n- installing 
     R -e 'install.packages("plotme.tar", dependencies = TRUE, repos = NULL, type="source", lib="./")'
     rm plotme.tar
   fi
+
+  git clone https://github.com/huayingfang/CCLasso.git
+  
   cd ../
 }
 echo -e "${white}- Checking and performing installation of R-packages ${white}"

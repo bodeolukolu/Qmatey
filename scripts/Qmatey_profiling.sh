@@ -35,6 +35,36 @@ fi
 
 
 cd $projdir
+if [[ $taxonomic_level =~ strain ]]; then
+	strain_level=true
+fi
+if [[ $taxonomic_level =~ species ]]; then
+	species_level=true
+fi
+if [[ $taxonomic_level =~ genus ]]; then
+	genus_level=true
+fi
+if [[ $taxonomic_level =~ family ]]; then
+	family_level=true
+fi
+if [[ $taxonomic_level =~ order ]]; then
+	order_level=true
+fi
+if [[ $taxonomic_level =~ class ]]; then
+	class_level=true
+fi
+if [[ $taxonomic_level =~ phylum ]]; then
+	phylum_level=true
+fi
+if [[ -z $sunburst_taxlevel ]]; then
+	run_sunburst=false
+else
+	run_sunburst=true
+fi
+if [[ -z $compositional_corr ]]; then
+	run_corr=true
+fi
+
 if [[ -z $min_unique_seqs ]]; then
 	min_unique_seqs=1
 fi
@@ -3418,10 +3448,6 @@ sunburst() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is creating sunburst \n\e[97m########################################################\n"
 
 cd $projdir/metagenome/results
-
-if [[ -z $sunburst_taxlevel ]]; then
-	sunburst_taxlevel=strain
-fi
 sunburst_taxlevel=$( echo "$sunburst_taxlevel" | awk '{gsub(/,/,"\n")}1' )
 
 for tsun in "$sunburst_taxlevel"; do
@@ -3462,7 +3488,7 @@ correlogram() {
 		strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
 		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $strain_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]]&& test -f $strain_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3488,7 +3514,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $strain_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]]&& test -f $strain_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3509,7 +3535,7 @@ correlogram() {
 		species_level_stderr=species_taxainfo_quantification_accuracy_filtered.txt
 		species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $species_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3535,7 +3561,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $species_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3556,7 +3582,7 @@ correlogram() {
 		genus_level_stderr=genus_taxainfo_quantification_accuracy_filtered.txt
 		genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $genus_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3582,7 +3608,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $genus_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3603,7 +3629,7 @@ correlogram() {
 		family_level_stderr=family_taxainfo_quantification_accuracy_filtered.txt
 		family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $family_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3629,7 +3655,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $family_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3650,7 +3676,7 @@ correlogram() {
 		order_level_stderr=order_taxainfo_quantification_accuracy_filtered.txt
 		order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $order_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3676,7 +3702,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $order_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3697,7 +3723,7 @@ correlogram() {
 		class_level_stderr=class_taxainfo_quantification_accuracy_filtered.txt
 		class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $class_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3723,7 +3749,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $class_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3744,7 +3770,7 @@ correlogram() {
 		phylum_level_stderr=phylum_taxainfo_quantification_accuracy_filtered.txt
 		phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $phylum_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3770,7 +3796,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$run_corr" == true ]] && test -f $phylum_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ pjhylum ]]&& test -f $phylum_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
