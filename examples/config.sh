@@ -6,6 +6,7 @@ walkaway=true
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+WGS_mode=stringent
 
 
 # Normalization

@@ -364,53 +364,108 @@ if [[ -z "flushed_reads.txt" ]]; then
 	    fi
 	    wait
 
-	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-	        mv $i ./WGS_original_data/
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-						mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+			if [[ -z $WGS_subsample_mode ]]; then WGS_subsample_mode=high;fi
+
+			if [[ $WGS_mode == stringent ]]; then
+		    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+		      if [[ "${fa_fq}" == "@" ]]; then
+		        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+		        mv $i ./WGS_original_data/
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+							mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+						fi
+		      fi
+		      if [[ "${fa_fq}" == ">" ]]; then
+		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+		        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+		        mv $i ./WGS_original_data/
+		        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+							mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
+							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						fi
+		      fi
+		    else
+		      if [[ "${fa_fq}" == "@" ]]; then
+		        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+		        mv $i ./WGS_original_data/
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+							mv ${i%.f*}_R2.fastq ./WGS_original_data/
+						fi
+		      fi
+		      if [[ "${fa_fq}" == ">" ]]; then
+		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+		        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+		        mv $i ./WGS_original_data/
+		        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+							mv ${i%.f*}_R2.fasta ./WGS_original_data/
+							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						fi
+		      fi
+		    fi
+			fi
+
+			if [[ $WGS_mode == relaxed ]]; then
+				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+					if [[ "${fa_fq}" == "@" ]]; then
+						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+						mv $i ./WGS_original_data/
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+							mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+						fi
 					fi
-	      fi
-	      if [[ "${fa_fq}" == ">" ]]; then
-	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-	        mv $i ./WGS_original_data/
-	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-						mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
-						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+					if [[ "${fa_fq}" == ">" ]]; then
+						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+						mv $i ./WGS_original_data/
+						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+							mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
+							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						fi
 					fi
-	      fi
-	    else
-	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-	        mv $i ./WGS_original_data/
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-						mv ${i%.f*}_R2.fastq ./WGS_original_data/
+				else
+					if [[ "${fa_fq}" == "@" ]]; then
+						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+						mv $i ./WGS_original_data/
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+							mv ${i%.f*}_R2.fastq ./WGS_original_data/
+						fi
 					fi
-	      fi
-	      if [[ "${fa_fq}" == ">" ]]; then
-	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-	        mv $i ./WGS_original_data/
-	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-						mv ${i%.f*}_R2.fasta ./WGS_original_data/
-						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+					if [[ "${fa_fq}" == ">" ]]; then
+						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+						mv $i ./WGS_original_data/
+						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+							mv ${i%.f*}_R2.fasta ./WGS_original_data/
+							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						fi
 					fi
-	      fi
-	    fi
+				fi
+			fi
+
 	  done
 	fi
 	touch flushed_reads.txt
@@ -1337,7 +1392,6 @@ for i in $(ls *_sighits.txt.gz);do
 	id=${i%_sighits*}_rel_stderr && awk -v id=$id '{gsub(/rel_stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$5}' > holdrelstderr.txt
 	awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}'  holdrelstderr.txt strain_taxa_rel_quantification_accuracy_temp.txt > holdrelstderr2.txt && cat holdrelstderr2.txt > strain_taxa_rel_quantification_accuracy_temp.txt
 	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $1,"\t",$2,"\t",$3,"\t",$4,"\t",$5,"\t", a[$1]}'  rankedlineage_subhits.txt stats2.txt > stats3.txt
-	awk '{print $1,$2,$3,$4,$5,$7,$8,$9,$10,$11,$12,$13,$14,$15 }' stats3.txt | awk '{gsub(/ /,"\t"); print }' > ${i%_sighits*}_taxastats.txt &&
 	rm *stats1* *stats2* *stats3* *hold*
 done
 
@@ -1516,8 +1570,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_species
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt);do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -1597,8 +1654,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_species
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt); do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -1667,7 +1727,7 @@ echo -e 'species' | cat - species_taxa_rel_quantification_accuracy_temp1.txt > s
 species_level=species
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $species_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs species "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'species\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -1857,8 +1917,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_genus
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i > ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt); do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i > ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -1938,8 +2001,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_genus
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt);do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -2199,8 +2265,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_family
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt); do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -2271,8 +2340,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_family
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt); do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -2524,8 +2596,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_order
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt); do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -2596,8 +2671,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_order
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt);do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -2850,8 +2928,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_class
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt); do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -2922,8 +3003,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_class
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt); do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -3174,8 +3258,11 @@ else
 
   cd $projdir/metagenome/sighits/sighits_phylum
 
-  for i in $(ls -S *_taxids_dup.txt);do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt
+  for i in $(ls -S *_taxids_dup.txt);do (
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+		wait
+	fi
   done
   wait
 
@@ -3246,8 +3333,11 @@ else
 
 	rm *_uniq_inter.txt
 	cd $projdir/metagenome/sighits/sighits_phylum
-	for i in $(ls *_taxids_uniq.txt);do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	for i in $(ls *_taxids_uniq.txt); do (
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+       wait
+     fi
 	done
 	wait
 
@@ -3524,6 +3614,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/strain_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3573,6 +3664,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/species_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3622,6 +3714,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/genus_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3671,6 +3764,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/family_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3720,6 +3814,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/order_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3769,6 +3864,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/class_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 
@@ -3808,7 +3904,7 @@ correlogram() {
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ pjhylum ]]&& test -f $phylum_level_mean; then
+		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
 			for min_perc in $min_percent_sample; do (
 				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
@@ -3818,6 +3914,7 @@ correlogram() {
 			done
 		fi
 	fi
+	cd $projdir/metagenome/results/phylum_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 }
