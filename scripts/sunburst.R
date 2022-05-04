@@ -4,7 +4,8 @@ args <- commandArgs(TRUE)
 perc <- args[2]
 nlayers <- unlist(strsplit(args[3],","))
 layers <- args[3]
-libdir <- args[5]
+libdir <- args[4]
+taxlevel <- args[5]
 
 .libPaths( c( .libPaths(), libdir) )
 library(dplyr)
@@ -24,6 +25,18 @@ for (k in 1:(ncol(sunburst)-7)){
 sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunburst)-7))*100
 sunburst <- subset(sunburst, percent >= perc)
 sunburst <- subset(sunburst, select=-c(percent))
+if (taxlevel == "strain") {
+  sunburst_virus <- sunburst[grepl("viricota", sunburst$phylum),]
+  sunburst <- sunburst[!grepl("viricota", sunburst$phylum),]
+  sunburst_virus$species <- sunburst_virus$taxname
+  sunburst_virus_genus <- sunburst_virus[is.na(sunburst_virus$genus),]
+  sunburst_virus <- sunburst_virus[!(is.na(sunburst_virus$genus)),]
+  sunburst_virus_genus$genus <- sub("\\_.*","",sunburst_virus_genus$taxname)
+  sunburst_virus <- rbind(sunburst_virus, sunburst_virus_genus)
+  sunburst$genus <- sub("\\_.*","",sunburst$taxname)
+  sunburst$species <- sub("\\_.*","",(sub(".*?_","",sunburst$taxname)))
+  sunburst <- rbind(sunburst, sunburst_virus)
+}
 
 sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
 sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"

@@ -1454,7 +1454,7 @@ else
 fi
 
 }
-if [[ "$strain_level" == "true" ]]; then
+if [[ "$strain_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
 	time strain_level 2>> $projdir/log.out
 fi
 
@@ -1795,7 +1795,7 @@ else
 fi
 
 }
-if [[ "$species_level" == "true" ]]; then
+if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/species_taxainfo* 2> /dev/null)" ]]; then
 	time species 2>> $projdir/log.out
 fi
 
@@ -2137,7 +2137,7 @@ else
 fi
 
 }
-if [[ "$genus_level" == "true" ]]; then
+if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/genus_taxainfo* 2> /dev/null)" ]]; then
 	time genus 2>> $projdir/log.out
 fi
 
@@ -2462,7 +2462,7 @@ else
 fi
 
 }
-if [[ "$family_level" == "true" ]]; then
+if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/family_taxainfo* 2> /dev/null)" ]]; then
 	time family 2>> $projdir/log.out
 fi
 
@@ -2787,7 +2787,7 @@ else
 fi
 
 }
-if [[ "$order_level" == "true" ]]; then
+if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/order_taxainfo* 2> /dev/null)" ]]; then
 	time order 2>> $projdir/log.out
 fi
 
@@ -3113,7 +3113,7 @@ else
 fi
 
 }
-if [[ "$class_level" == "true" ]]; then
+if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/class_taxainfo* 2> /dev/null)" ]]; then
 	time class 2>> $projdir/log.out
 fi
 #######################################################################333
@@ -3438,7 +3438,7 @@ else
 fi
 
 }
-if [[ "$phylum_level" == "true" ]]; then
+if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 	time phylum 2>> $projdir/log.out
 fi
 
@@ -3460,7 +3460,7 @@ for tsun in "$sunburst_taxlevel"; do
       mean=$mean_norm
     fi
     for min_perc in $min_percent_sample; do (
-      Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" &>/dev/null )&
+      Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			  wait
 			fi
@@ -3524,6 +3524,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3571,6 +3573,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### genus: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3618,6 +3622,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### family: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3665,6 +3671,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### order: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3712,6 +3720,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### class: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3759,6 +3769,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 
 	#### phylum: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3806,6 +3818,8 @@ correlogram() {
 			done
 		fi
 	fi
+	mkdir -p compositional_correlation
+	mv *corr.tiff ./compositional_correlation/
 }
 correlogram sunburst &>> $projdir/log.out
 

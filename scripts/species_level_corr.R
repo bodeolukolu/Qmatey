@@ -58,7 +58,7 @@ for ( j in 1:ncol(metag_pmat)) {
 }
 corr <- cbind(metag_corr1, metag_pmat1)
 corr <- subset(corr, select=-c(4:5))
-write.table(corr,paste("Metagenome_",perc,"perc_species_corr_spearman.txt",sep=""), sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
+write.table(corr,paste("Metagenome_",perc,"perc_species_corr.txt",sep=""), sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
   
 
 for (minc in (as.numeric(mincorr))) {
@@ -80,6 +80,6 @@ for (minc in (as.numeric(mincorr))) {
             legend.title=element_text(size=0.5*axis_density), legend.text=element_text(size=20),legend.key.size = unit(0.5, "in"),
             plot.title = element_text(size=axis_density)) +
       labs(title= paste("Species-Level Correlogram (",perc,"% missingness threshold, ",ntaxa," taxa)",sep=""))
-    ggsave(filename=paste("Metagenome_species_",perc,"perc_","neg",maxc,"_pos",minc,"_corr_spearman.tiff",sep=""), plot=plot, width=35, height=35, dpi=600, compression = "lzw", limitsize = FALSE)
+    ggsave(filename=paste("Metagenome_species_",perc,"perc_","neg",maxc,"_pos",minc,"_corr.tiff",sep=""), plot=plot, width=35, height=35, dpi=600, compression = "lzw", limitsize = FALSE)
   }
 }

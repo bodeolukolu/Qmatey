@@ -129,7 +129,7 @@ for (perc in c(percent_thresh)) {
     xlim<-max(fence$Upper)
     reform$Phylum[is.na(reform$Phylum)] = "Unknown"
     u<-plot_ly(reform, x = ~`Unique Reads`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = "Boxplot of Unique Reads", xaxis = list(range=c(0,xlim), title = "Unique Reads"), yaxis = list(size = 1, title = "Taxaname"))
-    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_unique_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
+    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_unique_reads_",perc,"perc.html",sep=""), selfcontained=TRUE)
   }
   uniq_box(df, dfu)
   
@@ -158,7 +158,7 @@ for (perc in c(percent_thresh)) {
     xlim<-max(fence$Upper)
     reform$Phylum[is.na(reform$Phylum)] = "Unknown"
     u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = "Boxplot of Mean Reads", xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
-    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_mean_reads_",perc,"perc.html",sep=""), selfcontained = FALSE)
+    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_mean_reads_",perc,"perc.html",sep=""), selfcontained=TRUE)
   }
   mean_box(df, dfm)
   
@@ -187,7 +187,7 @@ for (perc in c(percent_thresh)) {
     xlim<-max(fence$Upper)
     reform$Phylum[is.na(reform$Phylum)] = "Unknown"
     u<-plot_ly(reform, x = ~errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= "Boxplot of Standard Error", xaxis = list(titlerange=c(0,xlim), title = "Standard Error"), yaxis = list(size = 1, title = "Taxaname"))
-    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_errors_",perc,"perc.html",sep=""), selfcontained = FALSE)
+    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_errors_",perc,"perc.html",sep=""), selfcontained=TRUE)
   }
   error_box(df, dfe)
 
@@ -216,7 +216,7 @@ for (perc in c(percent_thresh)) {
     xlim<-max(fence$Upper)
     reform$Phylum[is.na(reform$Phylum)] = "Unknown"
     u<-plot_ly(reform, x = ~rel_errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= "Boxplot of Relative Standard Error (% RSE)", xaxis = list(titlerange=c(0,xlim), title = "Relative Standard Error (% RSE)"), yaxis = list(size = 1, title = "Taxaname"))
-    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_rel_errors_",perc,"perc.html",sep=""), selfcontained = FALSE)
+    htmlwidgets::saveWidget(as_widget(u), paste("genus_level_rel_errors_",perc,"perc.html",sep=""), selfcontained=TRUE)
   }
   rel_error_box(df, dfre)
 }

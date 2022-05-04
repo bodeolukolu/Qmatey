@@ -36,6 +36,7 @@ git clone https://github.com/bodeolukolu/Qmatey.git
 * samtools
 * picard tools
 * java
+* pandoc
 * R version 3.5 or above
 * R dependencies (dependencies of packages not listed): plotme, ggplot, plotly, reshape2, ggcorrplot, ccrepe
 * If you are performing a **local BLAST**, you will require an NCBI sequencing database compiled into one directory
