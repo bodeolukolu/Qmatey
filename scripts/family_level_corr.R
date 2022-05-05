@@ -56,7 +56,7 @@ for ( j in 1:ncol(metag_pmat)) {
 }
 corr <- cbind(metag_corr1, metag_pmat1)
 corr <- subset(corr, select=-c(4:5))
-write.table(corr,paste("Metagenome_",perc,"perc_family_corr.txt",sep=""), sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
+write.table(corr,paste("Metagenome_",perc,"perc_family_corr.txt",sep=""), sep="\t",row.names=FALSE, col.names=TRUE, quote = F)
 
 for (minc in (as.numeric(mincorr))) {
   for (maxc in (as.numeric(maxcorr))) {

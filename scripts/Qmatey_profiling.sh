@@ -1053,13 +1053,12 @@ fi
 blast () {
 
 cd $projdir/metagenome/haplotig
+rdfreq_threshold=$(( $(ls *.fasta.gz | wc -l) / 20))
+if [[ $rdfreq_threshold -le 1 ]]; then
+	rdfreq_threshold=1
+fi
 if test ! -f combined_compressed_metagenomes.fasta.gz; then
-	for compfa in *.fasta.gz; do
-		zcat $compfa 2> /dev/null |  awk NF | awk 'NR%2==0' | $gzip >> hold_metagenomes.fasta.gz
-	done
-	wait
-	awk -F, '!seen[$0]++' <(zcat hold_metagenomes.fasta.gz 2> /dev/null) | awk '{print ">seq"NR"\n"$1}' | $gzip > combined_compressed_metagenomes.fasta.gz &&
-	rm hold_metagenomes.fasta.gz
+	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print "@"$1"\t"$1"\t"$1}' $gzip > combined_compressed_metagenomes.fasta.gz
 fi
 
 if [[ "$taxids" == true ]]; then
