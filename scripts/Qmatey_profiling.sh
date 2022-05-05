@@ -104,28 +104,28 @@ else
 fi
 
 totalk=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
-loopthreads=2
+export loopthread=2
 if [[ "$threads" -gt 1 ]]; then
-	N=$((threads/2))
+	export N=$((threads/2))
 	ram1=$(($totalk/$N))
 else
-	N=1 && loopthreads=threads
+	export N=1 && loopthread=threads
 fi
 ram1=$((ram1/1000000))
-Xmx1=-Xmx${ram1}G
+export Xmx1=-Xmx${ram1}G
 ram2=$(echo "$totalk*0.00000095" | bc)
 ram2=${ram2%.*}
-Xmx2=-Xmx${ram2}G
+export Xmx2=-Xmx${ram2}G
 
 if [[ -z "$threads" ]]; then
 	threads=$(nproc --all)
 	if [[ "$threads" -ge 4 ]]; then
-		threads=$((threads-2))
+		export threads=$((threads-2))
 	fi
 fi
 if  [[ "$threads" -ge 1 ]]; then
-	loopthread=2
-	N=$(($threads/2))
+	export loopthread=2
+	export N=$(($threads/2))
 else
 	N=1 && loopthread=$threads
 fi
@@ -135,14 +135,14 @@ if test -f "rankedlineage.dmp.gz"; then
 	gunzip rankedlineage.dmp.gz
 fi
 if [[ "$threads" -le 4 ]]; then
-	gthreads=threads
-	Xmxg=$Xmx2
-	gN=1
+	export gthreads=threads
+	export Xmxg=$Xmx2
+	export gN=1
 else
-	gthreads=4
-	gN=$(( threads / gthreads ))
+	export gthreads=4
+	export gN=$(( threads / gthreads ))
 	ramg=$(( ram2 / gN ))
-	Xmxg=-Xmx${ramg}G
+	export Xmxg=-Xmx${ramg}G
 fi
 
 
@@ -490,7 +490,7 @@ if [[ -d "pe" ]]; then
 	fi
 else
 	echo -e "${YELLOW}- Qmatey is organizing sample fastq files  ${WHITE}"
-	time organize_fq_files &>> log.out
+	time organize_fq_files &>> ${projdir}/log.out
 fi
 total_no_samples=$(ls "${projdir}"/samples/* | wc -l)
 
@@ -1057,7 +1057,8 @@ if [[ $rdfreq_threshold -le 1 ]]; then
 	rdfreq_threshold=1
 fi
 if test ! -f combined_compressed_metagenomes.fasta.gz; then
-	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print "@"$1"\t"$1"\t"$1}' $gzip > combined_compressed_metagenomes.fasta.gz
+	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print "@"$1"\t"$1"\t"$1}' > combined_compressed_metagenomes.fasta
+	$gzip combined_compressed_metagenomes.fasta
 fi
 
 if [[ "$taxids" == true ]]; then
