@@ -1057,7 +1057,7 @@ if [[ $rdfreq_threshold -le 1 ]]; then
 	rdfreq_threshold=1
 fi
 if test ! -f combined_compressed_metagenomes.fasta.gz; then
-	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print "@"$1"\t"$1"\t"$1}' > combined_compressed_metagenomes.fasta
+	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print $1}' > combined_compressed_metagenomes.fasta
 	$gzip combined_compressed_metagenomes.fasta
 fi
 
