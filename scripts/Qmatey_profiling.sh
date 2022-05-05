@@ -489,7 +489,6 @@ if [[ -d "pe" ]]; then
 		sleep 5 && exit 0
 	fi
 else
-	cd $projdir
 	echo -e "${YELLOW}- Qmatey is organizing sample fastq files  ${WHITE}"
 	time organize_fq_files &>> log.out
 fi
