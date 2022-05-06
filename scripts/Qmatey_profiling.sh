@@ -289,7 +289,7 @@ if [[ "$sampno" == "0" ]]; then
 	exit 0
 fi
 
-if [[ -z "flushed_reads.txt" ]]; then
+if test ! -f flushed_reads.txt; then
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$library_type" =~ "amplicon"]] || [["$library_type" =~ "Amplicon"]] || [["$library_type" =~ "AMPLICON"]] || [["$library_type" =~ "16S"]] || [["$library_type" =~ "16s"]]|| [["$library_type" =~ "ITS"]] || [["$library_type" =~ "its"]]; then
 		:> length_distribution.txt
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
@@ -364,107 +364,107 @@ if [[ -z "flushed_reads.txt" ]]; then
 	    fi
 	    wait
 
-			if [[ -z $WGS_subsample_mode ]]; then WGS_subsample_mode=high;fi
+			if [[ -z $WGS_mode ]]; then WGS_mode=stringent;fi
 
-			if [[ $WGS_mode == stringent ]]; then
-		    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-		      if [[ "${fa_fq}" == "@" ]]; then
-		        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-		        mv $i ./WGS_original_data/
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-							mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
-						fi
-		      fi
-		      if [[ "${fa_fq}" == ">" ]]; then
-		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-		        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-		        mv $i ./WGS_original_data/
-		        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-							mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
-							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-						fi
-		      fi
-		    else
-		      if [[ "${fa_fq}" == "@" ]]; then
-		        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-		        mv $i ./WGS_original_data/
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-							mv ${i%.f*}_R2.fastq ./WGS_original_data/
-						fi
-		      fi
-		      if [[ "${fa_fq}" == ">" ]]; then
-		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-		        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-		        mv $i ./WGS_original_data/
-		        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-							mv ${i%.f*}_R2.fasta ./WGS_original_data/
-							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-						fi
-		      fi
-		    fi
-			fi
+				if [[ $WGS_mode == stringent ]]; then
+			    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+			      if [[ "${fa_fq}" == "@" ]]; then
+			        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+			        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+			        mv $i ./WGS_original_data/
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+								grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+								mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+							fi
+			      fi
+			      if [[ "${fa_fq}" == ">" ]]; then
+			        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+			        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+			        mv $i ./WGS_original_data/
+			        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+								awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+								mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
+								mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+							fi
+			      fi
+			    else
+			      if [[ "${fa_fq}" == "@" ]]; then
+			        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+			        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+			        mv $i ./WGS_original_data/
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+								grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+								mv ${i%.f*}_R2.fastq ./WGS_original_data/
+							fi
+			      fi
+			      if [[ "${fa_fq}" == ">" ]]; then
+			        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+			        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+			        mv $i ./WGS_original_data/
+			        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+								awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+								mv ${i%.f*}_R2.fasta ./WGS_original_data/
+								mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+							fi
+			      fi
+			    fi
+				fi
 
-			if [[ $WGS_mode == relaxed ]]; then
-				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-						mv $i ./WGS_original_data/
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-							mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+				if [[ $WGS_mode == relaxed ]]; then
+					if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+						if [[ "${fa_fq}" == "@" ]]; then
+							awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+							mv $i ./WGS_original_data/
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+								grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+								mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
+							fi
 						fi
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-						mv $i ./WGS_original_data/
-						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-							mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
-							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						if [[ "${fa_fq}" == ">" ]]; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+							mv $i ./WGS_original_data/
+							mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+								awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+								mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
+								mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+							fi
 						fi
-					fi
-				else
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-						mv $i ./WGS_original_data/
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-							mv ${i%.f*}_R2.fastq ./WGS_original_data/
+					else
+						if [[ "${fa_fq}" == "@" ]]; then
+							awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+							grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
+							mv $i ./WGS_original_data/
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+								grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
+								mv ${i%.f*}_R2.fastq ./WGS_original_data/
+							fi
 						fi
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-						mv $i ./WGS_original_data/
-						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-						if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-							mv ${i%.f*}_R2.fasta ./WGS_original_data/
-							mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+						if [[ "${fa_fq}" == ">" ]]; then
+							awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+							awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+							mv $i ./WGS_original_data/
+							mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+							if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
+								awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
+								awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
+								mv ${i%.f*}_R2.fasta ./WGS_original_data/
+								mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
+							fi
 						fi
 					fi
 				fi
-			fi
 
 	  done
 	fi
@@ -1057,7 +1057,7 @@ if [[ $rdfreq_threshold -le 1 ]]; then
 	rdfreq_threshold=1
 fi
 if test ! -f combined_compressed_metagenomes.fasta.gz; then
-	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print $1}' > combined_compressed_metagenomes.fasta
+	zcat *.fasta.gz | grep -v '>' | awk '{A[$1]++}END{for(i in A)print i,A[i]}' | awk -v rdfreq=$rdfreq_threshold '$2>=rdfreq{print $1}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
 	$gzip combined_compressed_metagenomes.fasta
 fi
 
@@ -1078,7 +1078,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 	else
 		if [[ -d splitccf ]]; then rm -r splitccf; fi
 		mkdir splitccf; cd splitccf
-		awk -v RS=">" -v FS="\n" -v ORS="\n" -v OFS="" '$0 {$1=">"$1"\n"; print}' <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) | $gzip > combined_compressed_metagenomes.fasta.gz
+		cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
 		awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 		wait $PIDsplit1
 		rm combined_compressed_metagenomes.fasta.gz
