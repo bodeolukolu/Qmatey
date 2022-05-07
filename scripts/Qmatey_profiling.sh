@@ -356,7 +356,7 @@ if test ! -f flushed_reads.txt; then
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 	  mkdir -p WGS_original_data
-	  for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f 2> /dev/null); do
+	  for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 	    else
