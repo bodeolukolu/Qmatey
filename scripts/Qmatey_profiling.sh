@@ -184,109 +184,113 @@ echo -e "\e[97m########################################################\n \e[38;
 organize_fq_files () {
 cd $projdir
 cd samples
-if [[ -d "se" ]]; then
-	:
-else
-	mkdir se
-fi
-if [[ -d "pe" ]]; then
-	:
-else
-	mkdir pe
-fi
+if test ! -f filename_reformatted.txt; then
+	if [[ -d "se" ]]; then
+		:
+	else
+		mkdir se
+	fi
+	if [[ -d "pe" ]]; then
+		:
+	else
+		mkdir pe
+	fi
 
-cd se
-if [[ -z "$(ls -A ../pe)" ]]; then
+	cd se
+	if [[ -z "$(ls -A ../pe)" ]]; then
+		if [[ -z "$(ls -A ../se)" ]]; then
+			cd ../
+			for i in $(ls *.f* | grep -v R2.f); do
+				if [[ "$i" == *.R1* ]]; then
+					mv $i ${i/.R1/}
+				elif [[ "$i" == *_R1* ]]; then
+					mv $i ${i/_R1/}
+				fi
+			done
+		fi
+	fi
+
+	cd se
+	if [[ -z "$(ls -A ../pe)" ]]; then
+		if [[ "$(ls -A ../se)" ]]; then
+			echo -e "${magenta}- only single-end reads available in se-folder ${white}\n"
+			for i in $(ls *.f* ); do
+				if [[ "$i" == *.R1* ]]; then
+					mv $i ../${i/.R1/}
+				elif [[ "$i" == *_R1* ]]; then
+					mv $i ../${i/_R1/}
+				else
+					mv $i ../$i
+				fi
+			done
+		fi
+	fi
+
+	cd ../pe
 	if [[ -z "$(ls -A ../se)" ]]; then
-		cd ../
-		for i in $(ls *.f* | grep -v R2.f); do
-			if [[ "$i" == *.R1* ]]; then
-				mv $i ${i/.R1/}
-			elif [[ "$i" == *_R1* ]]; then
-				mv $i ${i/_R1/}
-			fi
-		done
+		if [[ "$(ls -A ../pe)" ]]; then
+			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
+			for i in $(ls *R1.f*); do
+				mv ${i%R1.f*}R2.f* ../
+				if [[ "$i" == *.R1* ]]; then
+					mv $i ../${i/.R1/}
+				elif [[ "$i" == *_R1* ]]; then
+					mv $i ../${i/_R1/}
+				else
+					echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2)  ${white}\n"
+					echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
+					read -p "- y(YES) or n(NO) " -n 1 -r
+					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+						printf '\n'
+						exit 0
+					fi
+				fi
+			done
+		fi
 	fi
-fi
 
-cd se
-if [[ -z "$(ls -A ../pe)" ]]; then
+	cd ../pe
 	if [[ "$(ls -A ../se)" ]]; then
-		echo -e "${magenta}- only single-end reads available in se-folder ${white}\n"
-		for i in $(ls *.f* ); do
-			if [[ "$i" == *.R1* ]]; then
-				mv $i ../${i/.R1/}
-			elif [[ "$i" == *_R1* ]]; then
-				mv $i ../${i/_R1/}
-			else
-				mv $i ../$i
-			fi
-		done
-	fi
-fi
-
-cd ../pe
-if [[ -z "$(ls -A ../se)" ]]; then
-	if [[ "$(ls -A ../pe)" ]]; then
-		echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
-		for i in $(ls *R1.f*); do
-			mv ${i%R1.f*}R2.f* ../
-			if [[ "$i" == *.R1* ]]; then
-				mv $i ../${i/.R1/}
-			elif [[ "$i" == *_R1* ]]; then
-				mv $i ../${i/_R1/}
-			else
-				echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2)  ${white}\n"
-				echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
-				read -p "- y(YES) or n(NO) " -n 1 -r
-				if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-					printf '\n'
-					exit 0
+		if [[ "$(ls -A ../pe)" ]]; then
+			for i in $(ls *R1.f*); do
+				mv ${i%R1.f*}R2.f* ../
+				if [[ "$i" == *.R1* ]]; then
+					cat $i ../se/${i%.R1.f*}* > ../${i}
+					mv ../${i} ../${i/.R1/}
+					rm ../pe/$i ../se/${i%.R1.f*}*
+				elif [[ "$i" == *_R1* ]]; then
+					cat $i ../se/${i%_R1.f*}* > ../${i}
+					mv ../${i} ../${i/_R1/}
+					rm ../pe/$i ../se/${i%_R1.f*}*
+				else
+					echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2) ${white}\n"
+					echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
+					read -p "- y(YES) or n(NO) " -n 1 -r
+					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+						printf '\n'
+						exit 0
+					fi
 				fi
-			fi
-		done
+			done
+		fi
 	fi
-fi
-
-cd ../pe
-if [[ "$(ls -A ../se)" ]]; then
-	if [[ "$(ls -A ../pe)" ]]; then
-		for i in $(ls *R1.f*); do
-			mv ${i%R1.f*}R2.f* ../
-			if [[ "$i" == *.R1* ]]; then
-				cat $i ../se/${i%.R1.f*}* > ../${i}
-				mv ../${i} ../${i/.R1/}
-				rm ../pe/$i ../se/${i%.R1.f*}*
-			elif [[ "$i" == *_R1* ]]; then
-				cat $i ../se/${i%_R1.f*}* > ../${i}
-				mv ../${i} ../${i/_R1/}
-				rm ../pe/$i ../se/${i%_R1.f*}*
-			else
-				echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2) ${white}\n"
-				echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
-				read -p "- y(YES) or n(NO) " -n 1 -r
-				if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-					printf '\n'
-					exit 0
-				fi
-			fi
-		done
+	cd ../
+	mkdir hold
+	for i in $(ls *.f* | grep -v R2.f); do
+		checkfiles=$( ls ${i%.f*}.* | wc -l )
+		if [[ "$checkfiles" -gt 1 ]]; then
+			cat ${i%.f*}.* > ./hold/$i
+			rm -r ${i%.f*}.*
+			mv ./hold/$i ./
+		fi
+	done
+	sampno=$(ls -1 | wc -l)
+	if [[ "$sampno" == "0" ]]; then
+		echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
+		exit 0
 	fi
-fi
-cd ../
-mkdir hold
-for i in $(ls *.f* | grep -v R2.f); do
-	checkfiles=$( ls ${i%.f*}.* | wc -l )
-	if [[ "$checkfiles" -gt 1 ]]; then
-		cat ${i%.f*}.* > ./hold/$i
-		rm -r ${i%.f*}.*
-		mv ./hold/$i ./
-	fi
-done
-sampno=$(ls -1 | wc -l)
-if [[ "$sampno" == "0" ]]; then
-	echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
-	exit 0
+	find . -type d -empty -delete
+	echo filename_formatted > filename_formatted.txt
 fi
 
 if test ! -f flushed_reads.txt; then
@@ -369,58 +373,37 @@ if test ! -f flushed_reads.txt; then
 	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk 'NR%2==0' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-						mv ${i%.f*}_R2.fastq.gz ./WGS_original_data/
-					fi
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ${i%.f*}_R2.fastq.gz) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-						mv ${i%.f*}_R2.fasta.gz ./WGS_original_data/
-						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-					fi
 	      fi
 	    else
 	      if [[ "${fa_fq}" == "@" ]]; then
 	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk 'NR%2==0' ${i%.f*}_R2.fastq | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.fasta.gz
-						mv ${i%.f*}_R2.fastq ./WGS_original_data/
-					fi
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-					if test ! -f ${i%.f*}_R2.f* && test ! -f ${i%.f*}.R2.f*; then
-						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' ${i%.f*}_R2.fastq.gz | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_R2.tmp.gz
-						mv ${i%.f*}_R2.fasta ./WGS_original_data/
-						mv ${i%.f*}_R2.tmp.gz ${i%.f*}_R2.fasta.gz
-					fi
 	      fi
 	    fi
 
 	  done
 	fi
-	touch flushed_reads.txt
+	find . -type d -empty -delete
+	echo flushed_reads > flushed_reads.txt
 fi
 
-find . -type d -empty -delete
 }
 cd $projdir
 cd samples
+if test ! -f filename_formatted.txt;
 if [[ -d "pe" ]]; then
 	fqpass=$(find ./pe -maxdepth 1 -name '*_R1.f*' -o -name '*_R2.f*' -o -name '*.R1.f*' -o -name '*.R2.f*' | wc -l)
 	fqfail=$(ls ./pe/* | wc -l)
