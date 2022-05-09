@@ -892,7 +892,7 @@ no_norm () {
 						wait
 					else
 						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | $gzip > ${i%.f*}_compressed_hold.fasta.gz &&
-						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | awk -v min=$min_seqread_len '{print substr($2,1,min)}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min=$min_unique_seqs '$1>=min{print $2}' | grep -Ff - <(zcat ${i%.f*}_compressed_hold.fasta.gz) | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz && rm ${i%.f*}_compressed_hold.fasta.gz
+						cat $i ${i%.f*}.R2.f* | awk 'NR%2==0' | awk -v min=$min_seqread_len '{print substr($2,1,min)}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min=$min_unique_seqs '$1>=min{print $2}' | grep -Ff - <(zcat ${i%.f*}_compressed_hold.fasta.gz) | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz && rm ${i%.f*}_compressed_hold.fasta.gz
 
 						wait
 					fi
@@ -901,10 +901,6 @@ no_norm () {
 			fi
 		done
 		wait
-		for i in $(ls *_compressed.fasta.gz); do
-			zcat $i | awk '{gsub(/\t/,"\n");}1' | $gzip > ../metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
-			rm $i
-		done
 	else
 		cd $projdir/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
