@@ -30,7 +30,7 @@ if [[ "$blast_location" == "custom" ]]; then
 	fi
 	cd $projdir
 	echo -e "$1 \e[31m Creating custom database"
-	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in $input_dbfasta -parse_seqids -blastdb_version 10 -taxid_map $map_taxids -title "custom_db" -dbtype nt
+	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in $input_dbfasta -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -title "custom_db" -dbtype nucl
 fi
 
 
@@ -298,7 +298,7 @@ fi
 if test ! -f flushed_reads.txt; then
 	echo -e "${magenta}- \n- improved fluhsed ends (qRRS/Amplicon) and in silico reduced representation sequencing (WGS) was previously performed  ${white}\n"
 else
-	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [["$library_type" =~ "amplicon"]] || [["$library_type" =~ "Amplicon"]] || [["$library_type" =~ "AMPLICON"]] || [["$library_type" =~ "16S"]] || [["$library_type" =~ "16s"]]|| [["$library_type" =~ "ITS"]] || [["$library_type" =~ "its"]]; then
+	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 		:> length_distribution.txt
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
