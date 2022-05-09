@@ -19,7 +19,7 @@ fi
 #fi
 
 # Create custom database from user-provided fasta file and file mapping identifiers/header to taxids
-if [[ "$blast_location" == "custom" ]]; then
+if [[ "$blast_location" == "custom" ]] && test ! -f "${input_dbfasta%/*}db_created.txt"; then
 	if [[ -z $input_dbfasta ]]; then
 		echo -e "${magenta}- \n- Please provide fasta file(s) required to create custom database  ${white}\n"
 		exit 0
@@ -31,6 +31,7 @@ if [[ "$blast_location" == "custom" ]]; then
 	cd $projdir
 	echo -e "$1 \e[31m Creating custom database"
 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in $input_dbfasta -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -title "custom_db" -dbtype nucl
+	touch db_created.txt
 fi
 
 
