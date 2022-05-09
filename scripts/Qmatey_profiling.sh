@@ -189,7 +189,7 @@ organize_fq_files () {
 cd $projdir
 cd samples
 if test -f filename_reformatted.txt; then
-	echo -e "${magenta}- \n- filenamed reformatting was previously performed  ${white}\n"
+	echo -e "${magenta}- \n- file names reformatting was previously performed  ${white}\n"
 else
 	if [[ -d "se" ]]; then
 		:
@@ -300,7 +300,7 @@ else
 fi
 
 if test -f flushed_reads.txt; then
-	echo -e "${magenta}- \n- improved fluhsed ends (qRRS/Amplicon) and in silico reduced representation sequencing (WGS) was previously performed  ${white}\n"
+	echo -e "${magenta}- \n- improved flushed ends (qRRS/Amplicon) and in silico reduced representation sequencing (WGS) was previously performed  ${white}\n"
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 		:> length_distribution.txt
