@@ -19,7 +19,7 @@ fi
 #fi
 
 # Create custom database from user-provided fasta file and file mapping identifiers/header to taxids
-if [[ "$blast_location" == "custom" ]] && test ! -f "${input_dbfasta%/*}db_created.txt"; then
+if [[ "$blast_location" == "custom" ]] && test ! -f db_created.txt; then
 	if [[ -z $input_dbfasta ]]; then
 		echo -e "${magenta}- \n- Please provide fasta file(s) required to create custom database  ${white}\n"
 		exit 0
@@ -30,10 +30,12 @@ if [[ "$blast_location" == "custom" ]] && test ! -f "${input_dbfasta%/*}db_creat
 	fi
 	cd $projdir
 	echo -e "$1 \e[31m Creating custom database"
-	custom_db_db=${custom_db%.f*}
-	mkdir -p $custom_db_db
-	custom_db_db=${custom_db_db}/${custom_db_db##*/}
-	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in $input_dbfasta -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -title "${custom_db_db}" -dbtype nucl
+	custom_db_db=${input_dbfasta%.f*}
+	mkdir -p "$custom_db"
+	cd $custom_db && cp ${input_dbfasta} ./
+	custom_db=${custom_db}/${input_dbfasta##*/}
+	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+	cd $projdir
 	touch db_created.txt
 fi
 
@@ -1045,11 +1047,13 @@ cd $projdir
 if [[ "$normalization" == false ]]; then
 	metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
 	samplein=$(ls $projdir/samples/*.f 2> /dev/null | grep compressed | wc -l)
-	if [[ "$samplein" -eq "$metagout" ]] && [[ "$metagout" -gt 0 ]]; then
-		echo -e "${YELLOW}- Qmatey is skipping normalization and only performing file compression ${WHITE}"
-		time no_norm &>> $projdir/log.out
-	else
-		echo -e "${YELLOW}- Qmatey has already performed file compression ${WHITE}"
+	if [[ "$metagout" -gt 0 ]]; then
+		if [[ "$samplein" -eq "$metagout" ]];then
+			echo -e "${YELLOW}- Qmatey is skipping normalization and only performing file compression ${WHITE}"
+			time no_norm &>> $projdir/log.out
+		else
+			echo -e "${YELLOW}- Qmatey has already performed file compression ${WHITE}"
+		fi
 	fi
 else
 	echo -e "${YELLOW}- Qmatey has already performed file compression ${WHITE}"
@@ -3956,6 +3960,7 @@ echo -e "${blue}\n##############################################################
 
 cd $projdir
 find . -depth -type d -exec rmdir {} + 2> /dev/null &&
+mkdir -p norm_ref
 
 cd ${Qmatey_dir}/tools
 gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
@@ -3969,6 +3974,6 @@ fi
 if [[ -z $samples_alt_dir ||  $samples_alt_dir == false ]]; then
  	:
 else
-	rm sammples
+	rm samples
 fi
 echo -e "\n\n${magenta}- Run Complete ${white}"

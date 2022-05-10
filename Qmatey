@@ -343,7 +343,7 @@ update_database() {
   cd $projdir
 }
 
-if [[ "${db}" == "${db% *}" ]]; then
+if [[ "${db}" == "${db% *}" ]] && [[ ! -z ${db}]]; then
   input_db=${db%/*}
   mkdir -p "$input_db"
   if [[ $(ls -A ${input_db}/* 2> /dev/null | wc -l ) -gt 0 ]]; then
