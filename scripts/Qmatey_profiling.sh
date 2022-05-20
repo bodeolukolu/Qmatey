@@ -35,7 +35,7 @@ if [[ "$blast_location" == "custom" ]]; then
 		mkdir -p "$custom_db"
 		cd $custom_db && cp ${input_dbfasta} ./
 		custom_db=${custom_db}/${input_dbfasta##*/}
-		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip]]; then
+		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
@@ -1341,7 +1341,7 @@ fi
 
 #################################################################################################################
 awk '{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-echo $'tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\t' | \
+echo 'tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\t' | \
 cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
 rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
 
@@ -1403,7 +1403,7 @@ else
 	mv combined_compressed.megablast.gz ./combined/ &&
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}'  | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 		awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
@@ -1576,7 +1576,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_species/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at species-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=98' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -1923,7 +1923,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_genus/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at genus-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=96' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2271,7 +2271,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_family/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at family-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=94' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2602,7 +2602,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_order/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at order-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=92' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2934,7 +2934,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_class/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at class-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=90' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -3264,7 +3264,7 @@ cd $projdir/metagenome/alignment
 if find ../sighits/sighits_phylum/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at phylum-level already available for each sample"
 else
-	mkdir combined
+	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 	zcat $i | awk '$5>=90' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -3993,4 +3993,6 @@ if [[ -z $samples_alt_dir ||  $samples_alt_dir == false ]]; then
 else
 	rm samples
 fi
+cd $projdir
+touch Analysis_Complete
 echo -e "\n\n${magenta}- Run Complete ${white}"
