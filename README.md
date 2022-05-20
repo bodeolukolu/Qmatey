@@ -19,7 +19,7 @@ Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NC
 
 Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
-###Developers
+### Developers
 * Brandon Kristy (ORNL, TN)
 * Alison K. Adams (UTK, TN)
 * Bode A. Olukolu (UTK, TN)
