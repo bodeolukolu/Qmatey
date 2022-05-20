@@ -74,7 +74,7 @@ A project directory should contain the following sub-directories:
 * **Optional**: Normalzation Reference Genomes **if you are normalizing data**
   * This is where reference genomes for normalization will go. Reference genomes must be in **Fasta format**.
 
-  <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="643" height="341">
+  <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="804" height="427">
 
 
 ## Preparing A Database Directory for a Local BLAST
