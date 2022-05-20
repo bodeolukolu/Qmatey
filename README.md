@@ -3,7 +3,7 @@
 </p>
 
 # Introduction
-Qmatey (0.40) is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet).
+Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet).
 
 ## Features
 * Exact-matching (and exact-matching of consensus) sequence.
@@ -19,16 +19,40 @@ Qmatey (0.40) is a quantitative metagenomic/microbiome profiling pipeline. Using
 
 Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
-Developers:	Brandon Kristy (ORNL, TN), Alison K. Adams (UTK, TN), and Bode A. Olukolu (UTK, TN)
+###Developers
+* Brandon Kristy (ORNL, TN)
+* Alison K. Adams (UTK, TN)
+* Bode A. Olukolu (UTK, TN)
 
+
+## Contents
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic usage](#Basic_usage)
+  - [Overview of workflow](#Overview_of_workflow)
+  - [Configuration](#Configuration)
+- [Related Software](#Related_Software)
+- [Select Article Referencing Qmatey](#Select_Article_Referencing_Qmatey)
+- [Acknowledgment](#Acknowledgment)
+- [Troubleshooting](#Troubleshooting)
+- [Versioning](#Versioning)
+- [License](#License)
 
 
 ## Installation
-Clone or download the git repository to a desired location
-
-```
+- Currently, Qmatey is only available for unix-based systems.
+- Clone or download the Git repository to your desired folder.
+```bash
 git clone https://github.com/bodeolukolu/Qmatey.git
 ```
+- Installation occurs automatically the first time you run the pipeline.
+- To install dependencies without running a job:  
+```bash
+Qmatey_dir/Qmatey install
+```
+- With the exception of the R sotfware, all dependencies are installed to a local directory within Qmatey.
+
+
 
 ## Dependencies
 * NCBI MegaBLAST
@@ -38,7 +62,7 @@ git clone https://github.com/bodeolukolu/Qmatey.git
 * java
 * pandoc
 * R version 3.5 or above
-* R dependencies (dependencies of packages not listed): plotme, ggplot, plotly, reshape2, ggcorrplot, ccrepe
+* R dependencies: plotme, ggplot, plotly, reshape2, and ggcorrplot.
 * If you are performing a **local BLAST**, you will require an NCBI sequencing database compiled into one directory
 
 ## Setting Up a Project Directory
@@ -49,6 +73,10 @@ A project directory should contain the following sub-directories:
   * The format of the configuration file can be taken from the tools directory of the Qmatey Repository.
 * **Optional**: Normalzation Reference Genomes **if you are normalizing data**
   * This is where reference genomes for normalization will go. Reference genomes must be in **Fasta format**.
+
+  <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="643" height="341">
+
+
 ## Preparing A Database Directory for a Local BLAST
 If necessary, install the lftp tool to navigate NCBI's FTP site:
 ```

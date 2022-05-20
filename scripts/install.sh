@@ -117,6 +117,10 @@ echo -e "${blue}\n############################################## \n- installing 
 		R -e 'install.packages("ggplot2", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
+  dirtool=fansi; if [ ! -d $dirtool ]; then
+    R -e 'install.packages("fansi", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
   dirtool=ggcorrplot; if [ ! -d $dirtool ]; then
 	   R -e 'install.packages("ggcorrplot", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
@@ -140,7 +144,7 @@ echo -e "${blue}\n############################################## \n- installing 
   fi
 
   git clone https://github.com/huayingfang/CCLasso.git
-  
+
   cd ../
 }
 echo -e "${white}- Checking and performing installation of R-packages ${white}"
