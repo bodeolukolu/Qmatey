@@ -310,7 +310,7 @@ else
 fi
 
 if test -f flushed_reads.txt; then
-	echo -e "${magenta}- \n- improved flushed ends (qRRS/Amplicon) and in silico reduced representation sequencing (WGS) was previously performed  ${white}\n"
+	echo -e "${magenta}- \n- improved flushed ends of reads was previously performed  ${white}\n"
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 		:> length_distribution.txt
@@ -1077,6 +1077,7 @@ if (echo $local_db | grep -q 'nt'); then
 		export percid=90
 	fi
 	if [[ -z $filter_qcovs ]]; then
+		export strain_filter_qcovs=32
 		export filter_qcovs=80
 	fi
 fi
@@ -1085,6 +1086,7 @@ if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo
 		export percid=97
 	fi
 	if [[ -z $filter_qcovs ]]; then
+		export strain_filter_qcovs=90
 		export filter_qcovs=90
 	fi
 fi
@@ -1093,6 +1095,7 @@ if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo
 		export percid=97
 	fi
 	if [[ -z $filter_qcovs ]]; then
+		export strain_filter_qcovs=90
 		export filter_qcovs=90
 	fi
 fi
@@ -1341,7 +1344,7 @@ fi
 
 #################################################################################################################
 awk '{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-echo 'tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\t' | \
+printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\t" | \
 cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
 rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
 
@@ -1403,7 +1406,7 @@ else
 	mv combined_compressed.megablast.gz ./combined/ &&
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -v fqcov=$strain_filter_qcovs '$4 >= fqcov{print $0}' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 		awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
