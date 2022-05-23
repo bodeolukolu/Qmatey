@@ -1077,7 +1077,6 @@ if (echo $local_db | grep -q 'nt'); then
 		export percid=90
 	fi
 	if [[ -z $filter_qcovs ]]; then
-		export strain_filter_qcovs=32
 		export filter_qcovs=80
 	fi
 fi
@@ -1086,7 +1085,6 @@ if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo
 		export percid=97
 	fi
 	if [[ -z $filter_qcovs ]]; then
-		export strain_filter_qcovs=90
 		export filter_qcovs=90
 	fi
 fi
@@ -1095,7 +1093,6 @@ if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo
 		export percid=97
 	fi
 	if [[ -z $filter_qcovs ]]; then
-		export strain_filter_qcovs=90
 		export filter_qcovs=90
 	fi
 fi
@@ -1157,7 +1154,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1290,7 +1287,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1406,7 +1403,7 @@ else
 	mv combined_compressed.megablast.gz ./combined/ &&
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -v fqcov=$strain_filter_qcovs '$4 >= fqcov{print $0}' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		zcat $i 2> /dev/null | awk '$5==100' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 		awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
 		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
@@ -1582,7 +1579,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=98' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=98' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
@@ -1929,7 +1926,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=96' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=96' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
@@ -2277,7 +2274,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=94' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=94' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
@@ -2608,7 +2605,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=92' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=92' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
@@ -2940,7 +2937,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=90' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=90' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
@@ -3270,7 +3267,7 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=90' | awk '$3<=10' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+	zcat $i | awk '$5>=90' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
 	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
