@@ -1185,7 +1185,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 		  # fi
 			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt.gz
 		fi )&
-		if [[ $(jobs -r -p | wc -l) -ge $gthreads ]]; then
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
@@ -1240,7 +1240,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 		  # fi
 			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt
 		fi )&
-		if [[ $(jobs -r -p | wc -l) -ge $gthreads ]]; then
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
@@ -1319,7 +1319,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		  # fi
 			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt.gz
 		fi )&
-		if [[ $(jobs -r -p | wc -l) -ge $gthreads ]]; then
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
 		fi
 	done
