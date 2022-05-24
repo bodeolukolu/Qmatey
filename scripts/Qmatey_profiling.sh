@@ -1431,7 +1431,7 @@ awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_rel_quantification_accu
 strain_level=strain
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
-	Rscript "${Qmatey_dir}/scripts/stats_summary.R" ${i%.gz} $min_unique_seqs $strain_level "${Qmatey_dir}/tools/R"
+	Rscript "${Qmatey_dir}/scripts/stats_summary.R" ${i%.gz} $strain_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
 	echo $'tax_id\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -1779,7 +1779,7 @@ echo -e 'species' | cat - species_taxa_rel_quantification_accuracy_temp1.txt > s
 species_level=species
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs species "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} species "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'species\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -2126,7 +2126,7 @@ echo -e 'genus' | cat - genus_taxa_rel_quantification_accuracy_temp1.txt > genus
 genus_level=genus
 	for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $genus_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $genus_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'genus\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -2457,7 +2457,7 @@ echo -e 'family' | cat - family_taxa_rel_quantification_accuracy_temp1.txt > fam
 family_level=family
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $family_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $family_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'family\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -2788,7 +2788,7 @@ echo -e 'order' | cat - order_taxa_rel_quantification_accuracy_temp1.txt > order
 order_level=order
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $order_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $order_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'order\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -3120,7 +3120,7 @@ echo -e 'class' | cat - class_taxa_rel_quantification_accuracy_temp1.txt > class
 class_level=class
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $class_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $class_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'class\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
@@ -3450,7 +3450,7 @@ echo -e 'phylum' | cat - phylum_taxa_rel_quantification_accuracy_temp1.txt > phy
 phylum_level=phylum
 for i in $(ls *_sighits.txt.gz);do
 	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $min_unique_seqs $phylum_level "${Qmatey_dir}/tools/R"
+ 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $phylum_level "${Qmatey_dir}/tools/R"
 	wait
 	$gzip ${i%.gz}
   echo $'phylum\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt

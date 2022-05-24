@@ -3,8 +3,7 @@
 
 args <- commandArgs(TRUE)
 sighits <- args[1]
-minUniqRead <- args[2]
-libdir <- args[4]
+libdir <- args[3]
 
 .libPaths( c( .libPaths(), libdir) )
 library(plyr)
@@ -13,7 +12,7 @@ library(data.table)
 
 
 
-if (args[3] == "strain"){
+if (args[2] == "strain"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -43,13 +42,12 @@ if (args[3] == "strain"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "species"){
+if (args[2] == "species"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -78,13 +76,12 @@ if (args[3] == "species"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "genus"){
+if (args[2] == "genus"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -113,13 +110,12 @@ if (args[3] == "genus"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "family"){
+if (args[2] == "family"){
 fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -148,13 +144,12 @@ fileName <- c(sighits)
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "order"){
+if (args[2] == "order"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -183,13 +178,12 @@ if (args[3] == "order"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "class"){
+if (args[2] == "class"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -218,13 +212,12 @@ if (args[3] == "class"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
 }
 
-if (args[3] == "phylum"){
+if (args[2] == "phylum"){
   fileName <- c(sighits)
   stats1 <- read.delim(file=fileName, header=T, sep="\t", fill= T, quote="", check.names = T)
   if (nrow(stats1) > 0) {
@@ -253,7 +246,6 @@ if (args[3] == "phylum"){
     stats1 <- subset(stats1, select=c(1,3,2,5))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
-    stats1 <- subset(stats1, stats1$uniq_reads >= minUniqRead)
   }
   if (nrow(stats1) == 0) { stats1 <- NULL; stats1 <- data.frame(matrix(nrow=0, ncol = 4)); colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")}
   write.table(stats1,"stats1.txt", sep="\t",row.names=FALSE, col.names=FALSE, quote = F)
