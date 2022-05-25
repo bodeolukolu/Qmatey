@@ -65,6 +65,20 @@ Qmatey_dir/Qmatey install
 * R dependencies: plotme, ggplot, plotly, reshape2, and ggcorrplot.
 * If you are performing a **local BLAST**, you will require an NCBI sequencing database compiled into one directory
 
+
+## Usage
+Before running Qmatey, make sure you have created a project directory with the required files (config.sh, *.taxids, fasta/fastq files in samples folder, and reference fasta files in norm_ref folder)
+* Fastq data should be QC-filtered (paired-end and/or single-end reads allowed)
+* Obtain necessary reference genome(s) in FASTA format (within norm_ref folder): for normalization and removal of host sequence contamination.
+* For local BLAST: obtain and decompress NCBI database (other curated database). Qmatey can build database from input fasta and taxa id files
+* For remote BLAST (not recommended): specifiy NCBI database
+* Edit parameters in config.sh (template available in examples folder within software) files to match specific jobs.
+
+From the command line, type:
+```
+$ bash <path-to-Qmatey-directiry/Qmatey> <path-to-project-directory>
+```
+
 ## Setting Up a Project Directory
 A project directory should contain the following sub-directories:
 * Input Sequences
@@ -162,18 +176,5 @@ local_db_dir   | the path to a local NCBI sequencing database on your desktop   
 remote_db_dir  | the NCBI database for remote BLAST performance                    | e.g. nt, 16s, nr, etc. or NA
 normalization  | An option for reference-based normalization                         | TRUE OR FALSE
 
-## Usage
-Before running Qmatey, make sure you have:
-* Created a project directory with all the required subdirectories
-* Have QC-filtered sequencing data in the appropriate input directory
-* **for normalization**: Obtained necessary reference genome(s) in .fasta format in the appropriate normalization reference genome directory
-* **for a local BLAST**: Obtained an NCBI database directory and have the uncompressed files in one directory
-* **for a remote BLAST**: identified an NCBI database directory online
-* Have a correctly edited configuration file within the project directory
-
-From the command line, type:
-```
-$ bash <path to github repository>/Qmatey_v0.1.sh <path to project directory>/Qmatey.config
-```
 # License
-<a href="https://github.com/tararickman/metagenome/blob/add-license-1/LICENSE"> GNU General Public License v3.0
+<a href="https://github.com/bodeolukolu/Qmatey/blob/master/LICENSE">Apache License Version 2.0</a>
