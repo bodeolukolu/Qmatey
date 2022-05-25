@@ -76,6 +76,8 @@ else
 	run_sunburst=true
 fi
 if [[ -z $compositional_corr ]]; then
+	run_corr=false
+else
 	run_corr=true
 fi
 
@@ -97,9 +99,6 @@ if [[ -z $max_neg_corr ]]; then
 fi
 if [[ -z $genome_scaling ]]; then
 	genome_scaling=0
-fi
-if [[ -z $run_corr ]]; then
-	run_corr=true
 fi
 if [[ -z $sunburst_taxlevel ]]; then
 	sunburst_taxlevel=strain
@@ -1340,8 +1339,8 @@ fi
 
 
 #################################################################################################################
-awk '{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\t" | \
+awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
 cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
 rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
 
@@ -3970,7 +3969,9 @@ correlogram() {
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/
 }
-correlogram sunburst &>> $projdir/log.out
+if [[ "$run_corr" == true ]]; then
+	correlogram &>> $projdir/log.out
+fi
 
 ######################################################################################################################################################
 echo -e "${blue}\n############################################################################## ${white}\n"
