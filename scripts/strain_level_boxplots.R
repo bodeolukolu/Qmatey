@@ -9,7 +9,7 @@ perc <- as.numeric(args[5])
 libdir <- args[6]
 
 dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-9)] > "0")/(ncol(dfm)-10))*100
-dfm <- subset(dfm, percent >= percent_thresh)
+dfm <- subset(dfm, percent >= perc)
 dfm <- subset(dfm, select=-c(percent))
 dfu <- dfu[c(rownames(dfm)),]
 dfe <- dfe[c(rownames(dfm)),]
