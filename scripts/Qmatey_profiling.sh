@@ -1339,10 +1339,21 @@ fi
 
 
 #################################################################################################################
-awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
-cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
-rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+
+if [[ "$taxids" == true ]]; then
+	for i in ${projdir}/taxids/*.txids; do
+		cat $i >> ${projdir}/metagenome/All.txids
+	done
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
+	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp | awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' - ${projdir}/metagenome/All.txids > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
+	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+else
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
+	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
+	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+fi
 
 lineagedb=${projdir}/lineage_subset.txt
 if test -f $lineagedb; then
