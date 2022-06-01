@@ -18,9 +18,9 @@ dfre <- dfre[c(rownames(dfm)),]
 
 
 .libPaths( c( .libPaths(), libdir) )
-library(dplyr)
-library(plotly)
-library(htmlwidgets)
+library(dplyr, quietly=T)
+library(plotly, quietly=T)
+library(htmlwidgets, quietly=T)
 
 
 
@@ -29,9 +29,12 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   '%!in%' <- function(x,y)!('%in%'(x,y))
   vDrop<-c("family","order","class","kingdom","domain")
   mirror<-dfm[,(which(colnames(dfm) %!in% vDrop))]
-  mirror$phylum = as.character(mirror$phylum)
   mirror$genus<-as.character(mirror$genus)
-  mirror <- mirror[c(2:(ncol(mirror)-1),1,ncol(mirror))]
+  mirror$phylum = as.character(mirror$phylum)
+  if (colnames(mirror)[1] == "genus") {
+    mirror <- mirror[c(2:(ncol(mirror)-1),1,ncol(mirror))]
+  }
+  
   
   #set up empty arrays for the data values
   rowNum<-0

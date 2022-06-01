@@ -8,10 +8,10 @@ libdir <- args[4]
 taxlevel <- args[5]
 
 .libPaths( c( .libPaths(), libdir) )
-library(dplyr)
-library(stringi)
-library(plotme)
-library(htmlwidgets)
+library(dplyr, quietly=T)
+library(stringi, quietly=T)
+library(plotme, quietly=T)
+library(htmlwidgets, quietly=T)
 
 
 perc <- as.numeric(perc)

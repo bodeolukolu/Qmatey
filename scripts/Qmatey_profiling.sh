@@ -31,7 +31,7 @@ if [[ "$blast_location" == "custom" ]]; then
 		fi
 		cd $projdir
 		echo -e "$1 \e[31m Creating custom database"
-		custom_db_db=${input_dbfasta%.f*}
+		custom_db=${input_dbfasta%.f*}
 		mkdir -p "$custom_db"
 		cd $custom_db && cp ${input_dbfasta} ./
 		custom_db=${custom_db}/${input_dbfasta##*/}
@@ -393,25 +393,25 @@ else
 
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 100 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        awk 'length >=  && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
 	    else
 	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 80 && length <= 120' | \
+	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 100 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 80 && length <= 120' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        awk 'length >= 100 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
@@ -1075,24 +1075,15 @@ if (echo $local_db | grep -q 'nt'); then
 	if [[ -z $percid ]]; then
 		export percid=90
 	fi
-	if [[ -z $filter_qcovs ]]; then
-		export filter_qcovs=80
-	fi
 fi
 if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
 	if [[ -z $percid ]]; then
 		export percid=97
 	fi
-	if [[ -z $filter_qcovs ]]; then
-		export filter_qcovs=90
-	fi
 fi
 if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
 	if [[ -z $percid ]]; then
 		export percid=97
-	fi
-	if [[ -z $filter_qcovs ]]; then
-		export filter_qcovs=90
 	fi
 fi
 
@@ -1153,7 +1144,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1161,15 +1152,16 @@ if [[ "$blast_location" =~ "local" ]]; then
 		rmdir splitccf
 	fi
 
+
 	for i in $(ls -S *metagenome.fasta.gz); do (
 	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-		  awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
-		  awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
-		  awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}.txt.gz 2> /dev/null) - | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
-		  awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 		  # if [[ "$taxids" = true ]]; then
 		  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
@@ -1211,20 +1203,22 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	cat ../alignment/combined_compressed.megablast | awk '$4 <= 6{print}' | awk '$3 >= 32{print}' | > ../alignment/temp.megablast
+	cat ../alignment/combined_compressed.megablast | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
-	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast
+	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 	rm ../alignment/temp.megablast
 
+
+
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 > ../alignment/${i%_metagenome.fasta.gz}_step1.txt &&
+		if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}.txt) - | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' ../alignment/${i%_metagenome.fasta.gz}_step2.txt <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 		  # if [[ "$taxids" == true ]]; then
 		  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
@@ -1246,7 +1240,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
-	echo -e "${YELLOW}- performing local BLAST"
+	echo -e "${YELLOW}- performing custom BLAST"
 	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	if test -f $file; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
@@ -1286,7 +1280,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$3 >= 32{print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1296,15 +1290,15 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk NF=NF RS= OFS=@ <(zcat $i 2> /dev/null) | awk '{gsub(/@/,"\t");gsub(/>/,"\n"); print $0}' | awk 'NR>1' | sort -k2 | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
-			wait
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk -F'\t' 'BEGIN{OFS="\t"}{gsub(/>/,"")}1' | \
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}.txt.gz 2> /dev/null) - | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $14,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
-			wait
+	if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+    awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+    wait
+    awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+    awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+    awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+    awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
+    awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+    wait
 		  # if [[ "$taxids" == true ]]; then
 		  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		  #     taxid=${taxid_files%*.txids}
@@ -1341,17 +1335,18 @@ fi
 #################################################################################################################
 
 if [[ "$taxids" == true ]]; then
+	:> ${projdir}/metagenome/All.txids
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
-	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp | awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' - ${projdir}/metagenome/All.txids > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
+	wait
+	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' - ${projdir}/metagenome/All.txids | printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
+	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
 	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
 else
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
-	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
+	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
 	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
 fi
 
@@ -1413,12 +1408,14 @@ else
 	mv combined_compressed.megablast.gz ./combined/ &&
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		zcat $i 2> /dev/null | awk '$5==100' | awk -F'\t' '{print $8"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+		awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz
+		awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $9"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 		awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
-		zcat $i 2> /dev/null | awk '$5==100' | awk '$3<=10' | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | awk 'gsub(" ","_",$0)' | \
-		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{print "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tfqseq"}{print $0}' | \
-		awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
-		rm ${i%_haplotig.megablast.gz}_exactmatch.txt
+		awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
+		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
+		cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
+		rm ${i%_haplotig.megablast.gz}_exactmatch.txt ${i%.gz}strain.gz
 	done
 	wait
 	mv ./combined/combined_compressed.megablast.gz ./ &&
@@ -1535,8 +1532,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots/
-	mv *.html $projdir/metagenome/results/strain_level/boxplots/
+	mv *_files $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
 
 else
 	echo -e "${YELLOW}- creating strain-level visualizations"
@@ -1564,8 +1561,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots
-	mv *.html $projdir/metagenome/results/strain_level/boxplots
+	mv *_files $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
+	mv *.html $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
 
 fi
 
@@ -1589,9 +1586,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=98' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 98)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -1884,8 +1882,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/
-	mv *.html $projdir/metagenome/results/species_level/boxplots/
+	mv *_files $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating species-level visualizations"
 	cd $projdir/metagenome/results/species_level
@@ -1912,8 +1910,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/
-	mv *.html $projdir/metagenome/results/species_level/boxplots/
+	mv *_files $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -1936,9 +1934,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=96' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 96)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2232,8 +2231,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+	mv *_files $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating genus-level visualizations"
 	cd $projdir/metagenome/results/genus_level
@@ -2260,8 +2259,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/
+	mv *_files $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -2284,9 +2283,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=94' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 94)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=94') <(zcat $i | awk '$6>=94') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2563,8 +2563,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/
-	mv *.html $projdir/metagenome/results/family_level/boxplots/
+	mv *_files $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating family-level visualizations"
 	cd $projdir/metagenome/results/family_level
@@ -2591,8 +2591,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/
-	mv *.html $projdir/metagenome/results/family_level/boxplots/
+	mv *_files $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -2615,9 +2615,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=92' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 92)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=92') <(zcat $i | awk '$6>=92') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2894,8 +2895,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/
-	mv *.html $projdir/metagenome/results/order_level/boxplots/
+	mv *_files $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating order-level visualizations"
 	cd $projdir/metagenome/results/order_level
@@ -2922,8 +2923,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/
-	mv *.html $projdir/metagenome/results/order_level/boxplots/
+	mv *_files $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -2947,9 +2948,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=90' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -3226,8 +3228,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/
-	mv *.html $projdir/metagenome/results/class_level/boxplots/
+	mv *_files $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating class-level visualizations"
 	cd $projdir/metagenome/results/class_level
@@ -3254,8 +3256,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/
-	mv *.html $projdir/metagenome/results/class_level/boxplots/
+	mv *_files $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -3277,9 +3279,10 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-	zcat $i | awk '$5>=90' | awk -v fqcov=$filter_qcovs '$4 >= fqcov{print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-	cat <(printf "sseqid\tabundance\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\trefseqid\tqseqid\tfqseq\n") - | awk '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | \
-	awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -3556,8 +3559,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+	mv *_files $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 
 else
 	echo -e "${YELLOW}- creating phylum-level visualizations"
@@ -3585,8 +3588,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/
+	mv *_files $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -3676,9 +3679,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/strain_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3726,9 +3730,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/species_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### genus: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3776,9 +3781,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/genus_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### family: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3826,9 +3832,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/family_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### order: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3876,9 +3883,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/order_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### class: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3926,9 +3934,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/class_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### phylum: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
@@ -3976,9 +3985,10 @@ correlogram() {
 			done
 		fi
 	fi
+	wait
 	cd $projdir/metagenome/results/phylum_level
 	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/
+	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 }
 if [[ "$run_corr" == true ]]; then
 	correlogram &>> $projdir/log.out

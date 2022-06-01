@@ -18,9 +18,9 @@ dfre <- dfre[c(rownames(dfm)),]
 
 
 .libPaths( c( .libPaths(), libdir) )
-library(dplyr)
-library(plotly)
-library(htmlwidgets)
+library(dplyr, quietly=T)
+library(plotly, quietly=T)
+library(htmlwidgets, quietly=T)
 
 
 

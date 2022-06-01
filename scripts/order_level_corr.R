@@ -7,10 +7,10 @@ maxcorr <- unlist(strsplit(args[4],","))
 libdir <- args[5]
 
 .libPaths( c( .libPaths(), libdir) )
-library(ggplot2)
-library(ggcorrplot)
-library(reshape2)
-library(gtools)
+library(ggplot2, quietly=T)
+library(ggcorrplot, quietly=T)
+library(reshape2, quietly=T)
+library(gtools, quietly=T)
 source(paste(libdir,"/CCLasso/R/cclasso.R",sep=""))
 
 

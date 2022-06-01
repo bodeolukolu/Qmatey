@@ -109,6 +109,14 @@ echo -e "${blue}\n############################################## \n- installing 
 	   R -e 'install.packages("data.table", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
+  dirtool=plyr; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("plyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+  dirtool=dplyr; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("dplyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
   dirtool=rehsape2; if [ ! -d $dirtool ]; then
      R -e 'install.packages("reshape2", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
