@@ -1144,7 +1144,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk '$5 >= 90 {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1203,7 +1203,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	cat ../alignment/combined_compressed.megablast | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
+	cat ../alignment/combined_compressed.megablast | awk '$5 >= 90 {print}' | > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 	rm ../alignment/temp.megablast
@@ -1280,7 +1280,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk '$5 >= 90 {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
