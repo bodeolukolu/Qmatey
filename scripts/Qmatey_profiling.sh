@@ -97,9 +97,6 @@ fi
 if [[ -z $max_neg_corr ]]; then
 	max_neg_corr=0.1,0.2,0.3
 fi
-if [[ -z $genome_scaling ]]; then
-	genome_scaling=0
-fi
 if [[ -z $sunburst_taxlevel ]]; then
 	sunburst_taxlevel=strain
 fi
@@ -393,25 +390,25 @@ else
 
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 100 && length <= 600' | \
+	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 100 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
 	    else
 	      if [[ "${fa_fq}" == "@" ]]; then
-	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 100 && length <= 600' | \
+	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
 	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-	        awk 'length >= 100 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
+	        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
 	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
@@ -1144,7 +1141,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$5 >= 90 {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1203,7 +1200,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	cat ../alignment/combined_compressed.megablast | awk '$5 >= 90 {print}' | > ../alignment/temp.megablast
+	cat ../alignment/combined_compressed.megablast | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 	rm ../alignment/temp.megablast
@@ -1280,7 +1277,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk '$5 >= 90 {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1408,14 +1405,16 @@ else
 	mv combined_compressed.megablast.gz ./combined/ &&
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
-		awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz
-		awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $9"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
-		awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
-		awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
-		awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
-		cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
-		rm ${i%_haplotig.megablast.gz}_exactmatch.txt ${i%.gz}strain.gz
+		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz
+			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $9"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
+			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
+			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
+			cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
+			rm ${i%_haplotig.megablast.gz}_exactmatch.txt ${i%.gz}strain.gz
+		fi
 	done
 	wait
 	mv ./combined/combined_compressed.megablast.gz ./ &&
@@ -1499,7 +1498,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -1586,10 +1585,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 98)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 98)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -1849,7 +1850,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -1934,10 +1935,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 96)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 96)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2198,7 +2201,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -2283,10 +2286,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 94)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=94') <(zcat $i | awk '$6>=94') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 94)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=94') <(zcat $i | awk '$6>=94') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2530,7 +2535,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -2615,10 +2620,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 92)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=92') <(zcat $i | awk '$6>=92') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 92)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=92') <(zcat $i | awk '$6>=92') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -2862,7 +2869,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -2948,10 +2955,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -3195,7 +3204,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -3279,10 +3288,12 @@ else
 	mkdir -p combined
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
-		awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-		next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-		awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-		awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
+			awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
 	rmdir combined
@@ -3526,7 +3537,7 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum $genome_scaling "${Qmatey_dir}/tools/R" &>/dev/null
+Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" &>/dev/null
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
