@@ -102,8 +102,6 @@ df <- reform
 
 
 uniq_box<-function(df, dfu){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   uniq <- subset(dfu, select=-c(tax_id,species,genus,family,order,class,phylum,kingdom,domain))
   fence<-data.frame(matrix(nrow=nrow(uniq), ncol = 2))
@@ -130,8 +128,6 @@ uniq_box<-function(df, dfu){
 uniq_box(df, dfu)
 
 mean_box<-function(df, dfm){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   mean <- subset(dfm, select=-c(tax_id,species,genus,family,order,class,phylum,kingdom,domain))
   fence<-data.frame(matrix(nrow=nrow(mean), ncol = 2))
@@ -158,8 +154,6 @@ mean_box<-function(df, dfm){
 mean_box(df, dfm)
 
 error_box<-function(df, dfe){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   error <- subset(dfe, select=-c(tax_id,species,genus,family,order,class,phylum,kingdom,domain))
   fence<-data.frame(matrix(nrow=nrow(error), ncol = 2))
@@ -186,8 +180,6 @@ error_box<-function(df, dfe){
 error_box(df, dfe)
   
 rel_error_box<-function(df, dfre){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   rel_error <- subset(dfre, select=-c(tax_id,species,genus,family,order,class,phylum,kingdom,domain))
   fence<-data.frame(matrix(nrow=nrow(rel_error), ncol = 2))

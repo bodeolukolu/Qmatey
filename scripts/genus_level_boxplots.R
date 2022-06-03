@@ -108,8 +108,6 @@ df <- reform
 
 
 uniq_box<-function(df, dfu){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   uniq <- subset(dfu, select=-c(family,order,class,kingdom,domain))
   uniq <- uniq[c(2:(ncol(uniq)-1),1,ncol(uniq))]
@@ -137,8 +135,6 @@ uniq_box<-function(df, dfu){
 uniq_box(df, dfu)
 
 mean_box<-function(df, dfm){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   mean <- subset(dfm, select=-c(family,order,class,kingdom,domain))
   mean <- mean[c(2:(ncol(mean)-1),1,ncol(mean))]
@@ -166,8 +162,6 @@ mean_box<-function(df, dfm){
 mean_box(df, dfm)
 
 error_box<-function(df, dfe){
-  library(plotly)
-  library(dplyr)
   #chop off taxa names
   error <- subset(dfe, select=-c(family,order,class,kingdom,domain))
   error <- error[c(2:(ncol(error)-1),1,ncol(error))]
@@ -194,9 +188,7 @@ error_box<-function(df, dfe){
 }
 error_box(df, dfe)
 
-rel_error_box<-function(df, dfre){
-  library(plotly)
-  library(dplyr)
+rel_error_box<-function(df, dfre){s
   #chop off taxa names
   rel_error <- subset(dfe, select=-c(family,order,class,kingdom,domain))
   rel_error <- rel_error[c(2:(ncol(rel_error)-1),1,ncol(rel_error))]

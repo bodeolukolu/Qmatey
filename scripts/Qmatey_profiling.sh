@@ -36,7 +36,8 @@ if [[ "$blast_location" == "custom" ]]; then
 		cd $custom_db && cp ${input_dbfasta} ./
 		custom_db=${custom_db}/${input_dbfasta##*/}
 		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			title_db=${input_dbfasta##*/}
+			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out ${custom_db%.gz} -title ${title_db%.gz} -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		fi

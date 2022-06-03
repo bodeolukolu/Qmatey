@@ -144,6 +144,11 @@ echo -e "${blue}\n############################################## \n- installing 
   dirtool=gtools; if [ ! -d $dirtool ]; then
     R -e 'install.packages("gtools", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
+  wait
+  dirtool=gtools; if [ ! -d $dirtool ]; then
+    R -e 'install.packages("gtable", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
   dirtool=plotme; if [ ! -d $dirtool ]; then
     wget https://github.com/yogevherz/plotme/archive/refs/heads/master.tar.gz -O plotme.tar.gz
     gunzip plotme.tar.gz
