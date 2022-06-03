@@ -380,7 +380,6 @@ else
 	fi
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-	  mkdir -p WGS_original_data
 	  for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do(
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -393,24 +392,20 @@ else
 	      if [[ "${fa_fq}" == "@" ]]; then
 	        awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 	        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
 	    else
 	      if [[ "${fa_fq}" == "@" ]]; then
 	        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
 	        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz
-	        mv $i ./WGS_original_data/
 	      fi
 	      if [[ "${fa_fq}" == ">" ]]; then
 	        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 	        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$\|^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz
-	        mv $i ./WGS_original_data/
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
 	    fi

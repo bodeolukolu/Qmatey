@@ -429,7 +429,17 @@ if [ -d "./samples/pe" ]; then
       echo -e "${white}\n#########################################################################################"
   fi
 else
-  :
+  echo -e "${magenta}- Qmatey will modify your sample fastq files ${white}"
+  echo -e "${magenta}- Do you want create a copy/backup of your sample fastq file? ${white}"
+  read -p "- y(YES) or n(NO)? " -n 1 -r
+  if [[ $REPLY = ^[Yy]$ ]]; then
+    printf "\n"
+    echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
+    mkdir samples_backup
+    cp -r samples samples_backup
+    else
+      echo -e "${white}\n#########################################################################################"
+  fi
 fi
 
 
