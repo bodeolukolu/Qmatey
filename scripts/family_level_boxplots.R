@@ -133,7 +133,7 @@ uniq_box<-function(df, dfu){
 uniq_box(df, dfu)
 
 mean_box<-function(df, dfm){
-  #chop off taxa names
+  #chop off family names
   mean <- subset(dfm, select=-c(order,class,kingdom,domain))
   mean <- mean[c(2:(ncol(mean)-1),1,ncol(mean))]
   fence<-data.frame(matrix(nrow=nrow(mean), ncol = 2))

@@ -105,7 +105,7 @@ df <- reform
 
 
 uniq_box<-function(df, dfu){
-  #chop off taxa names
+  #chop off order names
   uniq <- subset(dfu, select=-c(class,kingdom,domain))
   uniq <- uniq[c(2:(ncol(uniq)-1),1,ncol(uniq))]
   fence<-data.frame(matrix(nrow=nrow(uniq), ncol = 2))
@@ -132,7 +132,7 @@ uniq_box<-function(df, dfu){
 uniq_box(df, dfu)
 
 mean_box<-function(df, dfm){
-  #chop off taxa names
+  #chop off order names
   mean <- subset(dfm, select=-c(class,kingdom,domain))
   mean <- mean[c(2:(ncol(mean)-1),1,ncol(mean))]
   fence<-data.frame(matrix(nrow=nrow(mean), ncol = 2))
@@ -159,7 +159,7 @@ mean_box<-function(df, dfm){
 mean_box(df, dfm)
 
 error_box<-function(df, dfe){
-  #chop off taxa names
+  #chop off order names
   error <- subset(dfe, select=-c(class,kingdom,domain))
   error <- error[c(2:(ncol(error)-1),1,ncol(error))]
   fence<-data.frame(matrix(nrow=nrow(error), ncol = 2))
@@ -186,7 +186,7 @@ error_box<-function(df, dfe){
 error_box(df, dfe)
 
 rel_error_box<-function(df, dfre){
-  #chop off taxa names
+  #chop off order names
   rel_error <- subset(dfe, select=-c(class,kingdom,domain))
   rel_error <- rel_error[c(2:(ncol(rel_error)-1),1,ncol(rel_error))]
   fence<-data.frame(matrix(nrow=nrow(rel_error), ncol = 2))
