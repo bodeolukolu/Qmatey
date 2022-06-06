@@ -1148,7 +1148,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
 	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1205,7 +1205,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
 		if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1284,7 +1284,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
 	if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-    awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat $i 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+    awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
     wait
     awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
     awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
