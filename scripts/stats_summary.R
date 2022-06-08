@@ -8,7 +8,8 @@ libdir <- args[3]
 .libPaths( c( .libPaths(), libdir) )
 library(plyr, quietly=T)
 library(reshape2, quietly=T)
-library(data.table, quietly=T)
+suppressMessages(library(data.table, quietly=T))
+
 
 
 
