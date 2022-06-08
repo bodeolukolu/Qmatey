@@ -1103,12 +1103,19 @@ if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- Primary BLAST (nt database) ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
-		if [[ -d splitccf ]]; then rm -r splitccf; fi
-		mkdir splitccf; cd splitccf
-		cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-		awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
-		wait $PIDsplit1
-		rm combined_compressed_metagenomes.fasta.gz
+		if [[ -d splitccf ]]; then
+			cd splitccf
+		else
+			mkdir splitccf; cd splitccf
+			cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
+			awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+			wait $PIDsplit1
+			rm combined_compressed_metagenomes.fasta.gz
+		fi
+		if [[ ! -z $(ls ../../alignment/subfile*) 2> /dev/null/ ]]; then
+			rm ../../alignment/subfile*
+			mv ../../alignment/F* ./
+		fi
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
@@ -1403,12 +1410,12 @@ else
 	for i in $(ls -S *_haplotig.megablast.gz); do
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz
+			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz &&
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $9"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
-			cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
+			cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
 			rm ${i%_haplotig.megablast.gz}_exactmatch.txt ${i%.gz}strain.gz
 		fi
 	done
@@ -1585,7 +1592,7 @@ else
 			awk -v lr=$((100 - 98)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
@@ -1935,7 +1942,7 @@ else
 			awk -v lr=$((100 - 96)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
@@ -2286,7 +2293,7 @@ else
 			awk -v lr=$((100 - 94)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=94') <(zcat $i | awk '$6>=94') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
@@ -2620,7 +2627,7 @@ else
 			awk -v lr=$((100 - 92)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=92') <(zcat $i | awk '$6>=92') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
@@ -2938,7 +2945,7 @@ fi
 #######################################################################333
 #######################################################################333
 class() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing class-Level classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Class-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
 cd $projdir/metagenome/sighits
 mkdir -p sighits_class
@@ -2955,7 +2962,7 @@ else
 			awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
@@ -3288,7 +3295,7 @@ else
 			awk -v lr=$((100 - 90)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=90') <(zcat $i | awk '$6>=90') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-			awk 'gsub(" ","\t",$0)' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
 	mv ./combined/combined_compressed.megablast.gz .
