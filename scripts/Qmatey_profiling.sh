@@ -1112,7 +1112,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 			wait $PIDsplit1
 			rm combined_compressed_metagenomes.fasta.gz
 		fi
-		if [[ ! -z $(ls ../../alignment/subfile*) 2> /dev/null/ ]]; then
+		if [[ ! -z "$(ls ../../alignment/subfile*) 2> /dev/null/)" ]]; then
 			rm ../../alignment/subfile*
 			mv ../../alignment/F* ./
 		fi
@@ -1246,12 +1246,19 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
-		if [[ -d splitccf ]]; then rm -r splitccf; fi
-		mkdir splitccf; cd splitccf
-		awk -v RS=">" -v FS="\n" -v ORS="\n" -v OFS="" '$0 {$1=">"$1"\n"; print}' <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) | $gzip > combined_compressed_metagenomes.fasta.gz
-		awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
-		wait $PIDsplit1
-		rm combined_compressed_metagenomes.fasta.gz
+		if [[ -d splitccf ]]; then
+		  cd splitccf
+		else
+		  mkdir splitccf; cd splitccf
+		  cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
+		  awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+		  wait $PIDsplit1
+		  rm combined_compressed_metagenomes.fasta.gz
+		fi
+		if [[ ! -z "$(ls ../../alignment/subfile*) 2> /dev/null/)" ]]; then
+		  rm ../../alignment/subfile*
+		  mv ../../alignment/F* ./
+		fi
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
