@@ -29,6 +29,7 @@ map_taxids=NA
 taxonomic_level=strain,species,genus,family,order,class,phylum
 percid=90
 min_unique_seqs=2
+min_strain_uniq=1,2
 min_percent_sample=5,10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3

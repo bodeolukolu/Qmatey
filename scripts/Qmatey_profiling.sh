@@ -85,6 +85,9 @@ fi
 if [[ -z $min_unique_seqs ]]; then
 	min_unique_seqs=2
 fi
+if [[ -z $min_strain_uniq ]]; then
+	min_strain_uniq=1,2
+fi
 if [[ -z $maxindel ]]; then
 	maxindel=100
 fi
@@ -1098,9 +1101,10 @@ fi
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 
-	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
-	if test -f $file; then
-		echo -e "${YELLOW}- Primary BLAST (nt database) ouput already exist"
+	file_ccm=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
+	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
+		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
 		if [[ -d splitccf ]]; then
@@ -1203,10 +1207,10 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	cat ../alignment/combined_compressed.megablast | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
+	gzip ../alignment/combined_compressed.megablast
+	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
-	rm ../alignment/temp.megablast
 
 
 
@@ -1241,8 +1245,9 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
-	if test -f $file; then
+	file_ccm=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
+	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
@@ -1508,72 +1513,81 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" &>/dev/null
+cd $projdir/metagenome/results/
+cp -r strain_level strain_level_hold
+for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
+	cd ./strain_level
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch &>/dev/null
 
-file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-	cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt &&
-	cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt &&
-	cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt &&
-	cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt &&
-	while read -r line; do
-		for i in $( ls *filtered.txt ); do
-			awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+	file=${projdir}/exclude_taxa.txt
+	if test -f $file; then
+		cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt &&
+		cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt &&
+		cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt &&
+		cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt &&
+		while read -r line; do
+			for i in $( ls *filtered.txt ); do
+				awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+			done
+		done < $file
+	fi
+
+	if test -f $file; then
+		echo -e "${YELLOW}- creating strain-level visualizations"
+		cd $projdir/metagenome/results/strain_level
+		strain_level_mean=strain_taxainfo_mean_filtered.txt
+		strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
+		strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
+		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
+
+
+		for min_perc in $min_percent_sample; do (
+			Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+			)&
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			 wait
+			fi
 		done
-	done < $file
-fi
+		wait
+		mkdir -p boxplots
+		mv *_files $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
+		mv *.html $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
 
-if test -f $file; then
-	echo -e "${YELLOW}- creating strain-level visualizations"
-	cd $projdir/metagenome/results/strain_level
-	strain_level_mean=strain_taxainfo_mean_filtered.txt
-	strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
-	strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
-	strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
-
-
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	wait
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
-
-else
-	echo -e "${YELLOW}- creating strain-level visualizations"
-	cd $projdir/metagenome/results/strain_level
-	strain_level_mean=strain_taxainfo_mean.txt
-	strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
-	strain_level_uniq=strain_taxainfo_unique_sequences.txt
-	strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
-	strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $strain_level_mean_norm ]]; then
-		:
 	else
-		strain_level_mean=strain_taxainfo_mean_normalized.txt
-	fi
-	if [[ -z $min_percent_sample ]]; then
-		min_percent_sample=5,10,20
-	fi
-
-	for min_perc in $min_percent_sample; do (
-		Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
-		)&
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
+		echo -e "${YELLOW}- creating strain-level visualizations"
+		cd $projdir/metagenome/results/strain_level
+		strain_level_mean=strain_taxainfo_mean.txt
+		strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
+		strain_level_uniq=strain_taxainfo_unique_sequences.txt
+		strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
+		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
+		if [[ -z $strain_level_mean_norm ]]; then
+			:
+		else
+			strain_level_mean=strain_taxainfo_mean_normalized.txt
 		fi
-	done
-	wait
-	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
-	mv *.html $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
+		if [[ -z $min_percent_sample ]]; then
+			min_percent_sample=5,10,20
+		fi
 
-fi
+		for min_perc in $min_percent_sample; do (
+			Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+			)&
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			 wait
+			fi
+		done
+		wait
+		mkdir -p boxplots
+		mv *_files $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
+		mv *.html $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
+
+	fi
+	cd ../
+	mv strain_level strain_level_minUniq_${min_strain_uniq_ematch}
+	cp -r strain_level_hold strain_level
+done
+rm -rf strain_level_hold
 
 }
 if [[ "$strain_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
@@ -3627,20 +3641,40 @@ cd $projdir/metagenome/results
 sunburst_taxlevel=$( echo "$sunburst_taxlevel" | awk '{gsub(/,/,"\n")}1' )
 
 for tsun in "$sunburst_taxlevel"; do
-    cd $projdir/metagenome/results/${tsun}_level
-    mean=${tsun}_taxainfo_mean.txt
-    mean_norm=${tsun}_taxainfo_mean_normalized.txt
-    if [[ -z $mean_norm ]]; then
-      :
-    else
-      mean=$mean_norm
-    fi
-    for min_perc in $min_percent_sample; do (
-      Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+	if [[ "$tsun" == strain ]]; then
+		for strain_minUniq in $(ls -d strain_level_minUniq_*); do
+			j=${strain_minUniq#strain_}
+		  cd $projdir/metagenome/results/${tsun}_"${j}"
+		  mean=${tsun}_taxainfo_mean.txt
+		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
+		  if [[ -z $mean_norm ]]; then
+		    :
+		  else
+		    mean=$mean_norm
+		  fi
+		  for min_perc in $min_percent_sample; do (
+		    Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				  wait
+				fi
+		  done
+		done
+	else
+		cd $projdir/metagenome/results/${tsun}_level
+		mean=${tsun}_taxainfo_mean.txt
+		mean_norm=${tsun}_taxainfo_mean_normalized.txt
+		if [[ -z $mean_norm ]]; then
+			:
+		else
+			mean=$mean_norm
+		fi
+		for min_perc in $min_percent_sample; do (
+			Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-			  wait
+				wait
 			fi
-    done
+		done
+	fi
 done
 
 }
@@ -3654,56 +3688,60 @@ fi
 correlogram() {
 	file=${projdir}/exclude_taxa.txt
 
+
 	#### strain: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
-	if test -f $file; then
-		echo -e "${YELLOW}- creating strain-level visualizations"
-		cd $projdir/metagenome/results/strain_level
-		strain_level_mean=strain_taxainfo_mean_filtered.txt
-		strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
-		strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
-		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
+	cd $projdir/metagenome/results
+	for strain_minUniq in $(ls -d strain_level_minUniq_*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating strain-level visualizations"
+			cd $projdir/metagenome/results/"${strain_minUniq}"
+			strain_level_mean=strain_taxainfo_mean_filtered.txt
+			strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
+			strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
+			strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]]&& test -f $strain_level_mean; then
-			for min_perc in $min_percent_sample; do (
-				Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-		fi
-	else
-		echo -e "${YELLOW}- creating strain-level visualizations"
-		cd $projdir/metagenome/results/strain_level
-		strain_level_mean=strain_taxainfo_mean.txt
-		strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
-		strain_level_uniq=strain_taxainfo_unique_sequences.txt
-		strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
-		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $strain_level_mean_norm ]]; then
-			:
+			if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]]&& test -f $strain_level_mean; then
+				for min_perc in $min_percent_sample; do (
+					Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+					)&
+				 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					 wait
+				 fi
+				done
+			fi
 		else
-			strain_level_mean=strain_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating strain-level visualizations"
+			cd $projdir/metagenome/results/"${strain_minUniq}"
+			strain_level_mean=strain_taxainfo_mean.txt
+			strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
+			strain_level_uniq=strain_taxainfo_unique_sequences.txt
+			strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
+			strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
+			if [[ -z $strain_level_mean_norm ]]; then
+				:
+			else
+				strain_level_mean=strain_taxainfo_mean_normalized.txt
+			fi
+			if [[ -z $min_percent_sample ]]; then
+				min_percent_sample=5,10,20
+			fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]]&& test -f $strain_level_mean; then
-			for min_perc in $min_percent_sample; do (
-				Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
+			if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]]&& test -f $strain_level_mean; then
+				for min_perc in $min_percent_sample; do (
+					Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+					)&
+				 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					 wait
+				 fi
+				done
+			fi
 		fi
-	fi
-	wait
-	cd $projdir/metagenome/results/strain_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		wait
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd $projdir/metagenome/results/
+	done
 
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################

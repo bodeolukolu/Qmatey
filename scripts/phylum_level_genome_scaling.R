@@ -3,7 +3,7 @@
 args <- commandArgs(TRUE)
 taxalevel <- (args[1])
 libdir <- args[2]
-
+strain_min_uniq_thresh <- as.numeric(args[3])
 .libPaths( c( .libPaths(), libdir) )
 library(dplyr, quietly = T)
 
@@ -13,7 +13,7 @@ if (taxalevel == "strain"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(tax_id,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 1] <- NA
+  finalq[finalq == strain_min_uniq_thresh] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -26,7 +26,7 @@ if (taxalevel == "strain"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
     final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-  else
+  } else {
     final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(taxname,species,genus,family,order,class,kingdom,domain))
@@ -76,7 +76,7 @@ if (taxalevel == "species"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(genus,family,order,class,kingdom,domain))
@@ -126,7 +126,7 @@ if (taxalevel == "genus"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(family,order,class,kingdom,domain))
@@ -176,7 +176,7 @@ if (taxalevel == "family"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(order,class,kingdom,domain))
@@ -226,7 +226,7 @@ if (taxalevel == "order"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(class,kingdom,domain))
@@ -276,7 +276,7 @@ if (taxalevel == "class"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
@@ -327,7 +327,7 @@ if (taxalevel == "phylum"){
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-    else
+  } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
