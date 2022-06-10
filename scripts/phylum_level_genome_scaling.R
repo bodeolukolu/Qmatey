@@ -13,10 +13,10 @@ if (taxalevel == "strain"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(tax_id,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 0] <- NA
+  finalq[finalq == 1] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -63,10 +63,10 @@ if (taxalevel == "species"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(species,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 1] <- NA
+  finalq[finalq == 2] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -113,10 +113,10 @@ if (taxalevel == "genus"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(genus,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 2] <- NA
+  finalq[finalq == 3] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -163,10 +163,10 @@ if (taxalevel == "family"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(family,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 3] <- NA
+  finalq[finalq == 4] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -213,10 +213,10 @@ if (taxalevel == "order"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(order,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 4] <- NA
+  finalq[finalq == 5] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -263,10 +263,10 @@ if (taxalevel == "class"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(class,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 5] <- NA
+  finalq[finalq == 6] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
@@ -314,10 +314,10 @@ if (taxalevel == "phylum"){
   final$mean_max <- do.call(pmax, final[,2:ncol(final)])
   final <- subset(final, select=c(phylum,mean_max))
   finalq <- final
-  finalq[finalq == 6] <- NA
+  finalq[finalq == 7] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.98))
+    summarize(q99 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]

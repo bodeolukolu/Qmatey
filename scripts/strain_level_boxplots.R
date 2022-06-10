@@ -74,11 +74,15 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   reform$X6<-phy
   reform<-subset(reform, reform$X2 >0)
   reform<-subset(reform, reform$X3 >0)
+  reform<-subset(reform, reform$X4 >0)
+  reform<-subset(reform, reform$X5 >0)
   #rename the variables
   colnames(reform)<-c("taxid","covMean","Unique Reads","errors","rel_errors","Phylum")
   #create total coverage data by multiplying the coverage by the unique reads
   reform$'Unique Reads' <- as.numeric(as.character(reform$'Unique Reads'))
   reform$covMean <- as.numeric(as.character(reform$covMean))
+  reform$errors <- as.numeric(as.character(reform$errors))
+  reform$rel_errors <- as.numeric(as.character(reform$rel_errors))
   reform$Tcov<-reform$covMean*reform$`Unique Reads`
   
   #cut data that makes up small percent of data
