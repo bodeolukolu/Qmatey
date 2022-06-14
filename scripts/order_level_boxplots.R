@@ -82,10 +82,10 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   colnames(reform)<-c("taxid","covMean","Unique Reads","errors","rel_errors","Phylum")
   #create total coverage data by multiplying the coverage by the unique reads
   reform$'Unique Reads' <- as.numeric(as.character(reform$'Unique Reads'))
-  reform$covMean <- as.numeric(as.character(reform$covMean))
-  reform$errors <- as.numeric(as.character(reform$errors))
-  reform$rel_errors <- as.numeric(as.character(reform$rel_errors))
-  reform$Tcov<-reform$covMean*reform$`Unique Reads`
+  reform$'covMean' <- as.numeric(as.character(reform$'covMean'))
+  reform$'errors' <- as.numeric(as.character(reform$'errors'))
+  reform$'rel_errors' <- as.numeric(as.character(reform$'rel_errors'))
+  reform$'Tcov'<-reform$'covMean'*reform$'Unique Reads'
   
   #cut data that makes up small percent of data
   met<-dfm
