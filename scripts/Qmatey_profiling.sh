@@ -3710,12 +3710,26 @@ for tsun in "$sunburst_taxlevel"; do
 			min_percent_sample=5,10,20
 		fi
 
-		for min_perc in ${min_percent_sample//,/ }; do (
-			Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
+		if [[ "$tsun" == strain ]] || [[ "$tsun" == species ]] ; then
+			for min_perc in ${min_percent_sample//,/ }; do (
+				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+		else
+			if [[ "$tsun" == phylum ]]; then
+				:
+			else
+				sunburst_nlayers2=phylum,$tsun
+				for min_perc in ${min_percent_sample//,/ }; do (
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						wait
+					fi
+				done
 			fi
-		done
+		fi
 	fi
 done
 
