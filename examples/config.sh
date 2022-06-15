@@ -38,6 +38,6 @@ max_neg_corr=0.1,0.2,0.3
 
 # Visualizations
 ####################################################
-sunburst_taxlevel=strain
+sunburst_taxlevel=strain,species,genus,family,order,class
 sunburst_nlayers=phylum,genus,species
 compositional_corr=strain,species,genus,family,order,class,phylum
