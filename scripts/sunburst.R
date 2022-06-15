@@ -25,6 +25,7 @@ for (k in 1:(ncol(sunburst)-7)){
 sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunburst)-7))*100
 sunburst <- subset(sunburst, percent >= perc)
 sunburst <- subset(sunburst, select=-c(percent))
+remtaxa <- nrow(sunburst)
 if (taxlevel == "strain") {
   sunburst_virus <- sunburst[grepl("viricota", sunburst$phylum),]
   sunburst <- sunburst[!grepl("viricota", sunburst$phylum),]
@@ -55,15 +56,11 @@ dir.create("sunburst")
 rel_abun <- sunburst %>%
   count(sunburst[,(match(nlayers,names(sunburst)))], wt=average) %>%
   count_to_sunburst()
-htmlwidgets::saveWidget(rel_abun, paste("./sunburst/taxa_profile_rel_abundance_",perc,"perc_",layers,".html",sep=""), selfcontained=T)
+htmlwidgets::saveWidget(rel_abun, paste("./sunburst/taxa_profile_rel_abundance_",perc,"perc_",remtaxa,"_taxa",layers,".html",sep=""), selfcontained=T)
+
 diversity <- sunburst %>%
   count(sunburst[,(match(nlayers,names(sunburst)))],wt=NULL) %>%
   count_to_sunburst()
-htmlwidgets::saveWidget(diversity, paste("./sunburst/taxa_profile_diversity_",perc,"perc_",layers,".html",sep=""), selfcontained=T)
-
-
-
-
-
+htmlwidgets::saveWidget(diversity, paste("./sunburst/taxa_profile_diversity_",perc,"perc_",remtaxa,"_taxa",layers,".html",sep=""), selfcontained=T)
 
 

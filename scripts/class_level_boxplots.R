@@ -2,16 +2,19 @@
 
 args <- commandArgs(TRUE)
 dfm <- read.delim(args[1], header=T, sep="\t", check.names =FALSE, fill=TRUE)
-dfu <- read.delim(args[2], header=T, sep="\t", check.names = FALSE, fill=TRUE)
-dfe <- read.delim(args[3], header=T, sep="\t", check.names = FALSE, fill= TRUE)
-dfre <- read.delim(args[4], header=T, sep="\t", check.names = FALSE, fill= TRUE)
-perc <- as.numeric(args[5])
-libdir <- args[6]
+dfrm <- read.delim(args[2], header=T, sep="\t", check.names =FALSE, fill=TRUE)
+dfu <- read.delim(args[3], header=T, sep="\t", check.names = FALSE, fill=TRUE)
+dfe <- read.delim(args[4], header=T, sep="\t", check.names = FALSE, fill= TRUE)
+dfre <- read.delim(args[5], header=T, sep="\t", check.names = FALSE, fill= TRUE)
+perc <- as.numeric(args[6])
+libdir <- args[7]
 
 
 dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-9)] > "0")/(ncol(dfm)-10))*100
 dfm <- subset(dfm, percent >= perc)
 dfm <- subset(dfm, select=-c(percent))
+remtaxa <- nrow(dfm)
+dfrm <- dfre[c(rownames(dfm)),]
 dfu <- dfu[c(rownames(dfm)),]
 dfe <- dfe[c(rownames(dfm)),]
 dfre <- dfre[c(rownames(dfm)),]
@@ -24,7 +27,7 @@ library(htmlwidgets, quietly=T)
 
 
 
-data.pipe<-function(dfm,dfu,dfe,dfre,cut){
+data.pipe<-function(dfm,dfrm,dfu,dfe,dfre,cut){
   '%!in%' <- function(x,y)!('%in%'(x,y))
   vDrop<-c("kingdom","domain")
   mirror<-dfm[,(which(colnames(dfm) %!in% vDrop))]
@@ -38,6 +41,7 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   rowNum<-0
   taxid<-c()
   means<-c()
+  rmeans<-c()
   uniq<-c()
   err<-c()
   rerr<-c()
@@ -51,6 +55,7 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
       taxid[rowNum]<-mirror[row,ncol(mirror)-1]
       phylum[rowNum]<-mirror[row,ncol(mirror)]
       means[rowNum]<-mirror[row,col]
+      rmeans[rowNum]<-mirror[row,col]
       uniq[rowNum]<-dfu[row,col+1]
       err[rowNum]<-dfe[row,col+1]
       rerr[rowNum]<-dfre[row,col+1]
@@ -64,6 +69,7 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   #convert the arrays to vectors 
   taxid<-as.vector(unlist(taxid))
   means<-as.vector(unlist(means))
+  rmeans<-as.vector(unlist(rmeans))
   uniq<-as.vector(unlist(uniq))
   err<-as.vector(unlist(err))
   rerr<-as.vector(unlist(rerr))
@@ -71,19 +77,22 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   #set variables equal to corresponding vectors of data
   reform$X1<-as.factor(taxid)
   reform$X2<-means
-  reform$X3<-uniq
-  reform$X4<-err
-  reform$X5<-rerr
-  reform$X6<-phy
+  reform$X3<-rmeans
+  reform$X4<-uniq
+  reform$X5<-err
+  reform$X6<-rerr
+  reform$X7<-phy
   reform<-subset(reform, reform$X2 >0)
   reform<-subset(reform, reform$X3 >0)
   reform<-subset(reform, reform$X4 >0)
   reform<-subset(reform, reform$X5 >0)
+  reform<-subset(reform, reform$X6 >0)
   #rename the variables
-  colnames(reform)<-c("taxid","covMean","Unique Reads","errors","rel_errors","Phylum")
+  colnames(reform)<-c("taxid","covMean","RelMean","Unique Reads","errors","rel_errors","Phylum")
   #create total coverage data by multiplying the coverage by the unique reads
   reform$'Unique Reads' <- as.numeric(as.character(reform$'Unique Reads'))
   reform$'covMean' <- as.numeric(as.character(reform$'covMean'))
+  reform$'RelMean' <- as.numeric(as.character(reform$'RelMean'))
   reform$'errors' <- as.numeric(as.character(reform$'errors'))
   reform$'rel_errors' <- as.numeric(as.character(reform$'rel_errors'))
   reform$'Tcov'<-reform$'covMean'*reform$'Unique Reads'
@@ -105,7 +114,7 @@ data.pipe<-function(dfm,dfu,dfe,dfre,cut){
   return(reform)
 }
 
-reform <- data.pipe(dfm, dfu, dfe, dfre, cut)
+reform <- data.pipe(dfm, dfrm, dfu, dfe, dfre, cut)
 df <- reform
 
 
@@ -131,7 +140,7 @@ uniq_box<-function(df, dfu){
   #make the boxplot
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
-  u<-plot_ly(reform, x = ~`Unique Reads`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = "Boxplot of Unique Reads", xaxis = list(range=c(0,xlim), title = "Unique Reads"), yaxis = list(size = 1, title = "Taxaname"))
+  u<-plot_ly(reform, x = ~`Unique Reads`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = paste("Boxplot of Unique Reads (",remtaxa," taxa)",sep=""), xaxis = list(range=c(0,xlim), title = "Unique Reads"), yaxis = list(size = 1, title = "Taxaname"))
   htmlwidgets::saveWidget(as_widget(u), paste("class_level_unique_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 uniq_box(df, dfu)
@@ -158,10 +167,37 @@ mean_box<-function(df, dfm){
   #make the boxplot
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
-  u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = "Boxplot of Mean Reads", xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
+  u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = paste("Boxplot of Mean Absolute Abundance (",remtaxa," taxa)",sep=""), xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
   htmlwidgets::saveWidget(as_widget(u), paste("class_level_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 mean_box(df, dfm)
+
+mean_box<-function(df, dfrm){
+  #chop off class names
+  mean <- subset(dfrm, select=-c(kingdom,domain))
+  mean <- mean[c(2:(ncol(mean)-1),1,ncol(mean))]
+  fence<-data.frame(matrix(nrow=nrow(mean), ncol = 2))
+  taxa<-c()
+  up<-c()
+  for (pl in 1:nrow(mean)) {
+    taxa[pl]<-mean[pl,ncol(mean)]
+    vec<-as.numeric(mean[pl,2:(ncol(mean)-1)])
+    iqr<-IQR(vec, na.rm = TRUE)
+    # UpperInner Fence
+    up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)
+  }
+  #set variables equal to corresponding vectors of data
+  fence$X1<-taxa
+  fence$X2<-up
+  #remove
+  colnames(fence)<-c("taxid","Upper")
+  #make the boxplot
+  xlim<-max(fence$Upper)
+  reform$Phylum[is.na(reform$Phylum)] = "Unknown"
+  u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = paste("Boxplot of Mean Relative Abundance (",remtaxa," taxa)",sep=""), xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
+  htmlwidgets::saveWidget(as_widget(u), paste("class_level_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
+}
+mean_box(df, dfrm)
 
 error_box<-function(df, dfe){
   #chop off class names
@@ -185,7 +221,7 @@ error_box<-function(df, dfe){
   #make the boxplot
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
-  u<-plot_ly(reform, x = ~errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= "Boxplot of Standard Error", xaxis = list(titlerange=c(0,xlim), title = "Standard Error"), yaxis = list(size = 1, title = "Taxaname"))
+  u<-plot_ly(reform, x = ~errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= paste("Boxplot of Standard Error (",remtaxa," taxa)",sep=""), xaxis = list(titlerange=c(0,xlim), title = "Standard Error"), yaxis = list(size = 1, title = "Taxaname"))
   htmlwidgets::saveWidget(as_widget(u), paste("class_level_errors_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 error_box(df, dfe)
@@ -212,7 +248,7 @@ rel_error_box<-function(df, dfre){
   #make the boxplot
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
-  u<-plot_ly(reform, x = ~rel_errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= "Boxplot of Relative Standard Error (% RSE)", xaxis = list(titlerange=c(0,xlim), title = "Relative Standard Error (% RSE)"), yaxis = list(size = 1, title = "Taxaname"))
+  u<-plot_ly(reform, x = ~rel_errors, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title= paste("Boxplot of Relative Standard Error (",remtaxa," taxa)",sep=""), xaxis = list(titlerange=c(0,xlim), title = "Relative Standard Error (% RSE)"), yaxis = list(size = 1, title = "Taxaname"))
   htmlwidgets::saveWidget(as_widget(u), paste("class_level_rel_errors_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 rel_error_box(df, dfre)

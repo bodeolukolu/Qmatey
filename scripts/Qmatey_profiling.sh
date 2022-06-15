@@ -97,7 +97,6 @@ fi
 if [[ -z $min_percent_sample ]]; then
 	min_percent_sample=5,10,20
 fi
-min_percent_sample=$( echo "$min_percent_sample" | awk '{gsub(/,/,"\n")}1' )
 if [[ -z $min_pos_corr ]]; then
 	min_pos_corr=0.1,0.2,0.3
 fi
@@ -320,9 +319,9 @@ else
 		:> length_distribution.txt
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			fi
 
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
@@ -354,9 +353,9 @@ else
 
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-		    fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+		    fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 		  else
-		    fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+		    fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 		  fi
 
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
@@ -389,9 +388,9 @@ else
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 	  for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do(
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-	      fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+	      fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 	    else
-	      fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+	      fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 	    fi
 	    wait
 
@@ -511,7 +510,7 @@ ref_norm () {
 	if [[ -z "$(ls -A ./norm_ref/*.dict 2> /dev/null)" ]]; then
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		echo -e "$1 \e[31m Qmatey will use read coverage of samples for normalization"
-		cd $projdir/samples
+		cd ${projdir}/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
@@ -519,9 +518,9 @@ ref_norm () {
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null 2> /dev/null) =~ gzip ]]; then
-				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			fi
 			wait
 
@@ -625,7 +624,7 @@ ref_norm () {
 		awk -v maximum=$maximum '{print $1,maximum/$2}' ${projdir}/metagenome/microbiome_coverage.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > ${projdir}/metagenome/coverage_normalization_factor.txt
 		rm ${projdir}/metagenome/microbiome_coverage.txt
 	else
-		cd $projdir/samples
+		cd ${projdir}/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
@@ -633,9 +632,9 @@ ref_norm () {
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			fi
 			wait
 
@@ -736,9 +735,9 @@ ref_norm () {
 		echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
 		for i in $(ls *_compressed.fasta.gz); do
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
-				cd $projdir/norm_ref
+				cd ${projdir}/norm_ref
 				$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
-				cd $projdir/samples
+				cd ${projdir}/samples
 				$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 				$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
@@ -750,7 +749,7 @@ ref_norm () {
 		cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt
 		rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
-		cd $projdir/metagenome
+		cd ${projdir}/metagenome
 		rm host_coverage.txt microbiome_coverage.txt
 		#Host-reference alignment coverage relative to other samples is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
@@ -770,8 +769,8 @@ ref_norm () {
 		rm host_coverage.txt microbiome_coverage.txt
 	fi
 
-	if [[ -z "$(ls -A $projdir/norm_ref/*.dict 2> /dev/null)" ]]; then
-		cd $projdir/samples
+	if [[ -z "$(ls -A ${projdir}/norm_ref/*.dict 2> /dev/null)" ]]; then
+		cd ${projdir}/samples
 		echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 		for i in $(ls -S *_compressed.fasta.gz); do
 			normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
@@ -781,7 +780,7 @@ ref_norm () {
 		rm ${projdir}/samples/*_compressed.fasta.gz
 
 	else
-		cd $projdir/metagenome
+		cd ${projdir}/metagenome
 		echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
 		for i in $(ls -S *.bam); do
 			normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
@@ -800,7 +799,7 @@ if [[ "$normalization" == true ]]; then
 		echo -e "${YELLOW}- Qmatey is skipping normalization ${WHITE}"
 	else
 		echo -e "${YELLOW}- Qmatey is performing normalization and file compression ${WHITE}"
-		time ref_norm &>> $projdir/log.out
+		time ref_norm &>> ${projdir}/log.out
 	fi
 else
 	echo -e "${YELLOW}- Qmatey is skipping normalization ${WHITE}"
@@ -817,9 +816,9 @@ no_norm () {
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			fi
 			wait
 
@@ -914,15 +913,15 @@ no_norm () {
 		done
 		wait
 	else
-		cd $projdir/samples
+		cd ${projdir}/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
 		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-				fa_fq=$(zcat $projdir/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
-				fa_fq=$(cat $projdir/samples/$i | head -n1 | cut -c1-1)
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			fi
 			wait
 
@@ -1038,7 +1037,7 @@ no_norm () {
 		cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt
 		rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
-		cd $projdir/metagenome
+		cd ${projdir}/metagenome
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
 		for i in $(ls -S *.bam); do
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
@@ -1052,12 +1051,12 @@ no_norm () {
 }
 cd $projdir
 if [[ "$normalization" == false ]]; then
-	metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
-	samplein=$(ls $projdir/samples/*.f 2> /dev/null | grep compressed | wc -l)
+	metagout=$(ls ${projdir}/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
+	samplein=$(ls ${projdir}/samples/*.f 2> /dev/null | grep compressed | wc -l)
 	if [[ "$metagout" -gt 0 ]]; then
 		if [[ "$samplein" -eq "$metagout" ]];then
 			echo -e "${YELLOW}- Qmatey is skipping normalization and only performing file compression ${WHITE}"
-			time no_norm &>> $projdir/log.out
+			time no_norm &>> ${projdir}/log.out
 		else
 			echo -e "${YELLOW}- Qmatey has already performed file compression ${WHITE}"
 		fi
@@ -1090,7 +1089,7 @@ fi
 
 blast () {
 
-cd $projdir/metagenome/haplotig
+cd ${projdir}/metagenome/haplotig
 if test ! -f combined_compressed_metagenomes.fasta.gz; then
 	zcat *.fasta.gz | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
 	$gzip combined_compressed_metagenomes.fasta
@@ -1338,13 +1337,13 @@ wait
 find ../alignment/ -size 0 -delete
 }
 cd $projdir
-metagout=$(ls $projdir/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
-mblastout=$(ls $projdir/metagenome/alignment/*haplotig.megablast.gz 2> /dev/null | wc -l)
+metagout=$(ls ${projdir}/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
+mblastout=$(ls ${projdir}/metagenome/alignment/*haplotig.megablast.gz 2> /dev/null | wc -l)
 if [[ "$metagout" -eq "$mblastout" ]] && [[ "$mblastout" -gt 0 ]]; then
 	echo -e "${YELLOW}- Qmatey has already performed ncbi megablast ${WHITE}"
 else
 	echo -e "${YELLOW}- Qmatey is performing sequence alignment using ncbi megablast ${WHITE}"
-	time blast &>> $projdir/log.out
+	time blast &>> ${projdir}/log.out
 fi
 
 
@@ -1412,11 +1411,11 @@ fi
 strain_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for strain-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_strain
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p strain_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
@@ -1441,13 +1440,13 @@ else
 fi
 
 echo -e "${YELLOW}- compiling taxonomic information"
-cd $projdir/metagenome/sighits/sighits_strain
+cd ${projdir}/metagenome/sighits/sighits_strain
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
-cd $projdir/metagenome/sighits/sighits_strain/
+cd ${projdir}/metagenome/sighits/sighits_strain/
 awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_mean_temp.txt
 awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_unique_sequences_temp.txt
 awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_quantification_accuracy_temp.txt
@@ -1483,7 +1482,7 @@ awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/strain_level/strain_
 rm *_temp*
 
 
-cd $projdir/metagenome/results/strain_level
+cd ${projdir}/metagenome/results/strain_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
 	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_strain/rankedlineage_subhits.txt strain_taxa_${i}.txt | \
 	awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > strain_taxainfo_${i}.txt &&
@@ -1517,7 +1516,7 @@ for i in *.txt; do
 done
 
 
-cd $projdir/metagenome/results/
+cd ${projdir}/metagenome/results/
 cp -r strain_level strain_level_hold
 for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	cd ./strain_level
@@ -1538,7 +1537,7 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 
 	if test -f $file; then
 		echo -e "${YELLOW}- creating strain-level visualizations"
-		cd $projdir/metagenome/results/strain_level
+		cd ${projdir}/metagenome/results/strain_level
 		strain_level_mean=strain_taxainfo_mean_filtered.txt
 		strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
 		strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
@@ -1558,28 +1557,24 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 		done
 		wait
 		mkdir -p boxplots
-		mv *_files $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
-		mv *.html $projdir/metagenome/results/strain_level/boxplots/ 2> /dev/null
+		mv *_files ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
+		mv *.html ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
 
 	else
 		echo -e "${YELLOW}- creating strain-level visualizations"
-		cd $projdir/metagenome/results/strain_level
+		cd ${projdir}/metagenome/results/strain_level
 		strain_level_mean=strain_taxainfo_mean.txt
 		strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
 		strain_level_uniq=strain_taxainfo_unique_sequences.txt
 		strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
 		strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $strain_level_mean_norm ]]; then
-			:
-		else
-			strain_level_mean=strain_taxainfo_mean_normalized.txt
-		fi
+
 		if [[ -z $min_percent_sample ]]; then
 			min_percent_sample=5,10,20
 		fi
 
 		for min_perc in ${min_percent_sample//,/ }; do (
-			Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+			Rscript "${Qmatey_dir}/scripts/strain_level_boxplots.R" "$strain_level_mean" "$strain_level_mean_norm" "$strain_level_uniq" "$strain_level_stderr" "$strain_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 			)&
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			 wait
@@ -1587,8 +1582,8 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 		done
 		wait
 		mkdir -p boxplots
-		mv *_files $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
-		mv *.html $projdir/metagenome/results/strain_level/boxplots 2> /dev/null
+		mv *_files ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
+		mv *.html ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
 
 	fi
 	cd ../
@@ -1598,19 +1593,19 @@ done
 rm -rf strain_level_hold strain_level
 
 }
-if [[ "$strain_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
-	time strain_level 2>> $projdir/log.out
+if [[ "$strain_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
+	time strain_level 2>> ${projdir}/log.out
 fi
 
 #################################################################################################################
 species() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for species-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_species
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p species_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_species/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at species-level already available for each sample"
 else
@@ -1628,7 +1623,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_species
+	cd ${projdir}/metagenome/sighits/sighits_species
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_species_unique_reads.txt
@@ -1637,7 +1632,7 @@ else
 
   echo -e "${YELLOW}- compiling species-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_species
+  cd ${projdir}/metagenome/sighits/sighits_species
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_species_unique_reads.txt.gz
@@ -1649,7 +1644,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_species
+  cd ${projdir}/metagenome/sighits/sighits_species
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -1661,7 +1656,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_species
+  cd ${projdir}/metagenome/sighits/sighits_species
 
   for i in $(ls -S *_taxids_dup.txt);do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -1746,7 +1741,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_species
+	cd ${projdir}/metagenome/sighits/sighits_species
 	for i in $(ls *_taxids_uniq.txt); do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -1798,7 +1793,7 @@ else
 	rm *_complete_species_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_species_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_species
+cd ${projdir}/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
@@ -1807,7 +1802,7 @@ awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1" "$2}' | 
 awk '!($2=$3=$4="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"species");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -n"}' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_species/
+cd ${projdir}/metagenome/sighits/sighits_species/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/' > species_taxa_mean_temp1.txt
 echo -e 'species' | cat - species_taxa_mean_temp1.txt > species_taxa_mean_temp.txt && rm species_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/'  > species_taxa_unique_sequences_temp1.txt
@@ -1850,7 +1845,7 @@ awk '{gsub(/ /,"\t"); print}' species_taxa_rel_quantification_accuracy_temp.txt 
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/species_level/species_taxa_mean.txt species_taxa_rel_quantification_accuracy_temp2.txt > ../../results/species_level/species_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/species_level
+cd ${projdir}/metagenome/results/species_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_species/rankedlineage_subhits.txt species_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > species_taxainfo_${i}.txt &&
@@ -1899,7 +1894,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating species-level visualizations"
-	cd $projdir/metagenome/results/species_level
+	cd ${projdir}/metagenome/results/species_level
 	species_level_mean=species_taxainfo_mean_filtered.txt
 	species_level_uniq=species_taxainfo_unique_sequences_filtered.txt
 	species_level_stderr=species_taxainfo_quantification_accuracy_filtered.txt
@@ -1919,27 +1914,23 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating species-level visualizations"
-	cd $projdir/metagenome/results/species_level
+	cd ${projdir}/metagenome/results/species_level
 	species_level_mean=species_taxainfo_mean.txt
 	species_level_mean_norm=species_taxainfo_mean_normalized.txt
 	species_level_uniq=species_taxainfo_unique_sequences.txt
 	species_level_stderr=species_taxainfo_quantification_accuracy.txt
 	species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $species_level_mean_norm ]]; then
-		:
-	else
-		species_level_mean=species_taxainfo_mean_normalized.txt
-	fi
+
 	if [[ -z $min_percent_sample ]]; then
 		min_percent_sample=5,10,20
 	fi
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/species_level_boxplots.R" "$species_level_mean" "$species_level_mean_norm" "$species_level_uniq" "$species_level_stderr" "$species_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -1947,24 +1938,24 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/species_taxainfo* 2> /dev/null)" ]]; then
-	time species 2>> $projdir/log.out
+if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/species_taxainfo* 2> /dev/null)" ]]; then
+	time species 2>> ${projdir}/log.out
 fi
 
 ###########################################################################################
 genus() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for genus-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_genus
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p genus_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_genus/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at genus-level already available for each sample"
 else
@@ -1982,7 +1973,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_genus
+	cd ${projdir}/metagenome/sighits/sighits_genus
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR==1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_genus_unique_reads.txt
@@ -1991,7 +1982,7 @@ else
 
   echo -e "${YELLOW}- compiling genus-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_genus
+  cd ${projdir}/metagenome/sighits/sighits_genus
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_genus_unique_reads.txt.gz
@@ -2003,7 +1994,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_genus
+  cd ${projdir}/metagenome/sighits/sighits_genus
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -2015,7 +2006,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_genus
+  cd ${projdir}/metagenome/sighits/sighits_genus
 
   for i in $(ls -S *_taxids_dup.txt); do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i > ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -2100,7 +2091,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_genus
+	cd ${projdir}/metagenome/sighits/sighits_genus
 	for i in $(ls *_taxids_uniq.txt);do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2152,7 +2143,7 @@ else
 	rm *_complete_genus_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_genus_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_genus
+cd ${projdir}/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
@@ -2161,7 +2152,7 @@ awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1}' | paste
 awk '!($2=$3=$4=$5="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"genus");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_genus/
+cd ${projdir}/metagenome/sighits/sighits_genus/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/' > genus_taxa_mean_temp1.txt
 echo -e 'genus' | cat - genus_taxa_mean_temp1.txt > genus_taxa_mean_temp.txt && rm genus_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/'  > genus_taxa_unique_sequences_temp1.txt
@@ -2204,7 +2195,7 @@ awk '{gsub(/ /,"\t"); print}' genus_taxa_rel_quantification_accuracy_temp.txt > 
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/genus_level/genus_taxa_mean.txt genus_taxa_rel_quantification_accuracy_temp2.txt > ../../results/genus_level/genus_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/genus_level
+cd ${projdir}/metagenome/results/genus_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_genus/rankedlineage_subhits.txt genus_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > genus_taxainfo_${i}.txt &&
@@ -2254,7 +2245,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating genus-level visualizations"
-	cd $projdir/metagenome/results/genus_level
+	cd ${projdir}/metagenome/results/genus_level
 	genus_level_mean=genus_taxainfo_mean_filtered.txt
 	genus_level_uniq=genus_taxainfo_unique_sequences_filtered.txt
 	genus_level_stderr=genus_taxainfo_quantification_accuracy_filtered.txt
@@ -2274,27 +2265,23 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating genus-level visualizations"
-	cd $projdir/metagenome/results/genus_level
+	cd ${projdir}/metagenome/results/genus_level
 	genus_level_mean=genus_taxainfo_mean.txt
 	genus_level_mean_norm=genus_taxainfo_mean_normalized.txt
 	genus_level_uniq=genus_taxainfo_unique_sequences.txt
 	genus_level_stderr=genus_taxainfo_quantification_accuracy.txt
 	genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $genus_level_mean_norm ]]; then
-		:
-	else
-		genus_level_mean=genus_taxainfo_mean_normalized.txt
-	fi
+
 	if [[ -z $min_percent_sample ]]; then
 		min_percent_sample=5,10,20
 	fi
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/genus_level_boxplots.R" "$genus_level_mean" "$genus_level_mean_norm" "$genus_level_uniq" "$genus_level_stderr" "$genus_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -2302,24 +2289,24 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/genus_taxainfo* 2> /dev/null)" ]]; then
-	time genus 2>> $projdir/log.out
+if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/genus_taxainfo* 2> /dev/null)" ]]; then
+	time genus 2>> ${projdir}/log.out
 fi
 
 ############################################################################
 family() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for family-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_family
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p family_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_family/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at family-level already available for each sample"
 else
@@ -2337,7 +2324,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_family
+	cd ${projdir}/metagenome/sighits/sighits_family
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_family_unique_reads.txt
@@ -2346,7 +2333,7 @@ else
 
   echo -e "${YELLOW}- compiling family-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_family
+  cd ${projdir}/metagenome/sighits/sighits_family
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_family_unique_reads.txt.gz
@@ -2358,7 +2345,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_family
+  cd ${projdir}/metagenome/sighits/sighits_family
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -2370,7 +2357,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_family
+  cd ${projdir}/metagenome/sighits/sighits_family
 
   for i in $(ls -S *_taxids_dup.txt); do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -2446,7 +2433,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_family
+	cd ${projdir}/metagenome/sighits/sighits_family
 	for i in $(ls *_taxids_uniq.txt); do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2492,14 +2479,14 @@ else
 	rm *_complete_family_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_family_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_family
+cd ${projdir}/metagenome/sighits/sighits_family
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_family/
+cd ${projdir}/metagenome/sighits/sighits_family/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/family/' > family_taxa_mean_temp1.txt
 echo -e 'family' | cat - family_taxa_mean_temp1.txt > family_taxa_mean_temp.txt && rm family_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/family/'  > family_taxa_unique_sequences_temp1.txt
@@ -2542,7 +2529,7 @@ awk '{gsub(/ /,"\t"); print}' family_taxa_rel_quantification_accuracy_temp.txt >
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/family_level/family_taxa_mean.txt family_taxa_rel_quantification_accuracy_temp2.txt > ../../results/family_level/family_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/family_level
+cd ${projdir}/metagenome/results/family_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_family/rankedlineage_subhits.txt family_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > family_taxainfo_${i}.txt &&
@@ -2592,7 +2579,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating family-level visualizations"
-	cd $projdir/metagenome/results/family_level
+	cd ${projdir}/metagenome/results/family_level
 	family_level_mean=family_taxainfo_mean_filtered.txt
 	family_level_uniq=family_taxainfo_unique_sequences_filtered.txt
 	family_level_stderr=family_taxainfo_quantification_accuracy_filtered.txt
@@ -2612,27 +2599,23 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating family-level visualizations"
-	cd $projdir/metagenome/results/family_level
+	cd ${projdir}/metagenome/results/family_level
 	family_level_mean=family_taxainfo_mean.txt
 	family_level_mean_norm=family_taxainfo_mean_normalized.txt
 	family_level_uniq=family_taxainfo_unique_sequences.txt
 	family_level_stderr=family_taxainfo_quantification_accuracy.txt
 	family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $family_level_mean_norm ]]; then
-		:
-	else
-		family_level_mean=family_taxainfo_mean_normalized.txt
-	fi
+
 	if [[ -z $min_percent_sample ]]; then
 		min_percent_sample=5,10,20
 	fi
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/family_level_boxplots.R" "$family_level_mean" "$family_level_mean_norm" "$family_level_uniq" "$family_level_stderr" "$family_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -2640,24 +2623,24 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/family_taxainfo* 2> /dev/null)" ]]; then
-	time family 2>> $projdir/log.out
+if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/family_taxainfo* 2> /dev/null)" ]]; then
+	time family 2>> ${projdir}/log.out
 fi
 
 #######################################################################333
 order() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_order
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p order_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_order/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at order-level already available for each sample"
 else
@@ -2675,7 +2658,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_order
+	cd ${projdir}/metagenome/sighits/sighits_order
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_order_unique_reads.txt
@@ -2684,7 +2667,7 @@ else
 
   echo -e "${YELLOW}- compiling order-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_order
+  cd ${projdir}/metagenome/sighits/sighits_order
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_order_unique_reads.txt.gz
@@ -2696,7 +2679,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_order
+  cd ${projdir}/metagenome/sighits/sighits_order
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -2708,7 +2691,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_order
+  cd ${projdir}/metagenome/sighits/sighits_order
 
   for i in $(ls -S *_taxids_dup.txt); do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -2784,7 +2767,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_order
+	cd ${projdir}/metagenome/sighits/sighits_order
 	for i in $(ls *_taxids_uniq.txt);do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2830,14 +2813,14 @@ else
 	rm *_complete_order_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_order_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_order
+cd ${projdir}/metagenome/sighits/sighits_order
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_order/
+cd ${projdir}/metagenome/sighits/sighits_order/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/order/' > order_taxa_mean_temp1.txt
 echo -e 'order' | cat - order_taxa_mean_temp1.txt > order_taxa_mean_temp.txt && rm order_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/order/'  > order_taxa_unique_sequences_temp1.txt
@@ -2880,7 +2863,7 @@ awk '{gsub(/ /,"\t"); print}' order_taxa_rel_quantification_accuracy_temp.txt > 
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/order_level/order_taxa_mean.txt order_taxa_rel_quantification_accuracy_temp2.txt > ../../results/order_level/order_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/order_level
+cd ${projdir}/metagenome/results/order_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_order/rankedlineage_subhits.txt order_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > order_taxainfo_${i}.txt &&
@@ -2930,7 +2913,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating order-level visualizations"
-	cd $projdir/metagenome/results/order_level
+	cd ${projdir}/metagenome/results/order_level
 	order_level_mean=order_taxainfo_mean_filtered.txt
 	order_level_uniq=order_taxainfo_unique_sequences_filtered.txt
 	order_level_stderr=order_taxainfo_quantification_accuracy_filtered.txt
@@ -2950,27 +2933,23 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating order-level visualizations"
-	cd $projdir/metagenome/results/order_level
+	cd ${projdir}/metagenome/results/order_level
 	order_level_mean=order_taxainfo_mean.txt
 	order_level_mean_norm=order_taxainfo_mean_normalized.txt
 	order_level_uniq=order_taxainfo_unique_sequences.txt
 	order_level_stderr=order_taxainfo_quantification_accuracy.txt
 	order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $order_level_mean_norm ]]; then
-		:
-	else
-		order_level_mean=order_taxainfo_mean_normalized.txt
-	fi
+
 	if [[ -z $min_percent_sample ]]; then
 		min_percent_sample=5,10,20
 	fi
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/order_level_boxplots.R" "$order_level_mean" "$order_level_mean_norm" "$order_level_uniq" "$order_level_stderr" "$order_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -2978,13 +2957,13 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/order_taxainfo* 2> /dev/null)" ]]; then
-	time order 2>> $projdir/log.out
+if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/order_taxainfo* 2> /dev/null)" ]]; then
+	time order 2>> ${projdir}/log.out
 fi
 
 #######################################################################333
@@ -2992,11 +2971,11 @@ fi
 class() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Class-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_class
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p class_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_class/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at class-level already available for each sample"
 else
@@ -3014,7 +2993,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_class
+	cd ${projdir}/metagenome/sighits/sighits_class
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_class_unique_reads.txt
@@ -3023,7 +3002,7 @@ else
 
   echo -e "${YELLOW}- compiling class-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_class
+  cd ${projdir}/metagenome/sighits/sighits_class
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_class_unique_reads.txt.gz
@@ -3035,7 +3014,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_class
+  cd ${projdir}/metagenome/sighits/sighits_class
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -3047,7 +3026,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_class
+  cd ${projdir}/metagenome/sighits/sighits_class
 
   for i in $(ls -S *_taxids_dup.txt); do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -3123,7 +3102,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_class
+	cd ${projdir}/metagenome/sighits/sighits_class
 	for i in $(ls *_taxids_uniq.txt); do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3169,14 +3148,14 @@ else
 	rm *_complete_class_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_class_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_class
+cd ${projdir}/metagenome/sighits/sighits_class
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_class/
+cd ${projdir}/metagenome/sighits/sighits_class/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/class/' > class_taxa_mean_temp1.txt
 echo -e 'class' | cat - class_taxa_mean_temp1.txt > class_taxa_mean_temp.txt && rm class_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/class/'  > class_taxa_unique_sequences_temp1.txt
@@ -3219,7 +3198,7 @@ awk '{gsub(/ /,"\t"); print}' class_taxa_rel_quantification_accuracy_temp.txt > 
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/class_level/class_taxa_mean.txt class_taxa_rel_quantification_accuracy_temp2.txt > ../../results/class_level/class_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/class_level
+cd ${projdir}/metagenome/results/class_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_class/rankedlineage_subhits.txt class_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > class_taxainfo_${i}.txt &&
@@ -3269,7 +3248,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating class-level visualizations"
-	cd $projdir/metagenome/results/class_level
+	cd ${projdir}/metagenome/results/class_level
 	class_level_mean=class_taxainfo_mean_filtered.txt
 	class_level_uniq=class_taxainfo_unique_sequences_filtered.txt
 	class_level_stderr=class_taxainfo_quantification_accuracy_filtered.txt
@@ -3289,27 +3268,23 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating class-level visualizations"
-	cd $projdir/metagenome/results/class_level
+	cd ${projdir}/metagenome/results/class_level
 	class_level_mean=class_taxainfo_mean.txt
 	class_level_mean_norm=class_taxainfo_mean_normalized.txt
 	class_level_uniq=class_taxainfo_unique_sequences.txt
 	class_level_stderr=class_taxainfo_quantification_accuracy.txt
 	class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy.txt
-	if [[ -z $class_level_mean_norm ]]; then
-		:
-	else
-		class_level_mean=class_taxainfo_mean_normalized.txt
-	fi
+
 	if [[ -z $min_percent_sample ]]; then
 		min_percent_sample=5,10,20
 	fi
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/class_level_boxplots.R" "$class_level_mean" "$class_level_mean_norm" "$class_level_uniq" "$class_level_stderr" "$class_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -3317,23 +3292,23 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/class_taxainfo* 2> /dev/null)" ]]; then
-	time class 2>> $projdir/log.out
+if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/class_taxainfo* 2> /dev/null)" ]]; then
+	time class 2>> ${projdir}/log.out
 fi
 #######################################################################333
 phylum() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
-cd $projdir/metagenome/sighits
+cd ${projdir}/metagenome/sighits
 mkdir -p sighits_phylum
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 mkdir -p phylum_level
-cd $projdir/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_phylum/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at phylum-level already available for each sample"
 else
@@ -3351,7 +3326,7 @@ else
 	rmdir combined
 	wait
 
-	cd $projdir/metagenome/sighits/sighits_phylum
+	cd ${projdir}/metagenome/sighits/sighits_phylum
 
 	for i in $(ls *_sighits.txt.gz);do
 		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_phylum_unique_reads.txt
@@ -3360,7 +3335,7 @@ else
 
   echo -e "${YELLOW}- compiling phylum-level multi-alignment algorithm"
 
-  cd $projdir/metagenome/sighits/sighits_phylum
+  cd ${projdir}/metagenome/sighits/sighits_phylum
   		for i in $(ls *_sighits.txt.gz);do
 				gunzip $i
 				gunzip ${i%_sighits*}_phylum_unique_reads.txt.gz
@@ -3372,7 +3347,7 @@ else
   wait
 
 
-  cd $projdir/metagenome/sighits/sighits_phylum
+  cd ${projdir}/metagenome/sighits/sighits_phylum
   for i in $(ls *_dup.txt.gz);do
   	awk -F '\t' '{print $8}' OFS=';' <(zcat ${i}) > ${i%_dup*}_taxids_dup_inter.txt
 		$gzip ${i%_dup*}_taxids_dup_inter.txt
@@ -3384,7 +3359,7 @@ else
 
   rm *_dup_inter.txt.gz
 
-  cd $projdir/metagenome/sighits/sighits_phylum
+  cd ${projdir}/metagenome/sighits/sighits_phylum
 
   for i in $(ls -S *_taxids_dup.txt);do (
   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
@@ -3460,7 +3435,7 @@ else
   done
 
 	rm *_uniq_inter.txt
-	cd $projdir/metagenome/sighits/sighits_phylum
+	cd ${projdir}/metagenome/sighits/sighits_phylum
 	for i in $(ls *_taxids_uniq.txt); do (
 	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3506,14 +3481,14 @@ else
 	rm *_complete_phylum_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_phylum_OTU.txt
 fi
 
-cd $projdir/metagenome/sighits/sighits_phylum
+cd ${projdir}/metagenome/sighits/sighits_phylum
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
-cd $projdir/metagenome/sighits/sighits_phylum/
+cd ${projdir}/metagenome/sighits/sighits_phylum/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/phylum/' > phylum_taxa_mean_temp1.txt
 echo -e 'phylum' | cat - phylum_taxa_mean_temp1.txt > phylum_taxa_mean_temp.txt && rm phylum_taxa_mean_temp1.txt
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/phylum/'  > phylum_taxa_unique_sequences_temp1.txt
@@ -3556,7 +3531,7 @@ awk '{gsub(/ /,"\t"); print}' phylum_taxa_rel_quantification_accuracy_temp.txt >
 awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' ../../results/phylum_level/phylum_taxa_mean.txt phylum_taxa_rel_quantification_accuracy_temp2.txt > ../../results/phylum_level/phylum_taxa_rel_quantification_accuracy.txt
 rm *_temp*
 
-cd $projdir/metagenome/results/phylum_level
+cd ${projdir}/metagenome/results/phylum_level
 for i in {mean,unique_sequences,quantification_accuracy,rel_quantification_accuracy}; do
   awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}'  ../../sighits/sighits_phylum/rankedlineage_subhits.txt phylum_taxa_${i}.txt | \
   awk 'NR==1{for(i=1;i<=NF;i++)b[$i]++&&a[i]}{for(i in a)$i="";gsub(" +"," ")}1' | awk '{gsub(/ /,"\t"); print }' | awk '$0!=x;(NR==1){x=$0}' > phylum_taxainfo_${i}.txt &&
@@ -3606,7 +3581,7 @@ fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating phylum-level visualizations"
-	cd $projdir/metagenome/results/phylum_level
+	cd ${projdir}/metagenome/results/phylum_level
 	phylum_level_mean=phylum_taxainfo_mean_filtered.txt
 	phylum_level_uniq=phylum_taxainfo_unique_sequences_filtered.txt
 	phylum_level_stderr=phylum_taxainfo_quantification_accuracy_filtered.txt
@@ -3618,7 +3593,7 @@ if test -f $file; then
 
 
 	for min_perc in ${min_percent_sample//,/ }; do (
-		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
+		Rscript "${Qmatey_dir}/scripts/phylum_level_boxplots.R" "$phylum_level_mean" "$phylum_level_mean_norm" "$phylum_level_uniq" "$phylum_level_stderr" "$phylum_level_rel_stderr" "$min_perc" "${Qmatey_dir}/tools/R" 2>/dev/null
 		)&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 		 wait
@@ -3626,12 +3601,12 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 
 else
 	echo -e "${YELLOW}- creating phylum-level visualizations"
-	cd $projdir/metagenome/results/phylum_level
+	cd ${projdir}/metagenome/results/phylum_level
 	phylum_level_mean=phylum_taxainfo_mean.txt
 	phylum_level_mean_norm=phylum_taxainfo_mean_normalized.txt
 	phylum_level_uniq=phylum_taxainfo_unique_sequences.txt
@@ -3655,13 +3630,13 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	mv *_files $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
-	mv *.html $projdir/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 fi
 
 }
-if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A $projdir/metagenome/results/strain_level/phylum_taxainfo* 2> /dev/null)" ]]; then
-	time phylum 2>> $projdir/log.out
+if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/phylum_taxainfo* 2> /dev/null)" ]]; then
+	time phylum 2>> ${projdir}/log.out
 fi
 
 
@@ -3669,14 +3644,14 @@ fi
 sunburst() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is creating sunburst \n\e[97m########################################################\n"
 
-cd $projdir/metagenome/results
+cd ${projdir}/metagenome/results
 sunburst_taxlevel=$( echo "$sunburst_taxlevel" | awk '{gsub(/,/,"\n")}1' )
 
-for tsun in "$sunburst_taxlevel"; do
+for tsun in ${sunburst_taxlevel//,/ }; do
 	if [[ "$tsun" == strain ]]; then
 		for strain_minUniq in $(ls -d strain_level_minUniq_*); do
 			j=${strain_minUniq#strain_}
-		  cd $projdir/metagenome/results/${tsun}_"${j}"
+		  cd ${projdir}/metagenome/results/${tsun}_"${j}"
 		  mean=${tsun}_taxainfo_mean.txt
 		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		  if [[ -z $mean_norm ]]; then
@@ -3697,7 +3672,7 @@ for tsun in "$sunburst_taxlevel"; do
 		  done
 		done
 	else
-		cd $projdir/metagenome/results/${tsun}_level
+		cd ${projdir}/metagenome/results/${tsun}_level
 		mean=${tsun}_taxainfo_mean.txt
 		mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		if [[ -z $mean_norm ]]; then
@@ -3736,7 +3711,7 @@ done
 }
 cd $projdir
 if [[ "$run_sunburst" == true ]]; then
-	time sunburst &>> $projdir/log.out
+	time sunburst &>> ${projdir}/log.out
 fi
 
 
@@ -3748,11 +3723,11 @@ correlogram() {
 
 	#### strain: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
-	cd $projdir/metagenome/results
+	cd ${projdir}/metagenome/results
 	for strain_minUniq in $(ls -d strain_level_minUniq_*); do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating strain-level visualizations"
-			cd $projdir/metagenome/results/"${strain_minUniq}"
+			cd ${projdir}/metagenome/results/"${strain_minUniq}"
 			strain_level_mean=strain_taxainfo_mean_filtered.txt
 			strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
 			strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
@@ -3773,7 +3748,7 @@ correlogram() {
 			fi
 		else
 			echo -e "${YELLOW}- creating strain-level visualizations"
-			cd $projdir/metagenome/results/"${strain_minUniq}"
+			cd ${projdir}/metagenome/results/"${strain_minUniq}"
 			strain_level_mean=strain_taxainfo_mean.txt
 			strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
 			strain_level_uniq=strain_taxainfo_unique_sequences.txt
@@ -3801,14 +3776,14 @@ correlogram() {
 		wait
 		mkdir -p compositional_correlation
 		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
-		cd $projdir/metagenome/results/
+		cd ${projdir}/metagenome/results/
 	done
 
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating species-level visualizations"
-		cd $projdir/metagenome/results/species_level
+		cd ${projdir}/metagenome/results/species_level
 		species_level_mean=species_taxainfo_mean_filtered.txt
 		species_level_uniq=species_taxainfo_unique_sequences_filtered.txt
 		species_level_stderr=species_taxainfo_quantification_accuracy_filtered.txt
@@ -3829,7 +3804,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating species-level visualizations"
-		cd $projdir/metagenome/results/species_level
+		cd ${projdir}/metagenome/results/species_level
 		species_level_mean=species_taxainfo_mean.txt
 		species_level_mean_norm=species_taxainfo_mean_normalized.txt
 		species_level_uniq=species_taxainfo_unique_sequences.txt
@@ -3855,7 +3830,7 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/species_level
+	cd ${projdir}/metagenome/results/species_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
@@ -3863,7 +3838,7 @@ correlogram() {
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating genus-level visualizations"
-		cd $projdir/metagenome/results/genus_level
+		cd ${projdir}/metagenome/results/genus_level
 		genus_level_mean=genus_taxainfo_mean_filtered.txt
 		genus_level_uniq=genus_taxainfo_unique_sequences_filtered.txt
 		genus_level_stderr=genus_taxainfo_quantification_accuracy_filtered.txt
@@ -3884,7 +3859,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating genus-level visualizations"
-		cd $projdir/metagenome/results/genus_level
+		cd ${projdir}/metagenome/results/genus_level
 		genus_level_mean=genus_taxainfo_mean.txt
 		genus_level_mean_norm=genus_taxainfo_mean_normalized.txt
 		genus_level_uniq=genus_taxainfo_unique_sequences.txt
@@ -3910,7 +3885,7 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/genus_level
+	cd ${projdir}/metagenome/results/genus_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
@@ -3918,7 +3893,7 @@ correlogram() {
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating family-level visualizations"
-		cd $projdir/metagenome/results/family_level
+		cd ${projdir}/metagenome/results/family_level
 		family_level_mean=family_taxainfo_mean_filtered.txt
 		family_level_uniq=family_taxainfo_unique_sequences_filtered.txt
 		family_level_stderr=family_taxainfo_quantification_accuracy_filtered.txt
@@ -3939,7 +3914,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating family-level visualizations"
-		cd $projdir/metagenome/results/family_level
+		cd ${projdir}/metagenome/results/family_level
 		family_level_mean=family_taxainfo_mean.txt
 		family_level_mean_norm=family_taxainfo_mean_normalized.txt
 		family_level_uniq=family_taxainfo_unique_sequences.txt
@@ -3965,7 +3940,7 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/family_level
+	cd ${projdir}/metagenome/results/family_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
@@ -3973,7 +3948,7 @@ correlogram() {
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating order-level visualizations"
-		cd $projdir/metagenome/results/order_level
+		cd ${projdir}/metagenome/results/order_level
 		order_level_mean=order_taxainfo_mean_filtered.txt
 		order_level_uniq=order_taxainfo_unique_sequences_filtered.txt
 		order_level_stderr=order_taxainfo_quantification_accuracy_filtered.txt
@@ -3994,7 +3969,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating order-level visualizations"
-		cd $projdir/metagenome/results/order_level
+		cd ${projdir}/metagenome/results/order_level
 		order_level_mean=order_taxainfo_mean.txt
 		order_level_mean_norm=order_taxainfo_mean_normalized.txt
 		order_level_uniq=order_taxainfo_unique_sequences.txt
@@ -4020,7 +3995,7 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/order_level
+	cd ${projdir}/metagenome/results/order_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
@@ -4028,7 +4003,7 @@ correlogram() {
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating class-level visualizations"
-		cd $projdir/metagenome/results/class_level
+		cd ${projdir}/metagenome/results/class_level
 		class_level_mean=class_taxainfo_mean_filtered.txt
 		class_level_uniq=class_taxainfo_unique_sequences_filtered.txt
 		class_level_stderr=class_taxainfo_quantification_accuracy_filtered.txt
@@ -4049,7 +4024,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating class-level visualizations"
-		cd $projdir/metagenome/results/class_level
+		cd ${projdir}/metagenome/results/class_level
 		class_level_mean=class_taxainfo_mean.txt
 		class_level_mean_norm=class_taxainfo_mean_normalized.txt
 		class_level_uniq=class_taxainfo_unique_sequences.txt
@@ -4075,7 +4050,7 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/class_level
+	cd ${projdir}/metagenome/results/class_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
@@ -4083,7 +4058,7 @@ correlogram() {
 	######################################################################################################
 	if test -f $file; then
 		echo -e "${YELLOW}- creating phylum-level visualizations"
-		cd $projdir/metagenome/results/phylum_level
+		cd ${projdir}/metagenome/results/phylum_level
 		phylum_level_mean=phylum_taxainfo_mean_filtered.txt
 		phylum_level_uniq=phylum_taxainfo_unique_sequences_filtered.txt
 		phylum_level_stderr=phylum_taxainfo_quantification_accuracy_filtered.txt
@@ -4104,7 +4079,7 @@ correlogram() {
 		fi
 	else
 		echo -e "${YELLOW}- creating phylum-level visualizations"
-		cd $projdir/metagenome/results/phylum_level
+		cd ${projdir}/metagenome/results/phylum_level
 		phylum_level_mean=phylum_taxainfo_mean.txt
 		phylum_level_mean_norm=phylum_taxainfo_mean_normalized.txt
 		phylum_level_uniq=phylum_taxainfo_unique_sequences.txt
@@ -4130,12 +4105,12 @@ correlogram() {
 		fi
 	fi
 	wait
-	cd $projdir/metagenome/results/phylum_level
+	cd ${projdir}/metagenome/results/phylum_level
 	mkdir -p compositional_correlation
 	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 }
 if [[ "$run_corr" == true ]]; then
-	correlogram &>> $projdir/log.out
+	correlogram &>> ${projdir}/log.out
 fi
 
 ######################################################################################################################################################
