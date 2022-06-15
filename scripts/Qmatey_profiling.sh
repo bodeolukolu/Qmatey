@@ -92,7 +92,7 @@ if [[ -z $maxindel ]]; then
 	maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	max_target=1000
+	max_target=10000
 fi
 if [[ -z $min_percent_sample ]]; then
 	min_percent_sample=5,10,20
