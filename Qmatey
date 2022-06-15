@@ -263,15 +263,16 @@ mv temp config.sh
 db="$(grep -v =NA config.sh | grep -v '#' | grep _db=)"
 db=${db//*=}
 db=$(echo $db | awk '{gsub(/,/," "); print}')
+input_db=${db%/*}
 
 setup_database() {
   cd $input_db
-  if [[ "${input_db/*\/}" == nt ]]; then
+  if [[ "${db/*\/}" == nt ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt*tar.gz
     for f in nt*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == refseq ]]; then
+  if [[ "${db/*\/}" =~ refseq ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ref_viroids_rep_genomes*tar.gz
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ref_prok_rep_genomes*tar.gz
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ref_euk_rep_genomes*tar.gz
@@ -279,31 +280,32 @@ setup_database() {
     for f in ref*.tar.gz; do tar -xzf "$f"; done
     rm ref*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 16S ]]; then
+  if [[ "${db/*\/}" =~ 16S ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA*tar.gz
     for f in 16S_ribosomal_RNA*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 18S ]]; then
+  if [[ "${db/*\/}" =~ 18S ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/18S_fungal_sequences*tar.gz
     for f in 18S_fungal_sequences*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 28S ]]; then
+  if [[ "${db/*\/}" =~ 28S ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/28S_fungal_sequences*tar.gz
     for f in 28S_fungal_sequences*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == ITS ]]; then
+  if [[ "${db/*\/}" =~ ITS ]]; then
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ITS_eukaryote_sequences*tar.gz
     for f in ITS_eukaryote_sequences*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
   cd $projdir
 }
+
 update_database() {
-  cd $db
-  if [[ "${input_db/*\/}" == refseq ]]; then
+  cd $input_db
+  if [[ "${db/*\/}" =~ refseq ]]; then
     rm -r ref* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ref_viroids_rep_genomes*tar.gz
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ref_prok_rep_genomes*tar.gz
@@ -312,31 +314,31 @@ update_database() {
     for f in ref*.tar.gz; do tar -xzf "$f"; done
     rm ref*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == nt ]]; then
+  if [[ "${db/*\/}" == nt ]]; then
     rm -r nt* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt*tar.gz
     for f in nt*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 16S ]]; then
+  if [[ "${db/*\/}" =~ 16S ]]; then
     rm -r 16S_ribosomal_RNA* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA*tar.gz
     for f in 16S_ribosomal_RNA*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 18S ]]; then
+  if [[ "${db/*\/}" =~ 18S ]]; then
     rm -r 18S_fungal_sequences* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/18S_fungal_sequences*tar.gz
     for f in 18S_fungal_sequences*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == 28S ]]; then
+  if [[ "${db/*\/}" =~ 28S ]]; then
     rm -r 28S_fungal_sequences* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/28S_fungal_sequences*tar.gz
     for f in 28S_fungal_sequences*.tar.gz; do tar -xzf "$f"; done
     rm nt*.tar.gz
   fi
-  if [[ "${input_db/*\/}" == ITS ]]; then
+  if [[ "${db/*\/}" =~ ITS ]]; then
     rm -r ITS_eukaryote_sequences* taxdb.btd taxdb.bti index.html 2> /dev/null
     wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/ITS_eukaryote_sequences*tar.gz
     for f in ITS_eukaryote_sequences*.tar.gz; do tar -xzf "$f"; done
