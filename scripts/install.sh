@@ -117,6 +117,22 @@ echo -e "${blue}\n############################################## \n- installing 
      R -e 'install.packages("dplyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
+  dirtool=rlang; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("rlang", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+  dirtool=generics; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("generics", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+  dirtool=tidyselect; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("tidyselect", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+  dirtool=plotly; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("plotly", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
   dirtool=Rcpp; if [ ! -d $dirtool ]; then
      R -e 'install.packages("Rcpp", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
@@ -146,7 +162,7 @@ echo -e "${blue}\n############################################## \n- installing 
   fi
   wait
 
-  dirtool=stringr; if [ ! -d $dirtool ]; then
+  dirtool=magrittr; if [ ! -d $dirtool ]; then
      R -e 'install.packages("magrittr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   waitdirtool=infotheo; if [ ! -d $dirtool ]; then
@@ -157,8 +173,12 @@ echo -e "${blue}\n############################################## \n- installing 
     R -e 'install.packages("gtools", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
-  dirtool=gtools; if [ ! -d $dirtool ]; then
+  dirtool=gtable; if [ ! -d $dirtool ]; then
     R -e 'install.packages("gtable", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+  dirtool=assertthat; if [ ! -d $dirtool ]; then
+    R -e 'install.packages("assertthat", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
   dirtool=plotme; if [ ! -d $dirtool ]; then

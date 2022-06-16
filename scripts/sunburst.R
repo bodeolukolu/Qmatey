@@ -52,15 +52,15 @@ for (i in 1:nrow(sunburst)){
 sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7))
 
 layers <- gsub(",","_",layers)
-dir.create("sunburst")
+dir.create("sunburst", showWarnings = FALSE)
 rel_abun <- sunburst %>%
   count(sunburst[,(match(nlayers,names(sunburst)))], wt=average) %>%
   count_to_sunburst()
-htmlwidgets::saveWidget(rel_abun, paste("./sunburst/taxa_profile_rel_abundance_",perc,"perc_",remtaxa,"_taxa",layers,".html",sep=""), selfcontained=T)
+htmlwidgets::saveWidget(rel_abun, paste("./sunburst/taxa_profile_rel_abundance_",perc,"perc_",remtaxa,"_taxa_",layers,".html",sep=""), selfcontained=F)
 
 diversity <- sunburst %>%
   count(sunburst[,(match(nlayers,names(sunburst)))],wt=NULL) %>%
   count_to_sunburst()
-htmlwidgets::saveWidget(diversity, paste("./sunburst/taxa_profile_diversity_",perc,"perc_",remtaxa,"_taxa",layers,".html",sep=""), selfcontained=T)
+htmlwidgets::saveWidget(diversity, paste("./sunburst/taxa_profile_diversity_",perc,"perc_",remtaxa,"_taxa_",layers,".html",sep=""), selfcontained=F)
 
 

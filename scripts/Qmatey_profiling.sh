@@ -3654,9 +3654,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 		  mean=${tsun}_taxainfo_mean.txt
 		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		  if [[ -z $mean_norm ]]; then
-		    :
-		  else
-		    mean=$mean_norm
+		    mean_norm=$mean
 		  fi
 
 			if [[ -z $min_percent_sample ]]; then
@@ -3664,7 +3662,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 			fi
 
 		  for min_perc in ${min_percent_sample//,/ }; do (
-		    Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+		    Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				  wait
 				fi
@@ -3675,9 +3673,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 		mean=${tsun}_taxainfo_mean.txt
 		mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		if [[ -z $mean_norm ]]; then
-			:
-		else
-			mean=$mean_norm
+			mean_norm=$mean
 		fi
 
 		if [[ -z $min_percent_sample ]]; then
@@ -3686,7 +3682,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 
 		if [[ "$tsun" == strain ]] || [[ "$tsun" == species ]] ; then
 			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 					wait
 				fi
@@ -3697,7 +3693,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 			else
 				sunburst_nlayers2=phylum,$tsun
 				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
 					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						wait
 					fi
