@@ -117,6 +117,10 @@ echo -e "${blue}\n############################################## \n- installing 
      R -e 'install.packages("dplyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
+  dirtool=Rcpp; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("Rcpp", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
   dirtool=rehsape2; if [ ! -d $dirtool ]; then
      R -e 'install.packages("reshape2", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
@@ -137,7 +141,15 @@ echo -e "${blue}\n############################################## \n- installing 
 	   R -e 'install.packages("stringi", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait
-  dirtool=infotheo; if [ ! -d $dirtool ]; then
+  dirtool=stringr; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("stringr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  wait
+
+  dirtool=stringr; if [ ! -d $dirtool ]; then
+     R -e 'install.packages("magrittr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
+  fi
+  waitdirtool=infotheo; if [ ! -d $dirtool ]; then
      R -e 'install.packages("infotheo", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")'
   fi
   wait

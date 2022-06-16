@@ -749,7 +749,7 @@ ref_norm () {
 		rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
 		cd ${projdir}/metagenome
-		rm host_coverage.txt microbiome_coverage.txt
+		rm host_coverage.txt microbiome_coverage.txt 2> /dev/null
 		#Host-reference alignment coverage relative to other samples is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
 		for i in $(ls -S *.bam); do
@@ -1118,7 +1118,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 			wait $PIDsplit1
 			rm combined_compressed_metagenomes.fasta.gz
 		fi
-		if [[ ! -z "$(ls ../../alignment/subfile*) 2> /dev/null)" ]]; then
+		if [[ ! -z "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
 			rm ../../alignment/subfile*
 			mv ../../alignment/F* ./
 		fi
