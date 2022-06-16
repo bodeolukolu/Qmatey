@@ -16,7 +16,11 @@ library(htmlwidgets, quietly=T)
 
 perc <- as.numeric(perc)
 sunburst <- read.delim(args[1], header=T, sep="\t", check.names=FALSE, quote="", fill=TRUE)
-sunburst <- subset(sunburst, select=-c(tax_id,kingdom,domain))
+if (taxlevel == "strain") {
+  sunburst <- subset(sunburst, select=-c(tax_id,kingdom,domain))
+} else {
+  sunburst <- subset(sunburst, select=-c(kingdom,domain))
+}
 colnames(sunburst) <- gsub("_mean","",colnames(sunburst))
 sunburst <- data.frame(sunburst)
 for (k in 1:(ncol(sunburst)-7)){

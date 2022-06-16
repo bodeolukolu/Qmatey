@@ -92,7 +92,7 @@ if [[ -z $maxindel ]]; then
 	maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	max_target=10000
+	max_target=1000
 fi
 if [[ -z $min_percent_sample ]]; then
 	min_percent_sample=5,10,20
@@ -3646,6 +3646,8 @@ echo -e "\e[97m########################################################\n \e[38;
 cd ${projdir}/metagenome/results
 
 for tsun in ${sunburst_taxlevel//,/ }; do
+	echo -e "${YELLOW}- creating sunburst from ${tsun}_level taxonomic profile"
+
 	if [[ "$tsun" == strain ]]; then
 		for strain_minUniq in $(ls -d strain_level_minUniq_*); do
 			j=${strain_minUniq#strain_}
@@ -3661,12 +3663,14 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 			fi
 
 		  for min_perc in ${min_percent_sample//,/ }; do (
-		    Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+		    Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				  wait
 				fi
 		  done
+			wait
 		done
+		wait
 	else
 		cd ${projdir}/metagenome/results/${tsun}_level
 		mean=${tsun}_taxainfo_mean.txt
@@ -3679,27 +3683,30 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 			min_percent_sample=5,10,20
 		fi
 
-		if [[ "$tsun" == strain ]] || [[ "$tsun" == species ]] ; then
+		if [[ "$tsun" == species ]] ; then
 			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 					wait
 				fi
 			done
+			wait
 		else
 			if [[ "$tsun" == phylum ]]; then
 				:
 			else
 				sunburst_nlayers2=phylum,$tsun
 				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun &>/dev/null )&
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
 					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						wait
 					fi
 				done
+				wait
 			fi
 		fi
 	fi
+	wait
 done
 
 }
