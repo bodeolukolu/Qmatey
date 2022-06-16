@@ -3644,7 +3644,6 @@ sunburst() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is creating sunburst \n\e[97m########################################################\n"
 
 cd ${projdir}/metagenome/results
-sunburst_taxlevel=$( echo "$sunburst_taxlevel" | awk '{gsub(/,/,"\n")}1' )
 
 for tsun in ${sunburst_taxlevel//,/ }; do
 	if [[ "$tsun" == strain ]]; then
