@@ -48,9 +48,18 @@ sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
 sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
 sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
 sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
-for (i in 1:nrow(sunburst)){
-  if(is.na(sunburst$species[i])){
-    sunburst$species[i] <- sunburst$taxname[i]
+if (taxlevel == "strain") {
+  for (i in 1:nrow(sunburst)){
+    if(is.na(sunburst$species[i])){
+      sunburst$species[i] <- sunburst$taxname[i]
+    }
+  }
+}
+if (taxlevel == "sspecies") {
+  for (i in 1:nrow(sunburst)){
+    if(is.na(sunburst$species[i])){
+      sunburst$species[i] <- sunburst$taxname[i]
+    }
   }
 }
 sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7))

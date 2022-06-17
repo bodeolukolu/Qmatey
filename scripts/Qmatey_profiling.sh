@@ -71,7 +71,7 @@ fi
 if [[ $taxonomic_level =~ phylum ]]; then
 	phylum_level=true
 fi
-if [[ -z $sunburst_taxlevel ]]; then
+if [[ -z $st_taxlevel ]]; then
 	run_sunburst=false
 else
 	run_sunburst=true
