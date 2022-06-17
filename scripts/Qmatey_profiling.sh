@@ -3691,19 +3691,26 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 				fi
 			done
 			wait
-		else
-			if [[ "$tsun" == phylum ]]; then
-				:
-			else
-				sunburst_nlayers2=phylum,$tsun
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						wait
-					fi
-				done
-				wait
-			fi
+		fi
+		if [[ "$tsun" == genus ]] || [[ "$tsun" == family ]] || [[ "$tsun" == order ]] || [[ "$tsun" == class ]]; then
+			sunburst_nlayers2=phylum,$tsun
+			for min_perc in ${min_percent_sample//,/ }; do (
+				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
+		fi
+		if [[ "$tsun" == phylum ]]; then
+			sunburst_nlayers2=phylum
+			for min_perc in ${min_percent_sample//,/ }; do (
+				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
 		fi
 	fi
 	wait
