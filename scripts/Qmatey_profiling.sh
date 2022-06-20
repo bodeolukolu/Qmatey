@@ -3644,11 +3644,11 @@ cd ${projdir}/metagenome/results
 
 for tsun in ${sunburst_taxlevel//,/ }; do
 	echo -e "${YELLOW}- creating sunburst from ${tsun}_level taxonomic profile"
+	cd ${projdir}/metagenome/results
 
 	if [[ "$tsun" == strain ]]; then
 		for strain_minUniq in $(ls -d strain_level_minUniq_*); do
-			j=${strain_minUniq#strain_}
-		  cd ${projdir}/metagenome/results/${tsun}_"${j}"
+		  cd ${strain_minUniq}
 		  mean=${tsun}_taxainfo_mean.txt
 		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		  if [[ -z $mean_norm ]]; then
@@ -3665,11 +3665,13 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 				  wait
 				fi
 		  done
+			cd ../
 			wait
 		done
 		wait
 	else
-		cd ${projdir}/metagenome/results/${tsun}_level
+		cd ${projdir}/metagenome/results
+		cd ${tsun}_level
 		mean=${tsun}_taxainfo_mean.txt
 		mean_norm=${tsun}_taxainfo_mean_normalized.txt
 		if [[ -z $mean_norm ]]; then
