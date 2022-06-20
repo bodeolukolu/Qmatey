@@ -71,7 +71,7 @@ fi
 if [[ $taxonomic_level =~ phylum ]]; then
 	phylum_level=true
 fi
-if [[ -z $st_taxlevel ]]; then
+if [[ -z $sunburst_taxlevel ]]; then
 	run_sunburst=false
 else
 	run_sunburst=true
@@ -102,9 +102,6 @@ if [[ -z $min_pos_corr ]]; then
 fi
 if [[ -z $max_neg_corr ]]; then
 	max_neg_corr=0.1,0.2,0.3
-fi
-if [[ -z $sunburst_taxlevel ]]; then
-	sunburst_taxlevel=strain
 fi
 if [[ -z $sunburst_nlayers ]]; then
 	sunburst_nlayers=phylum,genus,species
