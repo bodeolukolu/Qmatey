@@ -94,6 +94,10 @@ fi
 if [[ -z $max_target ]]; then
 	max_target=1000000
 fi
+if [[ -z $reads_per_megablast ]]; then
+	reads_per_megablast=1000
+fi
+
 if [[ -z $min_percent_sample ]]; then
 	min_percent_sample=5,10,20
 fi
@@ -1066,6 +1070,7 @@ echo -e "\e[97m########################################################\n \e[38;
 
 cd ${Qmatey_dir}
 local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
+
 if (echo $local_db | grep -q 'nt'); then
 	if [[ -z $percid ]]; then
 		export percid=95
@@ -1081,6 +1086,7 @@ if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo
 		export percid=95
 	fi
 fi
+rpm=$((reads_per_megablast * 2))
 
 
 blast () {
@@ -1122,7 +1128,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
-			awk 'NR%2000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
@@ -1266,7 +1272,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		for ccf in $(ls * | sort -V); do
 			mv $ccf ../../alignment/$ccf
 			cd ../../alignment
-			awk 'NR%2000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
