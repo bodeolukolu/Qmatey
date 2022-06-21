@@ -1356,15 +1356,15 @@ if [[ "$taxids" == true ]]; then
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp
 	wait
 	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' - ${projdir}/metagenome/All.txids | printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
-	cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
-	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+	cat - ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp
+	rm ${projdir}/rankedlineage_tabdelimited.dmp
 else
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
-	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | cat - ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp
-	rm ${Qmatey_dir}/tools/rankedlineage_tabdelimited.dmp
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp
+	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | cat - ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp
+	rm ${projdir}/rankedlineage_tabdelimited.dmp
 fi
 
 lineagedb=${projdir}/lineage_subset.txt
@@ -1372,31 +1372,31 @@ if test -f $lineagedb; then
 	echo -e "${YELLOW}- Compiling subset lineage file"
 	if awk 'NR==1{/tax_id/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="tax_id") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > tax_id.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' tax_id.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm tax_id.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' tax_id.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm tax_id.txt
 	elif awk 'NR==1{/taxname/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="taxname") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > taxname.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$2] > 0' taxname.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm taxname.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$2] > 0' taxname.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm taxname.txt
 	elif awk 'NR==1{/genus/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="genus") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > genus.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$4] > 0' genus.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm genus.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$4] > 0' genus.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm genus.txt
 	elif awk 'NR==1{/family}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="family") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > family.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$5] > 0' family.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm family.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$5] > 0' family.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm family.txt
 	elif awk 'NR==1{/order/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="order") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > order.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$6] > 0' order.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm order.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$6] > 0' order.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm order.txt
 	elif awk 'NR==1{/class/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="class") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > class.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$7] > 0' class.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm class.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$7] > 0' class.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm class.txt
 	elif awk 'NR==1{/phylum/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="phylum") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > phylum.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$8] > 0' phylum.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm phylum.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$8] > 0' phylum.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm phylum.txt
 	elif awk 'NR==1{/kingdom/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="kingdom") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > kingdom.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$9] > 0' kingdom.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm kingdom.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$9] > 0' kingdom.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm kingdom.txt
 	elif awk 'NR==1{/domain/}' lineage_subset.txt;then
 		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="domain") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > domain.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$10] > 0' domain.txt ${Qmatey_dir}/tools/rankedlineage_edited.dmp > ${Qmatey_dir}/tools/rankedlineage_edited.dmp && rm domain.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$10] > 0' domain.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm domain.txt
 	else
 		echo -e "${magenta}- lineage database is not formatted properly ${white}\n"
 		echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
@@ -1428,7 +1428,7 @@ else
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
 			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz &&
-			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $9"___"$10}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
+			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $2}' | \
 			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $10 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
@@ -1445,7 +1445,7 @@ echo -e "${YELLOW}- compiling taxonomic information"
 cd ${projdir}/metagenome/sighits/sighits_strain
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 cd ${projdir}/metagenome/sighits/sighits_strain/
@@ -1661,7 +1661,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_species
 
   for i in $(ls -S *_taxids_dup.txt);do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -1745,7 +1745,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_species
 	for i in $(ls *_taxids_uniq.txt); do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -1798,7 +1798,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits_temp.txt
 awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1" "$2}' | awk 'NR>1{gsub(/ /,"_");}1' | paste - rankedlineage_subhits_temp.txt | \
 awk '!($2=$3=$4="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"species");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -n"}' > rankedlineage_subhits.txt
@@ -2011,7 +2011,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_genus
 
   for i in $(ls -S *_taxids_dup.txt); do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i > ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i > ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -2095,7 +2095,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_genus
 	for i in $(ls *_taxids_uniq.txt);do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -2148,7 +2148,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt | \
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits_temp.txt
 awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1}' | paste - rankedlineage_subhits_temp.txt | \
 awk '!($2=$3=$4=$5="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"genus");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' > rankedlineage_subhits.txt
@@ -2362,7 +2362,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_family
 
   for i in $(ls -S *_taxids_dup.txt); do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -2437,7 +2437,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_family
 	for i in $(ls *_taxids_uniq.txt); do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -2484,7 +2484,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_family
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
@@ -2696,7 +2696,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_order
 
   for i in $(ls -S *_taxids_dup.txt); do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -2771,7 +2771,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_order
 	for i in $(ls *_taxids_uniq.txt);do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -2818,7 +2818,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_order
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
@@ -3031,7 +3031,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_class
 
   for i in $(ls -S *_taxids_dup.txt); do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -3106,7 +3106,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_class
 	for i in $(ls *_taxids_uniq.txt); do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -3153,7 +3153,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_class
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
@@ -3364,7 +3364,7 @@ else
   cd ${projdir}/metagenome/sighits/sighits_phylum
 
   for i in $(ls -S *_taxids_dup.txt);do (
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_dup*}_dup_inter.txt ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -3439,7 +3439,7 @@ else
 	rm *_uniq_inter.txt
 	cd ${projdir}/metagenome/sighits/sighits_phylum
 	for i in $(ls *_taxids_uniq.txt); do (
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${Qmatey_dir}/tools/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_edited.dmp OFS='\t' $i> ${i%_taxids_uniq*}_uniq_inter.txt ) &
      if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
        wait
      fi
@@ -3486,7 +3486,7 @@ fi
 cd ${projdir}/metagenome/sighits/sighits_phylum
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
-awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${Qmatey_dir}/tools/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
+awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
@@ -4133,8 +4133,7 @@ cd $projdir
 find . -depth -type d -exec rmdir {} + 2> /dev/null &&
 mkdir -p norm_ref
 
-cd ${Qmatey_dir}/tools
-gzip rankedlineage.dmp && rm rankedlineage_edited.dmp
+rm ${projdir}/rankedlineage_edited.dmp
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi

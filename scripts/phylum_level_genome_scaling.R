@@ -10,15 +10,15 @@ library(dplyr, quietly = T)
 if (taxalevel == "strain"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(taxname,species,genus,family,order,class,kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(tax_id,phylum,mean_max))
   finalq <- final
   finalq[finalq < strain_min_uniq_thresh] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -60,15 +60,15 @@ if (taxalevel == "strain"){
 if (taxalevel == "species"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(genus,family,order,class,kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(species,phylum,mean_max))
   finalq <- final
   finalq[finalq < 2] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -110,15 +110,15 @@ if (taxalevel == "species"){
 if (taxalevel == "genus"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(family,order,class,kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(genus,phylum,mean_max))
   finalq <- final
   finalq[finalq < 3] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -160,15 +160,15 @@ if (taxalevel == "genus"){
 if (taxalevel == "family"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(order,class,kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(family,phylum,mean_max))
   finalq <- final
   finalq[finalq < 4] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -210,15 +210,15 @@ if (taxalevel == "family"){
 if (taxalevel == "order"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(class,kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(order,phylum,mean_max))
   finalq <- final
   finalq[finalq < 5] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -260,15 +260,15 @@ if (taxalevel == "order"){
 if (taxalevel == "class"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(class,phylum,mean_max))
   finalq <- final
   finalq[finalq < 6] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
@@ -307,19 +307,18 @@ if (taxalevel == "class"){
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
-
 if (taxalevel == "phylum"){
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   final <- subset(final, select=-c(kingdom,domain))
-  final$mean_max <- do.call(pmax, final[,2:ncol(final)])
+  final$mean_max <- apply(as.matrix(final[,2:(ncol(final))]), 1, max)
   final <- subset(final, select=c(phylum,mean_max))
   finalq <- final
   finalq[finalq < 7] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q99 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q98 * 0.05, digit=0)
+  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)

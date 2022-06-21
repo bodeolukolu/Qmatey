@@ -222,7 +222,7 @@ fi
 
 # check rankedlineage. Perform update?
 cd $Qmatey_dir/tools
-file=rankedlineage.dmp*
+file=rankedlineage.dmp
 if test -f $file; then
   echo -e "${magenta}- we recommend updating the ranked lineage file every few weeks/months. ${white}"
   echo -e "${magenta}- warning: Updating the ranked lineage file may significantly alter the consistency of your results ${white}"
@@ -232,13 +232,12 @@ if test -f $file; then
   	:
   else
     lineage_update() {
-      rm rankedlineage.dmp*
+      rm rankedlineage.dmp
       wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
       gunzip -c new_taxdump.tar.gz | tar xf -
       rm *tar.gz
       rm citations.dmp; rm delnodes.dmp; rm division.dmp; rm fullnamelineage.dmp; rm gencode.dmp; rm host.dmp; rm merged.dmp; rm names.dmp; rm nodes.dmp
       rm taxidlineage.dmp; rm typematerial.dmp; rm typeoftype.dmp
-      gzip rankedlineage.dmp
     }
     echo -e "${white}- updating ranked lineage taxa dump ${white}"
     lineage_update &>> ./log.out
@@ -249,7 +248,6 @@ else
     tar -zxvf new_taxdump.tar.gz; rm *tar.gz
     rm citations.dmp; rm delnodes.dmp; rm division.dmp; rm fullnamelineage.dmp; rm gencode.dmp; rm host.dmp; rm merged.dmp; rm names.dmp; rm nodes.dmp
     rm taxidlineage.dmp; rm typematerial.dmp; rm typeoftype.dmp
-    gzip rankedlineage.dmp
   }
   echo -e "${white}- Performing installation of ranked lineage taxa dump ${white}"
   lineage_install &>> ./log.out
@@ -454,6 +452,7 @@ else
 fi
 
 
+cd ${projdir}
 normzalization="$(grep normlization config.sh)"
 normzalization=${normzalization//*=}
 if [[ -z "${normzalization}" ]]; then
@@ -486,6 +485,7 @@ fi
 
 ####################################################################################################################
 # check if the job was previously submitted and interrupted
+cd ${projdir}
 nthreads="$(grep threads config.sh)"
 nthreads=${nthreads//*=}
 totalk=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
@@ -512,10 +512,6 @@ if  [[ "$threads" -ge 1 ]]; then
 	N=$(($threads/2))
 else
 	N=1 && loopthread=$threads
-fi
-cd ${Qmatey_dir}/tools
-if test -f "rankedlineage.dmp.gz"; then
-	gunzip rankedlineage.dmp.gz
 fi
 if [[ "$threads" -le 4 ]]; then
 	gthreads=threads
