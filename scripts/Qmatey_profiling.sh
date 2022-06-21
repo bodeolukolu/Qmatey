@@ -347,9 +347,8 @@ else
 		done
 
 		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
-		export min_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}' length_distribution.txt)
 		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
-		#rm length_distribution.txt
+
 
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
@@ -360,22 +359,22 @@ else
 
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 		    if [[ "${fa_fq}" == "@" ]]; then
-		      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+		      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
 		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
 		    fi
 		    if [[ "${fa_fq}" == ">" ]]; then
 		      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
-		      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+		      awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
 		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 		    fi
 		  else
 		    if [[ "${fa_fq}" == "@" ]]; then
-		      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+		      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
 		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz && rm $i
 		    fi
 		    if [[ "${fa_fq}" == ">" ]]; then
 		      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
-		      awk -v min=$min_seqread_len 'length >= min' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+		      awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
 		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 		    fi
 		  fi ) &
@@ -1153,7 +1152,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print $0}'  | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1213,7 +1212,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	wait
 
 	gzip ../alignment/combined_compressed.megablast
-	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$5 >= percid {print}' | > ../alignment/temp.megablast
+	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$5 >= percid {print $0}' | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 
@@ -1297,7 +1296,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print $0}' | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1426,8 +1425,7 @@ else
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 100)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | $gzip > ${i%.gz}strain.gz &&
+			zcat $i | awk '$6==100' | awk '$4==1' | $gzip > ${i%.gz}strain.gz &&
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
@@ -1615,8 +1613,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 99)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=99') <(zcat $i | awk '$6>=99') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 99' | awk '$4 <= 2' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -1965,8 +1962,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 98)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 98' | awk '$4 <= 2' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2316,8 +2312,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 97)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 97' | awk '$4 <= 3' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2650,8 +2645,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 96)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 96' | awk '$4 <= 4' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2985,8 +2979,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 95)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$4 <= 5' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -3318,8 +3311,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			awk -v lr=$((100 - 95)) 'NR == FNR {if (FNR == 1 || $5 > max[$1]) max[$1] = $5
-			next} $5 >= max[$1]-lr {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$4 <= 5' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
