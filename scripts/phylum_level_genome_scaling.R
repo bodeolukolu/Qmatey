@@ -14,6 +14,7 @@ if (taxalevel == "strain"){
   final <- subset(final, select=c(tax_id,phylum,mean_max))
   finalq <- final
   finalq[finalq < strain_min_uniq_thresh] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -64,6 +65,7 @@ if (taxalevel == "species"){
   final <- subset(final, select=c(species,phylum,mean_max))
   finalq <- final
   finalq[finalq < 2] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -114,6 +116,7 @@ if (taxalevel == "genus"){
   final <- subset(final, select=c(genus,phylum,mean_max))
   finalq <- final
   finalq[finalq < 3] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -164,6 +167,7 @@ if (taxalevel == "family"){
   final <- subset(final, select=c(family,phylum,mean_max))
   finalq <- final
   finalq[finalq < 4] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -214,6 +218,7 @@ if (taxalevel == "order"){
   final <- subset(final, select=c(order,phylum,mean_max))
   finalq <- final
   finalq[finalq < 5] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -264,6 +269,7 @@ if (taxalevel == "class"){
   final <- subset(final, select=c(class,phylum,mean_max))
   finalq <- final
   finalq[finalq < 6] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
@@ -314,6 +320,7 @@ if (taxalevel == "phylum"){
   final <- subset(final, select=c(phylum,mean_max))
   finalq <- final
   finalq[finalq < 7] <- NA
+  finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q95 = quantile(mean_max, probs = 0.95))
