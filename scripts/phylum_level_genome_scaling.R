@@ -13,7 +13,7 @@ if (taxalevel == "strain"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(tax_id,phylum,mean_max))
   finalq <- final
-  finalq[finalq == strain_min_uniq_thresh] <- NA
+  finalq[finalq < strain_min_uniq_thresh] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -30,7 +30,7 @@ if (taxalevel == "strain"){
     final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(taxname,species,genus,family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -63,7 +63,7 @@ if (taxalevel == "species"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(species,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 2] <- NA
+  finalq[finalq < 2] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -80,7 +80,7 @@ if (taxalevel == "species"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(genus,family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -113,7 +113,7 @@ if (taxalevel == "genus"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(genus,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 3] <- NA
+  finalq[finalq < 3] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -130,7 +130,7 @@ if (taxalevel == "genus"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -163,7 +163,7 @@ if (taxalevel == "family"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(family,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 4] <- NA
+  finalq[finalq < 4] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -180,7 +180,7 @@ if (taxalevel == "family"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -213,7 +213,7 @@ if (taxalevel == "order"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(order,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 5] <- NA
+  finalq[finalq < 5] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -230,7 +230,7 @@ if (taxalevel == "order"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -263,7 +263,7 @@ if (taxalevel == "class"){
   final$mean_max <- do.call(pmax, final[,2:(ncol(final)-1)])
   final <- subset(final, select=c(class,phylum,mean_max))
   finalq <- final
-  finalq[finalq == 6] <- NA
+  finalq[finalq < 6] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -280,7 +280,7 @@ if (taxalevel == "class"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] > 1] <- NA
+  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-2
   final <- subset(final, select=c(tax_id,mean_max))
@@ -314,7 +314,7 @@ if (taxalevel == "phylum"){
   final$mean_max <- do.call(pmax, final[,2:ncol(final)])
   final <- subset(final, select=c(phylum,mean_max))
   finalq <- final
-  finalq[finalq == 7] <- NA
+  finalq[finalq < 7] <- NA
   finalq <- finalq %>%
     group_by(phylum) %>%
     summarize(q99 = quantile(mean_max, probs = 0.95))
@@ -331,7 +331,7 @@ if (taxalevel == "phylum"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
-  final[,2:ncol(final)] [final[,2:ncol(final)] > 1] <- NA
+  final[,2:ncol(final)] [final[,2:ncol(final)] <= 1] <- NA
   final$mean_max <- rowSums(is.na(final))
   sampleN <- ncol(final)-1
   final <- subset(final, select=c(tax_id,mean_max))
