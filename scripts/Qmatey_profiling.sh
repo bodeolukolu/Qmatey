@@ -1132,11 +1132,11 @@ if [[ "$blast_location" =~ "local" ]]; then
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-qcov_hsp_perc $percid -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-qcov_hsp_perc $percid -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
 				wait
@@ -1152,7 +1152,8 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1199,12 +1200,12 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	else
 		if [[ "$taxids" == true ]]; then
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs $max_target \
-			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+			-qcov_hsp_perc $percid -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 			-out ../alignment/combined_compressed.megablast -remote &&
 			wait
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs $max_target \
-			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+			-qcov_hsp_perc $percid -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 			-out ../alignment/combined_compressed.megablast -remote &&
 			wait
 		fi
@@ -1212,7 +1213,8 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	wait
 
 	gzip ../alignment/combined_compressed.megablast
-	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
+	# zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
+	zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 
@@ -1276,11 +1278,11 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid  -max_target_seqs $max_target \
-					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-qcov_hsp_perc $percid -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid  -max_target_seqs $max_target \
-					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-qcov_hsp_perc $percid -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
 				wait
@@ -1296,7 +1298,8 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
