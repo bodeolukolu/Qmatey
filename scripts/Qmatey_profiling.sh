@@ -1132,11 +1132,11 @@ if [[ "$blast_location" =~ "local" ]]; then
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
 				wait
@@ -1152,7 +1152,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print $0}'  | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1199,12 +1199,12 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	else
 		if [[ "$taxids" == true ]]; then
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs $max_target \
-			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" \
+			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 			-out ../alignment/combined_compressed.megablast -remote &&
 			wait
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid  -max_target_seqs $max_target \
-			-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" \
+			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 			-out ../alignment/combined_compressed.megablast -remote &&
 			wait
 		fi
@@ -1212,7 +1212,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	wait
 
 	gzip ../alignment/combined_compressed.megablast
-	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$5 >= percid {print $0}' | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' > ../alignment/temp.megablast
+	zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 
@@ -1276,11 +1276,11 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid  -max_target_seqs $max_target \
-					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
 					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid  -max_target_seqs $max_target \
-					-outfmt "6 qseqid sseqid length qstart qcovs pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
 				wait
@@ -1296,7 +1296,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 				rm $subfile
 			done
 			wait
-			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$5 >= percid {print $0}' | awk -v lr=$((100 - $percid)) '$4 <= lr {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+			zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
@@ -1425,7 +1425,7 @@ else
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6==100' | awk '$4==1' | $gzip > ${i%.gz}strain.gz &&
+			zcat $i | awk '$6==100' | awk '$3 >= $5*1 {print $0}' | $gzip > ${i%.gz}strain.gz &&
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
@@ -1613,7 +1613,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 99' | awk '$4 <= 2' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 99' | awk '$3 >= $5*0.99 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -1962,7 +1962,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 98' | awk '$4 <= 2' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 98' | awk '$3 >= $5*0.98 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2312,7 +2312,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 97' | awk '$4 <= 3' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 97' | awk '$3 >= $5*0.97 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2629,7 +2629,7 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 	time family 2>> ${projdir}/log.out
 fi
 
-#######################################################################333
+#########################################################################
 order() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
@@ -2645,7 +2645,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 96' | awk '$4 <= 4' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 96' | awk '$3 >= $5*0.96 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2962,8 +2962,8 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	time order 2>> ${projdir}/log.out
 fi
 
-#######################################################################333
-#######################################################################333
+##########################################################################
+##########################################################################
 class() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Class-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
@@ -2979,7 +2979,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 95' | awk '$4 <= 5' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -3295,7 +3295,7 @@ fi
 if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/class_taxainfo* 2> /dev/null)" ]]; then
 	time class 2>> ${projdir}/log.out
 fi
-#######################################################################333
+##########################################################################
 phylum() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
@@ -3311,7 +3311,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 95' | awk '$4 <= 5' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
