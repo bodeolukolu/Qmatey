@@ -45,6 +45,7 @@ if [[ "$blast_location" == "custom" ]]; then
 		touch db_created.txt
 	else
 		custom_db=${input_dbfasta%.f*}/${input_dbfasta##*/}
+		custom_db=${custom_db%.gz}
 	fi
 fi
 
@@ -1081,6 +1082,11 @@ if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo
 	fi
 fi
 if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
+	if [[ -z $percid ]]; then
+		export percid=95
+	fi
+fi
+if [[ "$blast_location" == "custom" ]]; then
 	if [[ -z $percid ]]; then
 		export percid=95
 	fi
