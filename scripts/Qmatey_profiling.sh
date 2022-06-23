@@ -37,7 +37,8 @@ if [[ "$blast_location" == "custom" ]]; then
 		custom_db=${custom_db}/${input_dbfasta##*/}
 		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 			title_db=${input_dbfasta##*/}
-			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out ${custom_db%.gz} -title ${title_db%.gz} -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			custom_db=${custom_db%.gz}
+			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out $custom_db-title ${title_db%.gz} -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		fi
@@ -1159,13 +1160,17 @@ if [[ "$blast_location" =~ "local" ]]; then
 			done
 			wait
 			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
-			zcat ${ccf}.blast.gz | grep -vi 'uncultured\|unculture' | $gzip >> combined_compressed.megablast.gz &&
+			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
 		rmdir splitccf
 	fi
+	wait
+	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
+	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
+	wait
 
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
@@ -1195,6 +1200,35 @@ if [[ "$blast_location" =~ "local" ]]; then
 			wait
 		fi
 	done
+	wait
+
+	for i in $(ls -S *metagenome.fasta.gz); do (
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			wait
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			wait
+			# if [[ "$taxids" = true ]]; then
+			#   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
+			#     taxid=${taxid_files%*.txids}
+			#     taxid=${taxid/*\/}
+			#     awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz 2> /dev/null) | $gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid${taxid}.megablast.gz
+			#   done
+			#   wait
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz
+			#   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz
+			# fi
+			rm ../alignment/uncultured_${i%_metagenome.fasta.gz}_step*.txt.gz
+		fi )&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			wait
+		fi
+	done
 fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
@@ -1218,12 +1252,20 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	grep -vi 'uncultured\|unculture' ../alignment/combined_compressed.megablast | $gzip > ../alignment/combined_compressed.megablast.gz
+	$gzip ../alignment/combined_compressed.megablast &&
 	rm ../alignment/combined_compressed.megablast
+	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
+	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
+	wait
+
+
 	# zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
 	zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
 	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
+	zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
+	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 
 
 
@@ -1248,6 +1290,33 @@ if [[ "$blast_location" =~ "remote" ]]; then
 		  #   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast | xargs cat | $gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
 		  #   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast
 		  # fi
+			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt
+		fi )&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			wait
+		fi
+	done
+	for i in $(ls -S *metagenome.fasta.gz); do (
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			wait
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			wait
+			# if [[ "$taxids" == true ]]; then
+			#   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
+			#     taxid=${taxid_files%*.txids}
+			#     taxid=${taxid/*\/}
+			#     awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast > ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid${taxid}.megablast
+			#   done
+			#   wait
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast
+			#   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast | xargs cat | $gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast
+			# fi
 			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1306,13 +1375,16 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			done
 			wait
 			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
-			zcat ${ccf}.blast.gz | grep -vi 'uncultured\|unculture' | $gzip >> combined_compressed.megablast.gz &&
+			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ../haplotig/splitccf/
 		done
 		cd ../
 		rmdir splitccf
 	fi
+	wait
+	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
+	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
@@ -1342,10 +1414,40 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			wait
 		fi
 	done
+
+	for i in $(ls -S *metagenome.fasta.gz); do (
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			wait
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			wait
+			# if [[ "$taxids" = true ]]; then
+			#   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
+			#     taxid=${taxid_files%*.txids}
+			#     taxid=${taxid/*\/}
+			#     awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz 2> /dev/null) | $gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid${taxid}.megablast.gz
+			#   done
+			#   wait
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz
+			#   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
+			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz
+			# fi
+			rm ../alignment/uncultured_${i%_metagenome.fasta.gz}_step*.txt.gz
+		fi )&
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			wait
+		fi
+	done
 fi
 
 wait
 find ../alignment/ -size 0 -delete
+
+
 }
 cd $projdir
 metagout=$(ls ${projdir}/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
@@ -1359,6 +1461,13 @@ fi
 
 
 #################################################################################################################
+
+${projdir}/metagenome/alignment
+mkdir -p uncultured
+ls | grep 'uncultured*megablast' | mv -t ./uncultured/
+mkdir -p cultured
+ls | grep -v 'uncultured*megablast' | mv -t ./cultured/
+
 
 if [[ "$taxids" == true ]]; then
 	:> ${projdir}/metagenome/All.txids
@@ -1430,9 +1539,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined/ &&
-	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6==100' | awk '$3 >= $5*1 {print $0}' | $gzip > ${i%.gz}strain.gz &&
@@ -1445,8 +1551,6 @@ else
 		fi
 	done
 	wait
-	mv ./combined/combined_compressed.megablast.gz ./ &&
-	rmdir combined
 fi
 
 echo -e "${YELLOW}- compiling taxonomic information"
@@ -1603,8 +1707,20 @@ done
 rm -rf strain_level_hold strain_level
 
 }
-if [[ "$strain_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
-	time strain_level 2>> ${projdir}/log.out
+if [[ "$strain_level" == "true" ]]; then
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time strain_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/strain_level ${projdir}/metagenome/results/uncultured_strain_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time strain_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 #################################################################################################################
@@ -1619,8 +1735,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_species/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at species-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 99' | awk '$3 >= $5*0.99 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -1628,8 +1742,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_species
@@ -1952,8 +2064,20 @@ else
 fi
 
 }
-if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
-	time species 2>> ${projdir}/log.out
+if [[ "$species_level" == "true" ]]; then
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_species_level/species_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time species_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time species_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 ###########################################################################################
@@ -1968,8 +2092,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_genus/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at genus-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 98' | awk '$3 >= $5*0.98 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -1977,8 +2099,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_genus
@@ -2303,7 +2423,19 @@ fi
 
 }
 if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
-	time genus 2>> ${projdir}/log.out
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time genus_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time genus_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 ############################################################################
@@ -2318,8 +2450,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_family/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at family-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 97' | awk '$3 >= $5*0.97 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2327,8 +2457,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_family
@@ -2636,7 +2764,19 @@ fi
 
 }
 if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
-	time family 2>> ${projdir}/log.out
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_family_level/family_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time family_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time family_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 #########################################################################
@@ -2651,8 +2791,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_order/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at order-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 96' | awk '$3 >= $5*0.96 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2660,8 +2798,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_order
@@ -2969,7 +3105,19 @@ fi
 
 }
 if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
-	time order 2>> ${projdir}/log.out
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_order_level/order_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time order_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time order_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 ##########################################################################
@@ -2985,8 +3133,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_class/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at class-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk -F '\t' '!/unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2994,8 +3140,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_class
@@ -3303,7 +3447,19 @@ fi
 
 }
 if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
-	time class 2>> ${projdir}/log.out
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_class_level/class_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time class_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time class_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 ##########################################################################
 phylum() {
@@ -3317,8 +3473,6 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_phylum/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at phylum-level already available for each sample"
 else
-	mkdir -p combined
-	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -3326,8 +3480,6 @@ else
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
 	done
-	mv ./combined/combined_compressed.megablast.gz .
-	rmdir combined
 	wait
 
 	cd ${projdir}/metagenome/sighits/sighits_phylum
@@ -3640,7 +3792,19 @@ fi
 
 }
 if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
-	time phylum 2>> ${projdir}/log.out
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		time phylum_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
+	fi
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
+		${projdir}/metagenome/alignment/
+		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}
+		time phylum_level 2>> ${projdir}/log.out
+		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+	fi
 fi
 
 
@@ -3655,7 +3819,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 	cd ${projdir}/metagenome/results
 
 	if [[ "$tsun" == strain ]]; then
-		for strain_minUniq in $(ls -d strain_level_minUniq_*); do
+		for strain_minUniq in $(ls -d *strain_level_minUniq_*); do
 		  cd ${strain_minUniq}
 		  mean=${tsun}_taxainfo_mean.txt
 		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
@@ -3679,46 +3843,49 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 		wait
 	else
 		cd ${projdir}/metagenome/results
-		cd ${tsun}_level
-		mean=${tsun}_taxainfo_mean.txt
-		mean_norm=${tsun}_taxainfo_mean_normalized.txt
-		if [[ -z $mean_norm ]]; then
-			mean_norm=$mean
-		fi
+		for culture_type in $(ls -d *${tsun}_level); do
+			cd $culture_type
+			mean=${tsun}_taxainfo_mean.txt
+			mean_norm=${tsun}_taxainfo_mean_normalized.txt
+			if [[ -z $mean_norm ]]; then
+				mean_norm=$mean
+			fi
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			if [[ -z $min_percent_sample ]]; then
+				min_percent_sample=5,10,20
+			fi
 
-		if [[ "$tsun" == species ]] ; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					wait
-				fi
-			done
-			wait
-		fi
-		if [[ "$tsun" == genus ]] || [[ "$tsun" == family ]] || [[ "$tsun" == order ]] || [[ "$tsun" == class ]]; then
-			sunburst_nlayers2=phylum,$tsun
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					wait
-				fi
-			done
-			wait
-		fi
-		if [[ "$tsun" == phylum ]]; then
-			sunburst_nlayers2=phylum
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					wait
-				fi
-			done
-			wait
-		fi
+			if [[ "$tsun" == species ]] ; then
+				for min_perc in ${min_percent_sample//,/ }; do (
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						wait
+					fi
+				done
+				wait
+			fi
+			if [[ "$tsun" == genus ]] || [[ "$tsun" == family ]] || [[ "$tsun" == order ]] || [[ "$tsun" == class ]]; then
+				sunburst_nlayers2=phylum,$tsun
+				for min_perc in ${min_percent_sample//,/ }; do (
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						wait
+					fi
+				done
+				wait
+			fi
+			if [[ "$tsun" == phylum ]]; then
+				sunburst_nlayers2=phylum
+				for min_perc in ${min_percent_sample//,/ }; do (
+					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						wait
+					fi
+				done
+				wait
+			fi
+			cd ../
+		done
 	fi
 	wait
 done
@@ -3796,6 +3963,7 @@ correlogram() {
 
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating species-level visualizations"
 		cd ${projdir}/metagenome/results/species_level
@@ -3851,6 +4019,7 @@ correlogram() {
 
 	#### genus: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating genus-level visualizations"
 		cd ${projdir}/metagenome/results/genus_level
@@ -3906,6 +4075,7 @@ correlogram() {
 
 	#### family: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating family-level visualizations"
 		cd ${projdir}/metagenome/results/family_level
@@ -3961,6 +4131,7 @@ correlogram() {
 
 	#### order: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating order-level visualizations"
 		cd ${projdir}/metagenome/results/order_level
@@ -4016,6 +4187,7 @@ correlogram() {
 
 	#### class: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating class-level visualizations"
 		cd ${projdir}/metagenome/results/class_level
@@ -4071,6 +4243,7 @@ correlogram() {
 
 	#### phylum: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
+	cd ${projdir}/metagenome/results
 	if test -f $file; then
 		echo -e "${YELLOW}- creating phylum-level visualizations"
 		cd ${projdir}/metagenome/results/phylum_level
