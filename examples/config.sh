@@ -23,7 +23,6 @@ remote_db=NA
 input_dbfasta=NA
 taxids=true
 map_taxids=NA
-uncultured=false
 reads_per_megablast=1000
 
 
