@@ -1168,8 +1168,8 @@ if [[ "$blast_location" =~ "local" ]]; then
 		rmdir splitccf
 	fi
 	wait
-	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
-	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	wait
 
 
@@ -1254,8 +1254,8 @@ if [[ "$blast_location" =~ "remote" ]]; then
 
 	$gzip ../alignment/combined_compressed.megablast &&
 	rm ../alignment/combined_compressed.megablast
-	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
-	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	wait
 
 
@@ -1383,8 +1383,8 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		rmdir splitccf
 	fi
 	wait
-	zcat combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > uncultured_combined_compressed.megablast.gz &&
-	zcat combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > tmp_compressed.megablast.gz && mv tmp combined_compressed.megablast.gz
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+	zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
