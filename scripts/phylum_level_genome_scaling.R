@@ -38,7 +38,6 @@ if (taxalevel == "strain"){
   final <- subset(final, select=c(tax_id,mean_max))
   final <- subset(final, final$mean_max > 0)
   final <- subset(final, final$mean_max > (sampleN/100))
-  final <- final[!grepl("uncultured", final$tax_id),]
   keep_tax_id2 <- final$tax_id
   keep_tax_id <- intersect(keep_tax_id1, keep_tax_id2)
   
@@ -91,7 +90,6 @@ if (taxalevel == "species"){
   final <- subset(final, select=c(tax_id,mean_max))
   final <- subset(final, final$mean_max > 0)
   final <- subset(final, final$mean_max > (sampleN/100))
-  final <- final[!grepl("uncultured", final$species),]
   keep_species2 <- final$species
   keep_species <- intersect(keep_species1, keep_species2)
   
@@ -144,7 +142,6 @@ if (taxalevel == "genus"){
   final <- subset(final, select=c(tax_id,mean_max))
   final <- subset(final, final$mean_max > 0)
   final <- subset(final, final$mean_max > (sampleN/100))
-  final <- final[!grepl("uncultured", final$genus),]
   keep_genus2 <- final$genus
   keep_genus <- intersect(keep_genus1, keep_genus2)
   

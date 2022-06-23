@@ -1649,6 +1649,7 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 		done < $file
 	fi
 
+
 	if test -f $file; then
 		echo -e "${YELLOW}- creating strain-level visualizations"
 		cd ${projdir}/metagenome/results/strain_level
