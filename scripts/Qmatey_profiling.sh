@@ -1428,8 +1428,8 @@ else
 	wait
 	for i in $(ls -S *_haplotig.megablast.gz); do
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6==100' | awk '$3 >= $5*1 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | $gzip > ${i%.gz}strain.gz &&
-			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
+			zcat $i | awk '$6==100' | awk '$3 >= $5*1 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | $gzip > ${i%.gz}strain.gz &&
+			awk '!/uncultured|Uncultured|unculture|Unculture/' <(zcat ${i%.gz}strain.gz) | awk 'gsub(" ","_",$0)' | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 			awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 			awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
@@ -1616,7 +1616,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 99' | awk '$3 >= $5*0.99 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 99' | awk '$3 >= $5*0.99 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -1945,7 +1945,7 @@ else
 fi
 
 }
-if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/species_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$species_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
 	time species 2>> ${projdir}/log.out
 fi
 
@@ -1965,7 +1965,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 98' | awk '$3 >= $5*0.98 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 98' | awk '$3 >= $5*0.98 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2295,7 +2295,7 @@ else
 fi
 
 }
-if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/genus_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 	time genus 2>> ${projdir}/log.out
 fi
 
@@ -2315,7 +2315,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 97' | awk '$3 >= $5*0.97 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 97' | awk '$3 >= $5*0.97 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2628,7 +2628,7 @@ else
 fi
 
 }
-if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/family_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
 	time family 2>> ${projdir}/log.out
 fi
 
@@ -2648,7 +2648,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 96' | awk '$3 >= $5*0.96 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 96' | awk '$3 >= $5*0.96 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -2961,7 +2961,7 @@ else
 fi
 
 }
-if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/order_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
 	time order 2>> ${projdir}/log.out
 fi
 
@@ -2982,7 +2982,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk -F '\t' '!/unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk -F '\t' '!/unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -3295,7 +3295,7 @@ else
 fi
 
 }
-if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/class_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
 	time class 2>> ${projdir}/log.out
 fi
 ##########################################################################
@@ -3314,7 +3314,7 @@ else
 	mv combined_compressed.megablast.gz ./combined
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | grep -v 'uncultured\|Uncultured\|unculture\|Unculture' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk '!/uncultured|Uncultured|unculture|Unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -3632,7 +3632,7 @@ else
 fi
 
 }
-if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/phylum_taxainfo* 2> /dev/null)" ]]; then
+if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 	time phylum 2>> ${projdir}/log.out
 fi
 
