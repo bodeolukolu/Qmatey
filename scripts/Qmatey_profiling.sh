@@ -1468,11 +1468,11 @@ fi
 
 #################################################################################################################
 
-${projdir}/metagenome/alignment
+cd ${projdir}/metagenome/alignment
 mkdir -p uncultured
-ls | grep 'uncultured*megablast' | mv -t ./uncultured/
+mv uncultured*megablast* ./uncultured/ 2> /dev/null
 mkdir -p cultured
-ls | grep -v 'uncultured*megablast' | mv -t ./cultured/
+ls *megablast* | grep -v 'uncultured' | xargs mv -t ./cultured/ 2> /dev/null
 
 
 if [[ "$taxids" == true ]]; then
@@ -1717,16 +1717,18 @@ rm -rf strain_level_hold strain_level
 if [[ "$strain_level" == "true" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time strain_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/strain_level ${projdir}/metagenome/results/uncultured_strain_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time strain_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
@@ -2074,16 +2076,18 @@ fi
 if [[ "$species_level" == "true" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_species_level/species_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time species_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time species_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
@@ -2432,16 +2436,18 @@ fi
 if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time genus_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time genus_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
@@ -2773,16 +2779,18 @@ fi
 if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_family_level/family_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time family_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time family_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
@@ -3114,16 +3122,18 @@ fi
 if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_order_level/order_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time order_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time order_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
@@ -3456,16 +3466,18 @@ fi
 if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_class_level/class_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time class_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time class_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 ##########################################################################
@@ -3801,16 +3813,18 @@ fi
 if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
+		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		time phylum_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
-		${projdir}/metagenome/alignment/
-		ls | grep -v 'uncultured*megablast' | grep '*megablast.gz' | mv -t ./
+		cd ${projdir}/metagenome/alignment/cultured/
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd ${projdir}
 		time phylum_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/*megablast.gz ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
