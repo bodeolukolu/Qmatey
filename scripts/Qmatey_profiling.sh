@@ -328,26 +328,28 @@ else
 
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=1000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> ${i%.f}_length_distribution.txt
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' <(zcat $i) | \
-					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=1000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> ${i%.f}_length_distribution.txt
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' $i | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+					awk 'NR%2==0' $i | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=1000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> ${i%.f}_length_distribution.txt
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk '/^>/ { if(i>0) printf("\n"); i++; printf("%s\t",$0); next;} {printf("%s",$0);} END { printf("\n");}' $i | \
-					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> length_distribution.txt
+					awk 'NR%2==0' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=1000; i++){x=int(rand()*NR) + 1; print a[x];}}' >> ${i%.f}_length_distribution.txt
 				fi
 			fi  ) &
-			if [[ $(jobs -r -p | wc -l) -ge $prepN ]]; then
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
 
+		for lenfile in *length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
+		wait
 		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
 		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 
@@ -380,7 +382,7 @@ else
 		      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 		    fi
 		  fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $prepN ]]; then
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
@@ -417,7 +419,7 @@ else
 	      fi
 	    fi
  ) &
-			if [[ $(jobs -r -p | wc -l) -ge $prepN ]]; then
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
