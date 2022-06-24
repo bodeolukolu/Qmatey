@@ -1716,24 +1716,29 @@ rm -rf strain_level_hold strain_level
 }
 if [[ "$strain_level" == "true" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
-		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
-		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		cd ${projdir}/metagenome/alignment/uncultured/
+		mv uncultured*megablast.gz ../ &&
+		mv ../uncultured_combined_compressed.megablast.gz ./ &&
 		time strain_level 2>> ${projdir}/log.out
-		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
-		mv ${projdir}/metagenome/results/strain_level ${projdir}/metagenome/results/uncultured_strain_level
+		wait
+		mv ../uncultured*megablast.gz ./ &&
+		cd ${projdir}/metagenome/results/ &&
+		for dirc in strain_level*; do mv $dirc uncultured_${dirc}; done
+		wait
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
-		mv *megablast* ../
-		mv ../combined_compressed.megablast.gz ./
+		mv *megablast* ../ &&
+		mv ../combined_compressed.megablast.gz ./ &&
 		cd ${projdir}
 		time strain_level 2>> ${projdir}/log.out
+		wait
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 fi
 
 #################################################################################################################
-species() {
+species_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for species-level profiling"
 cd ${projdir}/metagenome/sighits
@@ -2092,7 +2097,7 @@ if [[ "$species_level" == "true" ]]; then
 fi
 
 ###########################################################################################
-genus() {
+genus_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for genus-level profiling"
 cd ${projdir}/metagenome/sighits
@@ -2452,7 +2457,7 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 fi
 
 ############################################################################
-family() {
+family_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for family-level profiling"
 cd ${projdir}/metagenome/sighits
@@ -2795,7 +2800,7 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 fi
 
 #########################################################################
-order() {
+order_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
 cd ${projdir}/metagenome/sighits
@@ -3139,7 +3144,7 @@ fi
 
 ##########################################################################
 ##########################################################################
-class() {
+class_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Class-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
 cd ${projdir}/metagenome/sighits
@@ -3481,7 +3486,7 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	fi
 fi
 ##########################################################################
-phylum() {
+phylum_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
 cd ${projdir}/metagenome/sighits
