@@ -1111,10 +1111,7 @@ fi
 
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
-
-	file_ccm=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
-	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
-	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
+	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] && [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] && [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
@@ -1235,8 +1232,7 @@ fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	file=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
-	if test -f $file; then
+	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] && [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] && [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
@@ -1333,9 +1329,7 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	file_ccm=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
-	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
-	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
+	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] && [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] && [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
