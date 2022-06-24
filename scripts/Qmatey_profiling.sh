@@ -1111,7 +1111,7 @@ fi
 
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
-	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] || [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
+	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
@@ -1208,7 +1208,7 @@ fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] || [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
+	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
@@ -1282,7 +1282,7 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	if [[ -f "${projdir}/metagenome/alignment/combined_compressed.megablast.gz" ]] || [[ -f "${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
+	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	else
