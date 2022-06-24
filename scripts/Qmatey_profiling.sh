@@ -1173,7 +1173,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	  if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1202,13 +1202,13 @@ if [[ "$blast_location" =~ "local" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
 			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 			# if [[ "$taxids" = true ]]; then
@@ -1222,7 +1222,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 			#   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
 			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz
 			# fi
-			rm ../alignment/uncultured_${i%_metagenome.fasta.gz}_step*.txt.gz
+			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt.gz
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
@@ -1272,7 +1272,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1299,13 +1299,13 @@ if [[ "$blast_location" =~ "remote" ]]; then
 		fi
 	done
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
 			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 			# if [[ "$taxids" == true ]]; then
@@ -1390,16 +1390,16 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-    awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
-    wait
-    awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
-    awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
-    awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
-    awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
-    awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
-    wait
-		  # if [[ "$taxids" == true ]]; then
+	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+			wait
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
+			wait
+		  # if [[ "$taxids" = true ]]; then
 		  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
 		  #     taxid=${taxid_files%*.txids}
 		  #     taxid=${taxid/*\/}
@@ -1416,15 +1416,16 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			wait
 		fi
 	done
+	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncatd/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
+		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
-			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
-			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz &&
-			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/uncultured_${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
+			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
+			awk -F'\t' 'BEGIN{OFS="\t"}{print $3,$1}' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz &&
+			awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
 			awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 			wait
 			# if [[ "$taxids" = true ]]; then
@@ -1438,7 +1439,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 			#   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
 			#   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz
 			# fi
-			rm ../alignment/uncultured_${i%_metagenome.fasta.gz}_step*.txt.gz
+			rm ../alignment/${i%_metagenome.fasta.gz}_step*.txt.gz
 		fi )&
 		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 			wait
