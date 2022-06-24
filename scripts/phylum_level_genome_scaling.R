@@ -23,7 +23,6 @@ if (taxalevel == "strain"){
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- final[!grepl("uncultured", final$tax_id),]
   keep_tax_id1 <- final$tax_id
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -75,7 +74,6 @@ if (taxalevel == "species"){
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- final[!grepl("uncultured", final$species),]
   keep_species1 <- final$species
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -127,7 +125,6 @@ if (taxalevel == "genus"){
   final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- final[!grepl("uncultured", final$genus),]
   keep_genus1 <- final$genus
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
