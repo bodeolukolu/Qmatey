@@ -2248,27 +2248,27 @@ awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/'  >
 echo -e 'genus' | cat - genus_taxa_rel_quantification_accuracy_temp1.txt > genus_taxa_rel_quantification_accuracy_temp.txt && rm genus_taxa_rel_quantification_accuracy_temp1.txt
 
 genus_level=genus
-	for i in $(ls *_sighits.txt.gz);do
-	gunzip $i
- 	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $genus_level "${Qmatey_dir}/tools/R"
-	wait
-	$gzip ${i%.gz}
-  echo $'genus\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
-  id=${i%_sighits*}_mean && awk -v id=$id '{gsub(/mean/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$2}' > holdmean.txt
-  awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holdmean.txt genus_taxa_mean_temp.txt > holdmean2.txt
-  cat holdmean2.txt > genus_taxa_mean_temp.txt
-  id=${i%_sighits*}_uniq_reads && awk -v id=$id '{gsub(/uniq_reads/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$3}' > holduniq_reads.txt
-  awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holduniq_reads.txt genus_taxa_unique_sequences_temp.txt > holduniq_reads2.txt
-  cat holduniq_reads2.txt > genus_taxa_unique_sequences_temp.txt
-  id=${i%_sighits*}_stderr && awk -v id=$id '{gsub(/stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$4}' > holdstderr.txt
-  awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}'  holdstderr.txt genus_taxa_quantification_accuracy_temp.txt > holdstderr2.txt
-  cat holdstderr2.txt > genus_taxa_quantification_accuracy_temp.txt
-  id=${i%_sighits*}_rel_stderr && awk -v id=$id '{gsub(/rel_stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$5}' > holdrelstderr.txt
-  awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holdrelstderr.txt genus_taxa_rel_quantification_accuracy_temp.txt > holdrelstderr2.txt
-  cat holdrelstderr2.txt > genus_taxa_rel_quantification_accuracy_temp.txt
-	wait
-  rm *stats1* *stats2* *hold*
-	done
+for i in $(ls *_sighits.txt.gz);do
+gunzip $i
+	Rscript ${Qmatey_dir}/scripts/stats_summary.R ${i%.gz} $genus_level "${Qmatey_dir}/tools/R"
+wait
+$gzip ${i%.gz}
+echo $'genus\tmean\tuniq_reads\tstderr\trel_stderr' | cat - stats1.txt > stats2.txt
+id=${i%_sighits*}_mean && awk -v id=$id '{gsub(/mean/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$2}' > holdmean.txt
+awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holdmean.txt genus_taxa_mean_temp.txt > holdmean2.txt
+cat holdmean2.txt > genus_taxa_mean_temp.txt
+id=${i%_sighits*}_uniq_reads && awk -v id=$id '{gsub(/uniq_reads/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$3}' > holduniq_reads.txt
+awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holduniq_reads.txt genus_taxa_unique_sequences_temp.txt > holduniq_reads2.txt
+cat holduniq_reads2.txt > genus_taxa_unique_sequences_temp.txt
+id=${i%_sighits*}_stderr && awk -v id=$id '{gsub(/stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$4}' > holdstderr.txt
+awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}'  holdstderr.txt genus_taxa_quantification_accuracy_temp.txt > holdstderr2.txt
+cat holdstderr2.txt > genus_taxa_quantification_accuracy_temp.txt
+id=${i%_sighits*}_rel_stderr && awk -v id=$id '{gsub(/rel_stderr/,id); print }' stats2.txt | awk -F '\t' '{print $1,"\t",$5}' > holdrelstderr.txt
+awk 'FNR==NR{a[$1]=$2;next}{if(a[$1]==""){a[$1]=0}; print $0, a[$1]}' holdrelstderr.txt genus_taxa_rel_quantification_accuracy_temp.txt > holdrelstderr2.txt
+cat holdrelstderr2.txt > genus_taxa_rel_quantification_accuracy_temp.txt
+wait
+rm *stats1* *stats2* *hold*
+done
 
 awk 'NR==1; NR > 1 {s=0; for (i=2;i<=NF;i++) s+=$i; if (s!=0)print}' genus_taxa_mean_temp.txt > genus_taxa_mean_temp2.txt
 awk '{gsub(/ /,"\t"); print}' genus_taxa_mean_temp2.txt > ../../results/genus_level/genus_taxa_mean.txt
@@ -2394,6 +2394,7 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
 			mv ${projdir}/metagenome/sighits/sighits_genus ${projdir}/metagenome/sighits/uncultured_sighits_genus
+		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -2745,6 +2746,7 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
 			mv ${projdir}/metagenome/sighits/sighits_family ${projdir}/metagenome/sighits/uncultured_sighits_family
+		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -3096,6 +3098,7 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
 			mv ${projdir}/metagenome/sighits/sighits_order ${projdir}/metagenome/sighits/uncultured_sighits_order
+		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -3448,6 +3451,7 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			mv ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
 			mv ${projdir}/metagenome/sighits/sighits_class ${projdir}/metagenome/sighits/uncultured_sighits_class
+		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -3803,6 +3807,7 @@ if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
 			mv ${projdir}/metagenome/sighits/sighits_phylum ${projdir}/metagenome/sighits/uncultured_sighits_phylum
+		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
