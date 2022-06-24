@@ -1418,7 +1418,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	done
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/uncatd/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1722,6 +1722,7 @@ if [[ "$strain_level" == "true" ]]; then
 		mv ../uncultured*megablast.gz ./ &&
 		cd ${projdir}/metagenome/results/ &&
 		for dirc in strain_level*; do mv $dirc uncultured_${dirc}; done
+		mv ../sighits/sighits_strain ../sighits/uncultured_sighits_strain
 		wait
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
@@ -1819,7 +1820,7 @@ else
   done
 
   for i in $(ls *_species_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($19!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_species_duplicates_virome*}_species_duplicates.txt
+    awk -F '\t' '{ if ($19!="Viruses") print $0}' <(zcat $i) > ${i%*_species_duplicates_virome*}_species_duplicates.txt
 		$gzip ${i%*_species_duplicates_virome*}_species_duplicates.txt
   done
 
@@ -1902,7 +1903,7 @@ else
 
 	rm *_species_taxid.txt && rm *_uniq_inter.txt && rm *_species_column.txt && rm *_species_taxa.txt
 	for i in $(ls *_species_unique_uncultured.txt);do
-	   awk -F '\t' '!/Uncultured/' $i > ${i%*_species_unique_uncultured*}_unique_sequences.txt
+	   cat $i > ${i%*_species_unique_uncultured*}_unique_sequences.txt
 	done
 
 	rm *_species_unique_uncultured.txt *_species_inter.txt *_species_inter2.txt *_duplicate_count.txt *_multialign_species_reads.txt *_species_duplicates.txt.gz
@@ -2084,6 +2085,7 @@ if [[ "$species_level" == "true" ]]; then
 		time species_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
+		mv ${projdir}/metagenome/sighits/sighits_species ${projdir}/metagenome/sighits/uncultured_sighits_species
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -2179,7 +2181,7 @@ else
   done
 
   for i in $(ls *_genus_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($18!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_genus_duplicates_virome*}_genus_duplicates.txt
+    awk -F '\t' '{ if ($18!="Viruses") print $0}' <(zcat $i) > ${i%*_genus_duplicates_virome*}_genus_duplicates.txt
 		$gzip ${i%*_genus_duplicates_virome*}_genus_duplicates.txt
   done
 
@@ -2262,7 +2264,7 @@ else
 
 	rm *_genus_taxid.txt && rm *_uniq_inter.txt && rm *_genus_column.txt && rm *_genus_taxa.txt
 	for i in $(ls *_genus_unique_uncultured.txt);do
-	   awk -F '\t' '!/Uncultured/' $i > ${i%*_genus_unique_uncultured*}_unique_sequences.txt
+	   cat $i > ${i%*_genus_unique_uncultured*}_unique_sequences.txt
 	done
 
 	rm *_genus_unique_uncultured.txt *_genus_inter.txt *_genus_inter2.txt *_duplicate_count.txt *_multialign_genus_reads.txt *_genus_duplicates.txt.gz
@@ -2445,6 +2447,7 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 		time genus_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
+		mv ${projdir}/metagenome/sighits/sighits_genus ${projdir}/metagenome/sighits/uncultured_sighits_genus
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -2531,7 +2534,7 @@ else
   done
 
   for i in $(ls *_family_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($17!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_family_duplicates_virome*}_family_duplicates.txt
+    awk -F '\t' '{ if ($17!="Viruses") print $0}' <(zcat $i) > ${i%*_family_duplicates_virome*}_family_duplicates.txt
 		$gzip ${i%*_family_duplicates_virome*}_family_duplicates.txt
   done
 
@@ -2608,7 +2611,7 @@ else
 
   rm *_uniq_inter.txt && rm *_family_taxa.txt
   for i in $(ls *_family_unique_uncultured.txt);do
-     awk -F '\t' '!/Uncultured/' $i > ${i%*_family_unique_uncultured*}_unique_sequences.txt
+     cat $i > ${i%*_family_unique_uncultured*}_unique_sequences.txt
   done
 
   rm *_family_unique_uncultured.txt *_family_inter.txt *_family_inter2.txt *_duplicate_count.txt *_multialign_family_reads.txt *_family_duplicates.txt.gz
@@ -2789,6 +2792,7 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 		time family_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
+		mv ${projdir}/metagenome/sighits/sighits_family ${projdir}/metagenome/sighits/uncultured_sighits_family
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -2875,7 +2879,7 @@ else
   done
 
   for i in $(ls *_order_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($16!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_order_duplicates_virome*}_order_duplicates.txt
+    awk -F '\t' '{ if ($16!="Viruses") print $0}' <(zcat $i) > ${i%*_order_duplicates_virome*}_order_duplicates.txt
 		$gzip ${i%*_order_duplicates_virome*}_order_duplicates.txt
   done
 
@@ -2952,7 +2956,7 @@ else
 
   rm *_uniq_inter.txt && rm *_order_taxa.txt
   for i in $(ls *_order_unique_uncultured.txt);do
-     awk -F '\t' '!/Uncultured/' $i > ${i%*_order_unique_uncultured*}_unique_sequences.txt
+     cat $i > ${i%*_order_unique_uncultured*}_unique_sequences.txt
   done
 
 	rm *_order_unique_uncultured.txt *_order_inter.txt *_order_inter2.txt *_duplicate_count.txt *_multialign_order_reads.txt *_order_duplicates.txt.gz
@@ -3133,6 +3137,7 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 		time order_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
+		mv ${projdir}/metagenome/sighits/sighits_order ${projdir}/metagenome/sighits/uncultured_sighits_order
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
@@ -3159,7 +3164,7 @@ if find ../sighits/sighits_class/ -mindepth 1 | read; then
 else
 	for i in $(ls -S *_haplotig.megablast.gz);do
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
-			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk -F '\t' '!/unculture/' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+			zcat $i | awk '$6 >= 95' | awk '$3 >= $5*0.95 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 			awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 			awk '{gsub(" ","\t",$0);}1' | $gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 		fi
@@ -3220,7 +3225,7 @@ else
   done
 
   for i in $(ls *_class_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($15!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_class_duplicates_virome*}_class_duplicates.txt
+    awk -F '\t' '{ if ($15!="Viruses") print $0}' <(zcat $i) > ${i%*_class_duplicates_virome*}_class_duplicates.txt
 		$gzip ${i%*_class_duplicates_virome*}_class_duplicates.txt
   done
 
@@ -3297,7 +3302,7 @@ else
 
   rm *_uniq_inter.txt && rm *_class_taxa.txt
   for i in $(ls *_class_unique_uncultured.txt);do
-     awk -F '\t' '!/Uncultured/' $i > ${i%*_class_unique_uncultured*}_unique_sequences.txt
+     cat $i > ${i%*_class_unique_uncultured*}_unique_sequences.txt
   done
 
   rm *_class_unique_uncultured.txt *_class_inter.txt *_class_inter2.txt *_duplicate_count.txt *_multialign_class_reads.txt *_class_duplicates.txt.gz
@@ -3474,6 +3479,7 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_class_level/class_taxainfo* 2> /dev/null)" ]]; then
 		mv ${projdir}/metagenome/alignment/uncultured/uncultured*megablast.gz ${projdir}/metagenome/alignment/
 		mv ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz ${projdir}/metagenome/alignment/uncultured/
+		mv ${projdir}/metagenome/sighits/sighits_class ${projdir}/metagenome/sighits/uncultured_sighits_class
 		cd ${projdir}
 		time class_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
@@ -3563,7 +3569,7 @@ else
   done
 
   for i in $(ls *_phylum_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($14!="Viruses") print $0}' <(zcat $i) | awk -F '\t' '!/Uncultured/' > ${i%*_phylum_duplicates_virome*}_phylum_duplicates.txt
+    awk -F '\t' '{ if ($14!="Viruses") print $0}' <(zcat $i) > ${i%*_phylum_duplicates_virome*}_phylum_duplicates.txt
 		$gzip ${i%*_phylum_duplicates_virome*}_phylum_duplicates.txt
   done
 
@@ -3640,7 +3646,7 @@ else
 
   rm *_uniq_inter.txt && rm *_phylum_taxa.txt
   for i in $(ls *_phylum_unique_uncultured.txt);do
-     awk -F '\t' '!/Uncultured/' $i > ${i%*_phylum_unique_uncultured*}_unique_sequences.txt
+     cat $i > ${i%*_phylum_unique_uncultured*}_unique_sequences.txt
   done
 
 	rm *_phylum_unique_uncultured.txt *_phylum_inter.txt *_phylum_inter2.txt *_duplicate_count.txt *_multialign_phylum_reads.txt *_phylum_duplicates.txt.gz
@@ -3826,6 +3832,7 @@ if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 		time phylum_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/uncultured*megablast.gz ${projdir}/metagenome/alignment/uncultured/
 		mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
+		mv ${projdir}/metagenome/sighits/sighits_phylum ${projdir}/metagenome/sighits/uncultured_sighits_phylum
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 		cd ${projdir}/metagenome/alignment/cultured/
