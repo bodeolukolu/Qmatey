@@ -1112,7 +1112,7 @@ fi
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
 
-	file_ccm=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+	file_ccm=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
 	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
 	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
@@ -1176,7 +1176,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+	  if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1205,7 +1205,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1235,7 +1235,7 @@ fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	file=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+	file=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
 	if test -f $file; then
 		echo -e "${YELLOW}- BLAST ouput already exist"
 		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
@@ -1254,27 +1254,29 @@ if [[ "$blast_location" =~ "remote" ]]; then
 	fi
 	wait
 
-	$gzip ../alignment/combined_compressed.megablast &&
-	rm ../alignment/combined_compressed.megablast
+	if test -f ../alignment/combined_compressed.megablast; then
+		$gzip ../alignment/combined_compressed.megablast &&
+		rm ../alignment/combined_compressed.megablast
+	fi
+	
 	if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz; then
 		zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 		zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+
+		# zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
+		zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
+		awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+		awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
+		zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
+		awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+		awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 	fi
 	wait
 
 
-	# zcat ../alignment/combined_compressed.megablast.gz | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' > ../alignment/temp.megablast
-	zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
-	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
-	zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-	awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
-	awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
-
-
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1301,7 +1303,7 @@ if [[ "$blast_location" =~ "remote" ]]; then
 		fi
 	done
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1331,7 +1333,7 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	file_ccm=${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+	file_ccm=${projdir}/metagenome/alignment/cultured/combined_compressed.megablast.gz
 	dir_splitccf=${projdir}/metagenome/haplotig/splitccf
 	if [[ -f "$file_ccm" ]] && [[ ! -d "$dir_splitccf" ]]; then
 		echo -e "${YELLOW}- Primary BLAST ouput already exist"
@@ -1394,7 +1396,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	wait
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-	if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+	if test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
     awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
     wait
     awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
@@ -1422,7 +1424,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 	done
 
 	for i in $(ls -S *metagenome.fasta.gz); do (
-		if test ! -f ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
+		if test ! -f ../alignment/uncultured/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 			awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_step1.txt.gz &&
 			wait
 			awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat uncultured_combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
