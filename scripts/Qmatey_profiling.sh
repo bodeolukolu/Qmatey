@@ -4335,6 +4335,8 @@ find . -depth -type d -exec rmdir {} + 2> /dev/null &&
 mkdir -p norm_ref
 
 rm ${projdir}/rankedlineage_edited.dmp
+mkdir -p ${projdir}/metagenome/results/results_uncultured
+mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
