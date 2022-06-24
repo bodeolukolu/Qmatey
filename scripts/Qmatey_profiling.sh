@@ -1111,10 +1111,7 @@ fi
 
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
-	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
-		echo -e "${YELLOW}- Primary BLAST ouput already exist"
-		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
-	else
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 		if [[ -d splitccf ]]; then
 			cd splitccf
 		else
@@ -1163,6 +1160,9 @@ if [[ "$blast_location" =~ "local" ]]; then
 		done
 		cd ../
 		rmdir splitccf
+	else
+		echo -e "${YELLOW}- Primary BLAST ouput already exist"
+		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	fi
 	wait
 	if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz; then
@@ -1208,10 +1208,7 @@ fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
-		echo -e "${YELLOW}- BLAST ouput already exist"
-		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
-	else
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 		if [[ "$taxids" == true ]]; then
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 			-qcov_hsp_perc $percid -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1223,6 +1220,9 @@ if [[ "$blast_location" =~ "remote" ]]; then
 			-out ../alignment/combined_compressed.megablast -remote &&
 			wait
 		fi
+	else
+		echo -e "${YELLOW}- BLAST ouput already exist"
+		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	fi
 	wait
 
@@ -1282,10 +1282,7 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	if [[ ! -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d "${projdir}/metagenome/haplotig/splitccf" ]]; then
-		echo -e "${YELLOW}- Primary BLAST ouput already exist"
-		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
-	else
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 		if [[ -d splitccf ]]; then
 		  cd splitccf
 		else
@@ -1334,7 +1331,11 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		done
 		cd ../
 		rmdir splitccf
+	else
+		echo -e "${YELLOW}- Primary BLAST ouput already exist"
+		echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 	fi
+	
 	wait
 	if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz; then
 		zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
