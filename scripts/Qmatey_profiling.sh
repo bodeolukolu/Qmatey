@@ -4323,7 +4323,7 @@ mkdir -p norm_ref
 rm ${projdir}/rankedlineage_edited.dmp
 mkdir -p ${projdir}/metagenome/results/results_uncultured
 mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
-mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/results/
+mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
