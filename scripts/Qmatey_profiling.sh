@@ -73,6 +73,9 @@ fi
 if [[ $taxonomic_level =~ phylum ]]; then
 	phylum_level=true
 fi
+if [[ -z "$genome_scaling" ]]; then
+	genome_scaling=true
+fi
 if [[ -z $sunburst_taxlevel ]]; then
 	run_sunburst=false
 else
@@ -1568,7 +1571,9 @@ cd ${projdir}/metagenome/results/
 cp -r strain_level strain_level_hold
 for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	cd ./strain_level
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch &>/dev/null
+	if [[ "$genome_scaling" == true ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch &>/dev/null
+	fi
 
 	file=${projdir}/exclude_taxa.txt
 	if test -f $file; then
@@ -1945,7 +1950,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -2312,7 +2319,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -2664,7 +2673,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -3016,7 +3027,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -3369,7 +3382,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then
@@ -3720,7 +3735,9 @@ for i in *.txt; do
 done
 
 
-Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" &>/dev/null
+if [[ "$genome_scaling" == true ]]; then
+	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" &>/dev/null
+fi
 
 file=${projdir}/exclude_taxa.txt
 if test -f $file; then

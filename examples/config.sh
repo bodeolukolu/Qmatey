@@ -29,6 +29,7 @@ reads_per_megablast=1000
 # Taxonomic Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
+genome_scaling=true
 min_unique_seqs=2
 min_strain_uniq=1,2
 min_percent_sample=5,10,20
