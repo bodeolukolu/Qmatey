@@ -23,13 +23,11 @@ remote_db=NA
 input_dbfasta=NA
 taxids=true
 map_taxids=NA
-reads_per_megablast=1000
 
 
 # Taxonomic Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
-genome_scaling=true
 min_unique_seqs=2
 min_strain_uniq=1,2
 min_percent_sample=5,10,20
@@ -42,3 +40,10 @@ max_neg_corr=0.1,0.2,0.3
 sunburst_taxlevel=strain,species,genus,family,order,class
 sunburst_nlayers=phylum,genus,species
 compositional_corr=strain,species,genus,family,order,class,phylum
+
+
+# Advanced Parameters
+####################################################
+reads_per_megablast=1000
+genome_scaling=true
+qcov=50
