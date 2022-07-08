@@ -706,7 +706,7 @@ if [[ "$cluster" == true ]]; then
 
   cd $projdir
   n_nodes="$(grep nodes config.sh)"
-  n_nodes=${nodes//*=}
+  n_nodes=${n_nodes//*=}
   if [ -z "$n_nodes" ]; then
    n_nodes=1
   fi
