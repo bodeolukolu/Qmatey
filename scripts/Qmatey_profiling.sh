@@ -4469,6 +4469,11 @@ find . -depth -type d -exec rmdir {} + 2> /dev/null &&
 mkdir -p norm_ref
 
 rm ${projdir}/rankedlineage_edited.dmp
+cd  ${projdir}/metagenome/results
+for i in *strain_level*; do
+	mv ./$i ./${i%_minUniq*}
+done
+cd $projdir
 mkdir -p ${projdir}/metagenome/results/results_uncultured
 mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
 mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
