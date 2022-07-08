@@ -76,6 +76,9 @@ fi
 if [[ -z "$genome_scaling" ]]; then
 	genome_scaling=true
 fi
+if [[ -z "$node" ]]; then
+	node=1
+fi
 if [[ -z $sunburst_taxlevel ]]; then
 	run_sunburst=false
 else
@@ -1076,7 +1079,7 @@ fi
 #################################################################################################################
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey MegaBLAST \n\e[97m########################################################\n"
 
-cd ${Qmatey_dir}
+
 local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
 
 if (echo $local_db | grep -q 'nt'); then
@@ -1100,6 +1103,7 @@ if [[ "$blast_location" == "custom" ]]; then
 	fi
 fi
 rpm=$((reads_per_megablast * 2))
+
 
 
 blast () {
@@ -1132,39 +1136,63 @@ if [[ "$blast_location" =~ "local" ]]; then
 			rm ../../alignment/subfile*
 			mv ../../alignment/F* ./
 		fi
-		for ccf in $(ls * | sort -V); do
-			mv $ccf ../../alignment/$ccf
-			cd ../../alignment
-			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-			wait $PIDsplit2
-			for sub in $(ls subfile* | sort -V); do (
-				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+		if [[ $nodes -gt 1 ]]; then
+			splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
+			start_split=0
+			for nn in $(seq 1 "$nodes"); do
+				mkdir splitccf_node${nn}
+				end_split=$(($start_split + $splitnum))
+				start_split=$(($start_split + 1))
+				for snode in $(seq $start_split $end_split); do mv F${snode} ./splitccf_node${nn}/; done
+				start_split=$end_split
+			done
+			for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && mv F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
+			touch ${projdir}/multi_node_run_ready.txt
+		else
+			for ccf in $(ls * | sort -V); do
+				mv $ccf ../../alignment/$ccf
+				cd ../../alignment
+				awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+				wait $PIDsplit2
+				for sub in $(ls subfile* | sort -V); do (
+					if [[ "$taxids" == true ]]; then
+						${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+						-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+						wait
+					else
+						${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+						-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+						wait
+					fi
 					wait
-				else
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
-					wait
-				fi
+					gzip ${sub}_out.blast &&
+					rm $sub )&
+					if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+						wait
+					fi
+				done
 				wait
-				gzip ${sub}_out.blast &&
-				rm $sub )&
-				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-					wait
-				fi
+				for subfile in *_out.blast.gz; do
+					cat $subfile >> ${ccf}.blast.gz
+					rm $subfile
+				done
+				wait
+				# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+				cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
+				rm ${ccf}.blast.gz; rm $ccf &&
+				cd ../haplotig/splitccf/
 			done
-			wait
-			for subfile in *_out.blast.gz; do
-				cat $subfile >> ${ccf}.blast.gz
-				rm $subfile
+		fi
+		if [[ $nodes -gt 1 ]]; then
+			count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt | wc -l)
+			while [[ "$count_megablast_node" < $nodes ]]; do
+				sleep 300
 			done
+			cat combined_compressed_node*.megablast.gz > combined_compressed.megablast.gz
+			rm combined_compressed_node*.megablast.gz
 			wait
-			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
-			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
-			rm ${ccf}.blast.gz; rm $ccf &&
-			cd ../haplotig/splitccf/
-		done
+		fi
+		rmdir * && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 		cd ../
 		rmdir splitccf
 	else
@@ -1303,39 +1331,63 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		  rm ../../alignment/subfile*
 		  mv ../../alignment/F* ./
 		fi
-		for ccf in $(ls * | sort -V); do
-			mv $ccf ../../alignment/$ccf
-			cd ../../alignment
-			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-			wait $PIDsplit2
-			for sub in $(ls subfile* | sort -V); do (
-				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+		if [[ $nodes -gt 1 ]]; then
+			splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
+			start_split=0
+			for nn in $(seq 1 "$nodes"); do
+				mkdir splitccf_node${nn}
+				end_split=$(($start_split + $splitnum))
+				start_split=$(($start_split + 1))
+				for snode in $(seq $start_split $end_split); do mv F${snode} ./splitccf_node${nn}/; done
+				start_split=$end_split
+			done
+			for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && mv F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
+			touch ${projdir}/multi_node_run_ready.txt
+		else
+			for ccf in $(ls * | sort -V); do
+				mv $ccf ../../alignment/$ccf
+				cd ../../alignment
+				awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+				wait $PIDsplit2
+				for sub in $(ls subfile* | sort -V); do (
+					if [[ "$taxids" == true ]]; then
+						${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+						-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+						wait
+					else
+						${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+						-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
+						wait
+					fi
 					wait
-				else
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-					-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
-					wait
-				fi
+					gzip ${sub}_out.blast &&
+					rm $sub )&
+					if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+						wait
+					fi
+				done
 				wait
-				gzip ${sub}_out.blast &&
-				rm $sub )&
-				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-					wait
-				fi
+				for subfile in *_out.blast.gz; do
+					cat $subfile >> ${ccf}.blast.gz
+					rm $subfile
+				done
+				wait
+				# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
+				cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
+				rm ${ccf}.blast.gz; rm $ccf &&
+				cd ../haplotig/splitccf/
 			done
-			wait
-			for subfile in *_out.blast.gz; do
-				cat $subfile >> ${ccf}.blast.gz
-				rm $subfile
+		fi
+		if [[ $nodes -gt 1 ]]; then
+			count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt | wc -l)
+			while [[ "$count_megablast_node" < $nodes ]]; do
+				sleep 300
 			done
+			cat combined_compressed_node*.megablast.gz > combined_compressed.megablast.gz
+			rm combined_compressed_node*.megablast.gz
 			wait
-			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
-			cat ${ccf}.blast.gz >> combined_compressed.megablast.gz &&
-			rm ${ccf}.blast.gz; rm $ccf &&
-			cd ../haplotig/splitccf/
-		done
+		fi
+		rmdir * && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 		cd ../
 		rmdir splitccf
 	else

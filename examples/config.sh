@@ -47,3 +47,4 @@ compositional_corr=strain,species,genus,family,order,class,phylum
 reads_per_megablast=1000
 genome_scaling=true
 qcov=50
+nodes=1
