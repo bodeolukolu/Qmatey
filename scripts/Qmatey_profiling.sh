@@ -226,7 +226,7 @@ else
 		mkdir pe
 	fi
 
-	cd se
+	cd ${projdir}/samples/se
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ -z "$(ls -A ../se)" ]]; then
 			cd ../
@@ -240,7 +240,7 @@ else
 		fi
 	fi
 
-	cd se
+	cd ${projdir}/samples/se
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ "$(ls -A ../se)" ]]; then
 			echo -e "${magenta}- only single-end reads available in se-folder ${white}\n"
@@ -256,7 +256,7 @@ else
 		fi
 	fi
 
-	cd ../pe
+	cd ${projdir}/samples/pe
 	if [[ -z "$(ls -A ../se)" ]]; then
 		if [[ "$(ls -A ../pe)" ]]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
@@ -279,7 +279,7 @@ else
 		fi
 	fi
 
-	cd ../pe
+	cd ${projdir}/samples/pe
 	if [[ "$(ls -A ../se)" ]]; then
 		if [[ "$(ls -A ../pe)" ]]; then
 			for i in $(ls *R1.f*); do
