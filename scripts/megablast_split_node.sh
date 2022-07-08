@@ -38,7 +38,7 @@ fi
 blast () {
 
   if [[ "$blast_location" =~ "local" ]]; then
-    echo -e "${YELLOW}- performing a local BLAST"
+    echo -e "${YELLOW}- performing a local BLAST in multi-node mode"
     cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
 		for ccf in $(ls * | sort -V); do
 			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/$ccf
@@ -68,7 +68,6 @@ blast () {
 				rm $subfile
 			done
 			wait
-			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			cat ${ccf}.blast.gz >> combined_compressed_node${njob}.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
@@ -77,7 +76,7 @@ blast () {
   fi
 
   if [[ "$blast_location" =~ "custom" ]]; then
-  	echo -e "${YELLOW}- performing custom BLAST"
+  	echo -e "${YELLOW}- performing custom BLAST in multi-node mode"
     cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
 		for ccf in $(ls * | sort -V); do
 			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/$ccf
@@ -107,7 +106,6 @@ blast () {
 				rm $subfile
 			done
 			wait
-			# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
 			cat ${ccf}.blast.gz >> combined_compressed_node${njob}.megablast.gz &&
 			rm ${ccf}.blast.gz; rm $ccf &&
 			cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
