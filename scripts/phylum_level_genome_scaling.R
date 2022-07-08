@@ -20,7 +20,7 @@ if (taxalevel == "strain"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_tax_id1 <- final$tax_id
@@ -71,7 +71,7 @@ if (taxalevel == "species"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_species1 <- final$species
@@ -122,7 +122,7 @@ if (taxalevel == "genus"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_genus1 <- final$genus
@@ -173,7 +173,7 @@ if (taxalevel == "family"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_family1 <- final$family
@@ -224,7 +224,7 @@ if (taxalevel == "order"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_order1 <- final$order
@@ -275,7 +275,7 @@ if (taxalevel == "class"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_class1 <- final$class
@@ -326,7 +326,7 @@ if (taxalevel == "phylum"){
     summarize(q95 = quantile(mean_max, probs = 0.95))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final$threshold <- finalq$threshold[match(final$phylum, finalq$phylum)]
+  final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
   keep_phylum1 <- final$phylum
