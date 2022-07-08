@@ -3,7 +3,6 @@
 
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey MegaBLAST \n\e[97m########################################################\n"
 
-cd ${Qmatey_dir}
 local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
 
 if (echo $local_db | grep -q 'nt'); then
@@ -114,4 +113,6 @@ blast () {
   fi
 }
 
+time blast &>> ${projdir}/log_node${njob}.out
+wait
 touch ${projdir}/megablast_done_node${njob}.txt
