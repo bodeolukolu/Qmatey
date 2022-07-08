@@ -93,9 +93,7 @@ fi
 if [[ -z $min_unique_seqs ]]; then
 	min_unique_seqs=2
 fi
-if [[ -z $min_strain_uniq ]]; then
-	min_strain_uniq=2
-fi
+min_strain_uniq=2
 if [[ -z $maxindel ]]; then
 	maxindel=100
 fi
