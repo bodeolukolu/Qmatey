@@ -1137,6 +1137,7 @@ if [[ "$blast_location" =~ "local" ]]; then
 			mv ../../alignment/F* ./
 		fi
 		if [[ $nodes -gt 1 ]]; then
+			rm -rf splitccf_node*
 			splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
 			start_split=0
 			for nn in $(seq 1 "$nodes"); do
@@ -1368,6 +1369,7 @@ if [[ "$blast_location" =~ "custom" ]]; then
 		  mv ../../alignment/F* ./
 		fi
 		if [[ $nodes -gt 1 ]]; then
+			rm -rf splitccf_node*
 			splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
 			start_split=0
 			for nn in $(seq 1 "$nodes"); do
