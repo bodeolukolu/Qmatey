@@ -174,7 +174,7 @@ else
 fi
 
 
-
+#extract_parameters_above_for_megablast_splitrun_multi_node_mode
 ##################################################################################################################
 #Create all necessary subdirectories for downstream processing
 cd $projdir
