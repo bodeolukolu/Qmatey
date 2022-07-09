@@ -36,8 +36,8 @@ if [[ "$blast_location" == "custom" ]]; then
 		cd $custom_db && cp ${input_dbfasta} ./
 		custom_db=${custom_db}/${input_dbfasta##*/}
 		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-			title_db=${input_dbfasta##*/}
-			custom_db=${custom_db%.gz}
+			export title_db=${input_dbfasta##*/}
+			export custom_db=${custom_db%.gz}
 			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out $custom_db-title ${title_db%.gz} -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
 		else
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
@@ -46,78 +46,78 @@ if [[ "$blast_location" == "custom" ]]; then
 		touch db_created.txt
 	else
 		custom_db=${input_dbfasta%.f*}/${input_dbfasta##*/}
-		custom_db=${custom_db%.gz}
+		export custom_db=${custom_db%.gz}
 	fi
 fi
 
 
 cd $projdir
 if [[ $taxonomic_level =~ strain ]]; then
-	strain_level=true
+	export strain_level=true
 fi
 if [[ $taxonomic_level =~ species ]]; then
-	species_level=true
+	export species_level=true
 fi
 if [[ $taxonomic_level =~ genus ]]; then
-	genus_level=true
+	export genus_level=true
 fi
 if [[ $taxonomic_level =~ family ]]; then
-	family_level=true
+	export family_level=true
 fi
 if [[ $taxonomic_level =~ order ]]; then
-	order_level=true
+	export order_level=true
 fi
 if [[ $taxonomic_level =~ class ]]; then
-	class_level=true
+	export class_level=true
 fi
 if [[ $taxonomic_level =~ phylum ]]; then
-	phylum_level=true
+	export phylum_level=true
 fi
 if [[ -z "$genome_scaling" ]]; then
-	genome_scaling=true
+	export genome_scaling=true
 fi
 if [[ -z "$node" ]]; then
-	node=1
+	export node=1
 fi
 if [[ -z $sunburst_taxlevel ]]; then
-	run_sunburst=false
+	export run_sunburst=false
 else
-	run_sunburst=true
+	export run_sunburst=true
 fi
 if [[ -z $compositional_corr ]]; then
-	run_corr=false
+	export run_corr=false
 else
-	run_corr=true
+	export run_corr=true
 fi
 
 if [[ -z $min_unique_seqs ]]; then
-	min_unique_seqs=2
+	export min_unique_seqs=2
 fi
-min_strain_uniq=2
+export min_strain_uniq=2
 if [[ -z $maxindel ]]; then
-	maxindel=100
+	export maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	max_target=1000000
+	export max_target=1000000
 fi
 if [[ -z $reads_per_megablast ]]; then
-	reads_per_megablast=1000
+	export reads_per_megablast=1000
 fi
 if [[ -z $qcov ]]; then
-	qcov=50
+	export qcov=50
 fi
 
 if [[ -z $min_percent_sample ]]; then
-	min_percent_sample=5,10,20
+	export min_percent_sample=5,10,20
 fi
 if [[ -z $min_pos_corr ]]; then
-	min_pos_corr=0.1,0.2,0.3
+	export min_pos_corr=0.1,0.2,0.3
 fi
 if [[ -z $max_neg_corr ]]; then
-	max_neg_corr=0.1,0.2,0.3
+	export max_neg_corr=0.1,0.2,0.3
 fi
 if [[ -z $sunburst_nlayers ]]; then
-	sunburst_nlayers=phylum,genus,species
+	export sunburst_nlayers=phylum,genus,species
 fi
 
 
@@ -133,18 +133,18 @@ totalk=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
 export loopthread=2
 if [[ "$threads" -gt 1 ]]; then
 	export N=$((threads/2))
-	ram1=$(($totalk/$N))
+	export ram1=$(($totalk/$N))
 else
 	export N=1 && loopthread=threads
 fi
-ram1=$((ram1/1000000))
+export ram1=$((ram1/1000000))
 export Xmx1=-Xmx${ram1}G
-ram2=$(echo "$totalk*0.00000095" | bc)
-ram2=${ram2%.*}
+export ram2=$(echo "$totalk*0.00000095" | bc)
+export ram2=${ram2%.*}
 export Xmx2=-Xmx${ram2}G
 
 if [[ -z "$threads" ]]; then
-	threads=$(nproc --all)
+	export threads=$(nproc --all)
 	if [[ "$threads" -ge 4 ]]; then
 		export threads=$((threads-2))
 	fi
@@ -153,7 +153,7 @@ if  [[ "$threads" -ge 1 ]]; then
 	export loopthread=2
 	export N=$(($threads/2))
 else
-	N=1 && loopthread=$threads
+	export N=1 && export loopthread=$threads
 fi
 
 cd ${Qmatey_dir}/tools
@@ -167,7 +167,7 @@ if [[ "$threads" -le 4 ]]; then
 else
 	export gthreads=4
 	export gN=$(( threads / gthreads ))
-	ramg=$(( ram2 / gN ))
+	export ramg=$(( ram2 / gN ))
 	export Xmxg=-Xmx${ramg}G
 fi
 

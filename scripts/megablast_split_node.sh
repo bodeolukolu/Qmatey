@@ -3,7 +3,7 @@
 
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey MegaBLAST \n\e[97m########################################################\n"
 
-local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
+export local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
 
 if (echo $local_db | grep -q 'nt'); then
 	if [[ -z $percid ]]; then
@@ -25,7 +25,7 @@ if [[ "$blast_location" == "custom" ]]; then
 		export percid=95
 	fi
 fi
-rpm=$((reads_per_megablast * 2))
+export rpm=$((reads_per_megablast * 2))
 
 
 if [[ $nodes -gt 1 ]]; then

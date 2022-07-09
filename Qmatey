@@ -631,7 +631,7 @@ if [[ "$string" == false ]]; then
     echo -e "${magenta}- Quit (ctrl + c), else Qmatey will continue in 5 seconds ${white}"
     sleep 5
   fi
-  cat header.txt config.sh fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
+  cat header.txt <(grep -v '^[[:space:]]*$' config.sh | awk '{gsub(/^/,"export "); gsub(/export #/,"#");}1') fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
   rm header.txt fetchdir.txt
 
   echo -e "${magenta}- Qmatey is ready to submit job ${white}"
@@ -661,7 +661,7 @@ if [ -z $cluster ]; then
   printf "walkaway=true \n\n" > walkaway.txt
   printf "Qmatey_dir=${Qmatey_dir}\n" > fetchdir.txt
   printf "projdir=${projdir}" >> fetchdir.txt
-  cat header.txt config.sh walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
+  cat header.txt <(grep -v '^[[:space:]]*$' config.sh | awk '{gsub(/^/,"export "); gsub(/export #/,"#");}1') walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
   rm header.txt walkaway.txt fetchdir.txt
 
   echo -e "${magenta}- Qmatey is ready to submit job ${white}"
@@ -691,7 +691,7 @@ if [[ "$cluster" == true ]]; then
   echo -e "${magenta}- Qmatey will run in walkaway mode? ${white}"
   printf "#""!""/bin/bash \n#SBATCH -c ${nthread} \n\n" > cluster_header.sh
   printf "walkaway=true \n\n" > walkaway.txt
-  cat cluster_header.sh config.sh walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
+  cat cluster_header.sh <(grep -v '^[[:space:]]*$' config.sh | awk '{gsub(/^/,"export "); gsub(/export #/,"#");}1') walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh
   rm fetchdir.txt cluster_header.sh header.txt walkaway.txt
 
   echo -e "${magenta}- Qmatey is ready to submit job ${white}"
