@@ -10,6 +10,11 @@ if (echo $local_db | grep -q 'nt'); then
 		export percid=95
 	fi
 fi
+if (echo $local_db | grep -q 'refseq'); then
+	if [[ -z $percid ]]; then
+		export percid=95
+	fi
+fi
 if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
 	if [[ -z $percid ]]; then
 		export percid=95
