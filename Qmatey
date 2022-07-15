@@ -458,13 +458,18 @@ normzalization=${normzalization//*=}
 if [[ -z "${normzalization}" ]]; then
   normzalization=true
 fi
+if [[ "${normzalization}" == true ]]; then
+  echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
+  echo -e "${yellow} \e[31m \tMethod-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
+  echo -e "${yellow} \e[31m \tMethod-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
+  echo -e "${yellow} \e[31m \tMethod-3: Use sample total read coverage (relative abundance between samples)"
+fi
+if [[ -z "${normzalization}" == false ]]; then
+  echo -e "${yellow} \e[31m Data normlization will not be performed i.e., absolute abundance/expression:"
+fi
+
 if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
   if [[ "${normzalization}" == true ]]; then
-    echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
-    echo -e "${yellow} \e[31m Method-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
-    echo -e "${yellow} \e[31m Method-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
-    echo -e "${yellow} \e[31m Method-3: Use sample total read coverage (relative abundance between samples)"
-
     echo -e "${magenta} \e[31m normalization reference folder is empty (required for normalization methods 1 and 2)"
     echo -e "${magenta} \e[31m also, Qmatey will not subtract/eliminate reads derived from host genome/transciptome\n\n"
     echo -e "${magenta} \e[31m Qmatey can explore an alternative approach (below) for normzalization:\n"
@@ -480,6 +485,8 @@ if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
       mv temp.txt config.sh
     fi
   fi
+else
+
 fi
 
 
