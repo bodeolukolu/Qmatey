@@ -429,7 +429,7 @@ if [[ -d "./samples/pe" ]]; then
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
       mkdir samples_backup
       cp -r samples samples_backup
-      else
+    else
         echo -e "${white}\n#########################################################################################"
     fi
   fi
@@ -445,7 +445,7 @@ else
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
       mkdir samples_backup
       cp -r samples samples_backup
-      else
+    else
         echo -e "${white}\n#########################################################################################"
     fi
   fi
@@ -461,17 +461,17 @@ fi
 if [[ "${normzalization}" == true ]]; then
   echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
   echo -e "${yellow} \e[31m \tMethod-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
-  echo -e "${yellow} \e[31m \tMethod-2: Use host genome total read coverage (only for endophytic community or fairly consistent host genomc DNA contribution)"
+  echo -e "${yellow} \e[31m \tMethod-2: Use host genome total read coverage (only for endophytic community and/or fairly consistent host genomc DNA contribution)"
   echo -e "${yellow} \e[31m \tMethod-3: Use sample total read coverage (relative abundance between samples)"
 
   echo -e "${magenta}- would you like to use Method 1 or 2 (i.e spike-in or host genome)? ${white}"
   read -p "- y(YES) or n(NO) " -n 1 -r
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${magenta}- \tUsing sample total read coverage for normalization (Method-3) ${white}"
-    printf "export norm_method=samples" > norm_method.sh
+    echo export norm_method=samples > norm_method.sh
   else
     echo -e "${magenta}- \tUsing spike-in/host genome (Method-1/2) ${white}"
-    printf "export norm_method=spike_host" > norm_method.sh
+    echo export norm_method=spike_host > norm_method.sh
   fi
 fi
 if [[ "${normzalization}" == false ]]; then
@@ -495,8 +495,6 @@ if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
       mv temp.txt config.sh
     fi
   fi
-else
-
 fi
 
 
