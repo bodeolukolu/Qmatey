@@ -359,6 +359,7 @@ else
 		rm *_length_distribution.txt
 		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
 		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
+		rm length_distribution.txt
 
 
 		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
