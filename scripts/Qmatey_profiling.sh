@@ -530,7 +530,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do (
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -624,15 +624,6 @@ ref_norm () {
 					fi
 					wait
 				fi
-			fi ) &
-			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
-					wait
-				fi
-			else
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					wait
-				fi
 			fi
 		done
 		wait
@@ -654,7 +645,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do (
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -748,15 +739,6 @@ ref_norm () {
 
 						wait
 					fi
-					wait
-				fi
-			fi ) &
-			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
-					wait
-				fi
-			else
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 					wait
 				fi
 			fi
@@ -902,7 +884,7 @@ no_norm () {
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		cd ${projdir}/samples
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do (
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -998,15 +980,6 @@ no_norm () {
 					fi
 					wait
 				fi
-			fi ) &
-			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
-					wait
-				fi
-			else
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					wait
-				fi
 			fi
 		done
 		wait
@@ -1014,7 +987,7 @@ no_norm () {
 		cd ${projdir}/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do (
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do 
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -1108,15 +1081,6 @@ no_norm () {
 
 						wait
 					fi
-					wait
-				fi
-			fi ) &
-			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
-					wait
-				fi
-			else
-				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 					wait
 				fi
 			fi
