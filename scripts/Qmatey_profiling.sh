@@ -625,8 +625,14 @@ ref_norm () {
 					wait
 				fi
 			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
+			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
+					wait
+				fi
+			else
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			fi
 		done
 		wait
@@ -745,8 +751,14 @@ ref_norm () {
 					wait
 				fi
 			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
+			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
+					wait
+				fi
+			else
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			fi
 		done
 		wait
@@ -987,8 +999,14 @@ no_norm () {
 					wait
 				fi
 			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
+			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
+					wait
+				fi
+			else
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			fi
 		done
 		wait
@@ -1093,8 +1111,14 @@ no_norm () {
 					wait
 				fi
 			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
+			if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+				if [[ $(jobs -r -p | wc -l) -ge 1 ]]; then
+					wait
+				fi
+			else
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			fi
 		done
 		wait
