@@ -1,3 +1,4 @@
+
 if R --version; then
 	:
 else
@@ -987,7 +988,7 @@ no_norm () {
 		cd ${projdir}/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do 
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
