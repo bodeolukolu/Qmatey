@@ -808,10 +808,11 @@ ref_norm () {
 
 			cd ${projdir}/metagenome/
 			for i in $(ls -S *.bam); do
-				$samtools view -f 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
+				$samtools view -f 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print ">"$1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i
 			done
 
+			cd ${projdir}/samples/
 			#sample read depth is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
 			for i in $(ls -S *_compressed.fasta.gz); do
