@@ -103,8 +103,37 @@ fi
 if [[ -z $max_target ]]; then
 	export max_target=1000000
 fi
-if [[ -z $reads_per_megablast ]]; then
-	export reads_per_megablast=1000
+if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+  if [[ -z $reads_per_megablast ]]; then
+  	export reads_per_megablast=1000
+  fi
+fi
+if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+  if (echo $local_db | grep -q 'nt'); then
+    if [[ -z $reads_per_megablast ]]; then
+      export reads_per_megablast=10
+    fi
+  fi
+  if (echo $local_db | grep -q 'refseq'); then
+    if [[ -z $reads_per_megablast ]]; then
+      export reads_per_megablast=10
+    fi
+  fi
+  if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
+    if [[ -z $reads_per_megablast ]]; then
+      export reads_per_megablast=20
+    fi
+  fi
+  if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
+    if [[ -z $reads_per_megablast ]]; then
+      export reads_per_megablast=20
+    fi
+  fi
+  if [[ "$blast_location" == "custom" ]]; then
+    if [[ -z $reads_per_megablast ]]; then
+      export reads_per_megablast=20
+    fi
+  fi
 fi
 if [[ -z $qcov ]]; then
 	export qcov=50
