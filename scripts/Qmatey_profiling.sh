@@ -2162,7 +2162,7 @@ for i in $(ls -S ../../../metagenome/haplotig/*_metagenome.fasta.gz); do
     normfactor=$( awk -v sample=$sample '$1 == sample' ../../coverage_normalization_factor.txt | awk '{print $2}' )
   fi
 awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" species_taxainfo_mean.txt | \
-paste - species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_buildnorm0.txt &&genome_scal
+paste - species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_buildnorm0.txt &&
 mv species_taxainfo_mean_buildnorm0.txt species_taxainfo_mean_buildnorm.txt
 done
 paste species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_norm0.txt
