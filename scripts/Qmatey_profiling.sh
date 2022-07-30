@@ -1218,7 +1218,7 @@ fi
 
 if [[ "$blast_location" =~ "local" ]]; then
 	echo -e "${YELLOW}- performing local BLAST"
-	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
 		if [[ -d splitccf ]]; then
 			cd splitccf
 		else
@@ -1375,7 +1375,7 @@ fi
 
 if [[ "$blast_location" =~ "remote" ]]; then
 	echo -e "${YELLOW}- performing a remote BLAST"
-	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
 		if [[ "$taxids" == true ]]; then
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 			-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1449,7 +1449,7 @@ fi
 
 if [[ "$blast_location" =~ "custom" ]]; then
 	echo -e "${YELLOW}- performing custom BLAST"
-	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+	if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
 		if [[ -d splitccf ]]; then
 		  cd splitccf
 		else
@@ -4572,6 +4572,38 @@ cd $projdir
 mkdir -p ${projdir}/metagenome/results/results_uncultured
 mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
 mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
+cd ${projdir}/metagenome/
+if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt 2> /dev/null)" -gt 0 ]]; then
+	mkdir gene_annotation_count
+	taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
+	awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+	<(zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}') | \
+	awk -F'\t' '!seen[$1$3]++' | awk -F'\t' '!seen[$1$2]++' | \
+	cat <(printf "tax_id\tsequence\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz
+	taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
+	zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+	awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
+	awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
+
+	for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
+		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
+		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+		<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
+		cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
+		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
+		zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
+		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}genes_per_taxid.txt
+		) &
+		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+		 wait
+		fi
+	done
+	wait
+	mv ./alignment/cultured/*taxids_sequences_genes_geneID.txt.gz ./gene_annotation_count/
+	mv ./alignment/cultured/*genes_per_taxid.txt ./gene_annotation_count/
+fi
+
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
