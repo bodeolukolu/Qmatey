@@ -79,7 +79,6 @@ if (args[2] == "species"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$species == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$species))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,species=stats1$species), FUN=sum)
@@ -131,7 +130,6 @@ if (args[2] == "genus"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$genus == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$genus))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,genus=stats1$genus), FUN=sum)
@@ -183,7 +181,6 @@ if (args[2] == "family"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$family == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$family))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,family=stats1$family), FUN=sum)
@@ -235,7 +232,6 @@ if (args[2] == "order"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$order == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$order))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,order=stats1$order), FUN=sum)
@@ -287,7 +283,6 @@ if (args[2] == "class"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$class == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$class))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,class=stats1$class), FUN=sum)
@@ -339,7 +334,6 @@ if (args[2] == "phylum"){
     stats1 <- stats1[!(stats1$sseqid == ""), ]
     stats1 <- stats1[!(stats1$phylum == ""), ]
     stats1 <- subset(stats1, !grepl('^\\d+$', stats1$sseqid))
-    stats1 <- subset(stats1, grepl('^\\d+$', stats1$phylum))
   }
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,phylum=stats1$phylum), FUN=sum)

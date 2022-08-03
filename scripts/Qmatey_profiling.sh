@@ -4573,7 +4573,7 @@ mkdir -p ${projdir}/metagenome/results/results_uncultured
 mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
 mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
 cd ${projdir}/metagenome/
-if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt 2> /dev/null)" -gt 0 ]]; then
+if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt 2> /dev/null | wc -l)" -gt 0 ]]; then
 	mkdir gene_annotation_count
 	taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 	awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
