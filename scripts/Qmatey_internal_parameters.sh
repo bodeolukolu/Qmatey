@@ -23,19 +23,23 @@ else
   export gzip=gzip
 fi
 
-samtoolsout=$($samtools --version | head -n 3)
-if [ -z "$samtoolsout" ];then
-  echo -e "${white}- samtools installation within GBSapp is probably missing a dependency on host system ${white}"
-  echo -e "${white}- GBSapp will use host system samtools installation ${white}"
-  module add samtools
-  export samtools=samtools
-  $samtools --version | head -n 3
-else
-  $samtools --version | head -n 3
-fi
+slurm_module=$(module --version 2> /dev/null | head -n1)
 
-Rout=$(R --version | head -n 3)
-if [ -z "$Rout" ];then
-	module add R
-	R --version | head -n 3
+if [[ "$slurm_module" =~ "Module"  ]]; then
+  samtoolsout=$($samtools --version | head -n 3)
+  if [ -z "$samtoolsout" ];then
+    echo -e "${white}- samtools installation within GBSapp is probably missing a dependency on host system ${white}"
+    echo -e "${white}- GBSapp will use host system samtools installation ${white}"
+    module add samtools
+    export samtools=samtools
+    $samtools --version | head -n 3
+  else
+    $samtools --version | head -n 3
+  fi
+
+  Rout=$(R --version | head -n 3)
+  if [ -z "$Rout" ];then
+  	module add R
+  	R --version | head -n 3
+  fi
 fi

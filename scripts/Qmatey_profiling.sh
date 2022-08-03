@@ -1611,7 +1611,7 @@ find ../alignment/ -size 0 -delete
 }
 cd $projdir
 metagout=$(ls ${projdir}/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
-mblastout=$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep 'megablast.gz' | grep -v 'uncultured' | wc -l)
+mblastout=$(ls ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep 'megablast.gz' | grep -v 'uncultured' | wc -l)
 if [[ "$metagout" -eq "$mblastout" ]] && [[ "$mblastout" -gt 0 ]]; then
 	echo -e "${YELLOW}- Qmatey has already performed ncbi megablast ${WHITE}"
 else
