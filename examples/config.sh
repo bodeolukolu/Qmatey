@@ -48,4 +48,5 @@ nodes=1
 reads_per_megablast=1000
 genome_scaling=true
 qcov=50
+exclude_rRNA=true
 fastMegaBLAST=true
