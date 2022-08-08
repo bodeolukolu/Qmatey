@@ -424,7 +424,7 @@ if [[ -d "./samples/pe" ]]; then
     echo -e "${magenta}- Qmatey will modify your sample fastq files by concatenating <pe-R1-reads>, <pe-R2-reads>, and <se-reads> ${white}"
     echo -e "${magenta}- Do you want create a copy/backup of your sample fastq file? ${white}"
     read -p "- y(YES) or n(NO)? " -n 1 -r
-    if [[ $REPLY = ^[Yy]$ ]]; then
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
       printf "\n"
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
       mkdir samples_backup
@@ -440,7 +440,7 @@ else
     echo -e "${magenta}- Qmatey will modify your sample fastq files ${white}"
     echo -e "${magenta}- Do you want create a copy/backup of your sample fastq file? ${white}"
     read -p "- y(YES) or n(NO)? " -n 1 -r
-    if [[ $REPLY = ^[Yy]$ ]]; then
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
       printf "\n"
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
       mkdir samples_backup
