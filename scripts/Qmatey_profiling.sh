@@ -1946,7 +1946,7 @@ if [[ "$taxids" == true ]]; then
 	wait
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp
 	wait
-	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' - ${projdir}/metagenome/All.txids | printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
+	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
 	cat - ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp
 	rm ${projdir}/rankedlineage_tabdelimited.dmp
 else
@@ -5093,13 +5093,13 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		fi
 	done
 	wait
-	for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
+	for i in $(ls ./sighits/sighits_strain/*_sighits.txt.gz); do (
 		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
-		<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"-"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
+		<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
 		cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
 		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+		zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
 		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
 		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}genes_per_taxid_Diagnostic.txt
 		) &
@@ -5108,7 +5108,7 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		fi
 	done
 	wait
-	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz 
+	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep '^tax_id' | cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
 	wait
 	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
 	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
