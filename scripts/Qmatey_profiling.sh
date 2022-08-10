@@ -5077,7 +5077,7 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 	awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
 	awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
 	rm All_compressed.megablast.gz
-	
+
 	for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
 		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
@@ -5107,6 +5107,8 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		 wait
 		fi
 	done
+	wait
+	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz 
 	wait
 	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
 	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
