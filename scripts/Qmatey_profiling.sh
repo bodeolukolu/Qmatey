@@ -1920,8 +1920,6 @@ printf "MegaBLAST was completed" > ${projdir}/metagenome/MegaBLAST_completed.txt
 
 }
 cd $projdir
-metagout=$(ls ${projdir}/metagenome/haplotig/*metagenome.fasta.gz 2> /dev/null | wc -l)
-mblastout=$(ls ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep 'megablast.gz' | grep -v 'combined_compressed.megablast.gz' | wc -l)
 if test -f ${projdir}/metagenome/MegaBLAST_completed.txt; then
 	echo -e "${YELLOW}- Qmatey has already performed NCBI MegaBLAST ${WHITE}"
 else
