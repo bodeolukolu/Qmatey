@@ -417,7 +417,7 @@ fi
 
 
 cd $projdir
-if [[ -d "./samples/pe" ]]; then
+if [[ -d "./samples/pe" ]] || [[ -d "./samples/se" ]]; then
   if test -f "./samples/filename_reformatted.txt" || test -f "./samples/flushed_reads.txt"; then
     :
   else

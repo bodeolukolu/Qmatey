@@ -1916,6 +1916,12 @@ else
 	find ../alignment/ -size 0 -delete
 fi
 
+cd ${projdir}/metagenome/alignment
+mkdir -p uncultured
+mv uncultured* ./uncultured/ 2> /dev/null
+mkdir -p cultured
+ls *megablast.gz 2> /dev/null | grep -v 'uncultured' | xargs mv -t ./cultured/ 2> /dev/null
+
 printf "MegaBLAST was completed" > ${projdir}/metagenome/MegaBLAST_completed.txt
 
 }
@@ -1930,11 +1936,6 @@ fi
 
 #################################################################################################################
 
-cd ${projdir}/metagenome/alignment
-mkdir -p uncultured
-mv uncultured* ./uncultured/ 2> /dev/null
-mkdir -p cultured
-ls *megablast.gz 2> /dev/null | grep -v 'uncultured' | xargs mv -t ./cultured/ 2> /dev/null
 
 
 if [[ "$taxids" == true ]]; then
@@ -2293,7 +2294,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_species_taxid.txt.gz);do
-    awk -F '\t' '{print $1}' <(zcat $i) | awk -F ' ' '{print $1, $2}' > ${i%_species_taxid*}_species_column.txt
+    awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
   done
 	wait
 
@@ -2304,17 +2305,12 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) > ${i%_dup*}_species_duplicates_virome.txt
-		$gzip ${i%_dup*}_species_duplicates_virome.txt
+		$gzip ${i%_dup*}_species_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_species_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($19!="Viruses") print $0}' <(zcat $i) > ${i%*_species_duplicates_virome*}_species_duplicates.txt
-		$gzip ${i%*_species_duplicates_virome*}_species_duplicates.txt
-  done
-	wait
 
-  rm *_species_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_species_column.txt *_species_taxa.txt *_species_duplicates_virome.txt.gz
+  rm *_species_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_species_column.txt *_species_taxa.txt
 
   for i in $(ls *_species_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19, $20}' OFS='\t' <(zcat $i) > ${i%_species_duplicates*}_species_inter.txt
@@ -2354,6 +2350,13 @@ else
   done
 	wait
 
+  for i in $(ls *_species_OTU.txt);do
+    awk -F '\t' '{ if ($20!="Viruses") print $0}' <(zcat $i) > ${i%*_species_OTU.txt}_species_duplicates.txt
+		mv ${i%*_species_OTU.txt}_species_duplicates.txt $i
+		$gzip $i
+  done
+	wait
+
   for i in $(ls *_species_unique_reads.txt.gz);do (
     awk -F '\t' '{print $8}' OFS=';' <(zcat $i) > ${i%_species_unique_reads*}_taxids_uniq_inter.txt )
   done
@@ -2384,7 +2387,7 @@ else
 
 	rm *_taxids_uniq.txt
 	for i in $(ls *_species_taxid.txt);do
-	   awk -F '\t' '{print $1}' $i | awk -F ' ' '{print $1, $2}' > ${i%_species_taxid*}_species_column.txt
+		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
 	done
 	wait
 
@@ -2688,7 +2691,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_genus_taxid.txt.gz);do
-    awk -F '\t' '{print $1}' <(zcat $i) | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
+		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
   done
 	wait
 
@@ -2699,16 +2702,12 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt) > ${i%_dup*}_genus_duplicates_virome.txt
-		$gzip ${i%_dup*}_genus_duplicates_virome.txt
+		$gzip ${i%_dup*}_genus_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_genus_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($18!="Viruses") print $0}' <(zcat $i) > ${i%*_genus_duplicates_virome*}_genus_duplicates.txt
-		$gzip ${i%*_genus_duplicates_virome*}_genus_duplicates.txt
-  done
 
-  rm *_genus_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_genus_column.txt *_genus_taxa.txt *_genus_duplicates_virome.txt.gz
+  rm *_genus_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_genus_column.txt *_genus_taxa.txt
 
   for i in $(ls *_genus_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19}' OFS='\t' <(zcat $i) > ${i%_genus_duplicates*}_genus_inter.txt
@@ -2778,7 +2777,7 @@ else
 
 	rm *_taxids_uniq.txt
 	for i in $(ls *_genus_taxid.txt);do
-	   awk -F '\t' '{print $1}' $i | awk -F ' ' '{print $1, $2}' > ${i%_genus_taxid*}_genus_column.txt
+		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
 	done
 	wait
 
@@ -3085,17 +3084,11 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_dup.txt.gz}_family_taxa.txt) > ${i%_dup*}_family_duplicates_virome.txt
-		$gzip ${i%_dup*}_family_duplicates_virome.txt
+		$gzip ${i%_dup*}_family_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_family_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($17!="Viruses") print $0}' <(zcat $i) > ${i%*_family_duplicates_virome*}_family_duplicates.txt
-		$gzip ${i%*_family_duplicates_virome*}_family_duplicates.txt
-  done
-	wait
-
-  rm *_dup_inter.txt *_dup.txt.gz *_family_taxa.txt *_family_duplicates_virome.txt.gz
+  rm *_dup_inter.txt *_dup.txt.gz *_family_taxa.txt
 
   for i in $(ls *_family_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18}' OFS='\t' <(zcat $i) > ${i%_family_duplicates*}_family_inter.txt
@@ -3465,17 +3458,12 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_dup.txt.gz}_order_taxa.txt) > ${i%_dup*}_order_duplicates_virome.txt
-		$gzip ${i%_dup*}_order_duplicates_virome.txt
+		$gzip ${i%_dup*}_order_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_order_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($16!="Viruses") print $0}' <(zcat $i) > ${i%*_order_duplicates_virome*}_order_duplicates.txt
-		$gzip ${i%*_order_duplicates_virome*}_order_duplicates.txt
-  done
-	wait
 
-  rm *_dup_inter.txt *_dup.txt.gz *_order_taxa.txt *_order_duplicates_virome.txt.gz
+  rm *_dup_inter.txt *_dup.txt.gz *_order_taxa.txt
 
   for i in $(ls *_order_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17}' OFS='\t' <(zcat $i) > ${i%_order_duplicates*}_order_inter.txt
@@ -3845,17 +3833,12 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_dup.txt.gz}_class_taxa.txt) > ${i%_dup*}_class_duplicates_virome.txt
-		$gzip ${i%_dup*}_class_duplicates_virome.txt
+		$gzip ${i%_dup*}_class_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_class_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($15!="Viruses") print $0}' <(zcat $i) > ${i%*_class_duplicates_virome*}_class_duplicates.txt
-		$gzip ${i%*_class_duplicates_virome*}_class_duplicates.txt
-  done
-	wait
 
-  rm *_dup_inter.txt *_dup.txt.gz *_class_taxa.txt *_class_duplicates_virome.txt.gz
+  rm *_dup_inter.txt *_dup.txt.gz *_class_taxa.txt
 
   for i in $(ls *_class_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16}' OFS='\t' <(zcat $i) > ${i%_class_duplicates*}_class_inter.txt
@@ -4223,17 +4206,12 @@ else
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_dup.txt.gz}_phylum_taxa.txt) > ${i%_dup*}_phylum_duplicates_virome.txt
-		$gzip ${i%_dup*}_phylum_duplicates_virome.txt
+		$gzip ${i%_dup*}_phylum_duplicates.txt
   done
 	wait
 
-  for i in $(ls *_phylum_duplicates_virome.txt.gz);do
-    awk -F '\t' '{ if ($14!="Viruses") print $0}' <(zcat $i) > ${i%*_phylum_duplicates_virome*}_phylum_duplicates.txt
-		$gzip ${i%*_phylum_duplicates_virome*}_phylum_duplicates.txt
-  done
-	wait
 
-  rm *_dup_inter.txt *_dup.txt.gz *_phylum_taxa.txt *_phylum_duplicates_virome.txt.gz
+  rm *_dup_inter.txt *_dup.txt.gz *_phylum_taxa.txt
 
   for i in $(ls *_phylum_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15}' OFS='\t' <(zcat $i) > ${i%_phylum_duplicates*}_phylum_inter.txt
@@ -5096,7 +5074,7 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
 		<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
-		cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
+		cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
 		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
 		zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
 		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
@@ -5107,7 +5085,7 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		fi
 	done
 	wait
-	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep '^tax_id' | cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
+	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
 	wait
 	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
 	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
