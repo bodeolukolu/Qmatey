@@ -2351,9 +2351,8 @@ else
 	wait
 
   for i in $(ls *_species_OTU.txt);do
-    awk -F '\t' '{ if ($20!="Viruses") print $0}' <(zcat $i) > ${i%*_species_OTU.txt}_species_duplicates.txt
+    awk -F '\t' '{ if ($20!="Viruses") print $0}' $i > ${i%*_species_OTU.txt}_species_duplicates.txt
 		mv ${i%*_species_OTU.txt}_species_duplicates.txt $i
-		$gzip $i
   done
 	wait
 
@@ -2691,7 +2690,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_genus_taxid.txt.gz);do
-		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
+		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
   done
 	wait
 
