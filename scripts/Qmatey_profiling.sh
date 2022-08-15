@@ -2774,7 +2774,7 @@ else
 
 	rm *_taxids_uniq.txt
 	for i in $(ls *_genus_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
+		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
 	done
 	wait
 
