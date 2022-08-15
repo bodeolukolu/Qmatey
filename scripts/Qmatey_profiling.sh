@@ -5082,11 +5082,11 @@ if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt
 		fi
 	done
 	wait
-	zcat *taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
-	wait
 	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
 	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
 	mv ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
+	zcat ./gene_annotation_count/*taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep -v '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
+
 fi
 
 if [[ "$normalization" == true ]]; then
