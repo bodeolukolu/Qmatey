@@ -2298,7 +2298,7 @@ else
 	wait
 
   for i in $(ls *_species_column.txt);do
-    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' zcat ${i%_species_column*}_species_taxid.txt) > ${i%_species_column*}_species_taxa.txt
+    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' ${i%_species_column*}_species_taxid.txt) > ${i%_species_column*}_species_taxa.txt
   done
 	wait
 
