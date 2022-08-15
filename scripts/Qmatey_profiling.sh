@@ -2288,18 +2288,17 @@ else
 
 	for i in $(ls *_dup_inter.txt);do
 	   awk -F '\t'  '{print $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_species_taxid.txt
-		 $gzip ${i%_dup_inter*}_species_taxid.txt
 	done
 	wait
 	rm *_taxids_dup.txt
 
-  for i in $(ls *_species_taxid.txt.gz);do
-    awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
+  for i in $(ls *_species_taxid.txt);do
+    awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
   done
 	wait
 
   for i in $(ls *_species_column.txt);do
-    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' <( zcat ${i%_species_column*}_species_taxid.txt.gz)) > ${i%_species_column*}_species_taxa.txt
+    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' zcat ${i%_species_column*}_species_taxid.txt) > ${i%_species_column*}_species_taxa.txt
   done
 	wait
 
@@ -2310,7 +2309,7 @@ else
 	wait
 
 
-  rm *_species_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_species_column.txt *_species_taxa.txt
+  rm *_species_taxid.txt *_dup_inter.txt *_dup.txt.gz *_species_column.txt *_species_taxa.txt
 
   for i in $(ls *_species_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19, $20}' OFS='\t' <(zcat $i) > ${i%_species_duplicates*}_species_inter.txt
@@ -2386,7 +2385,7 @@ else
 
 	rm *_taxids_uniq.txt
 	for i in $(ls *_species_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
+		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
 	done
 	wait
 
@@ -2684,18 +2683,17 @@ else
 
 	for i in $(ls *_dup_inter.txt);do
 	   awk -F '\t'  '{print $2, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_genus_taxid.txt
-		 $gzip ${i%_dup_inter*}_genus_taxid.txt
 	done
 	wait
 	rm *_taxids_dup.txt
 
-  for i in $(ls *_genus_taxid.txt.gz);do
-		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
+  for i in $(ls *_genus_taxid.txt);do
+		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
   done
 	wait
 
   for i in $(ls *_genus_column.txt);do
-    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $2, $3, $4, $5, $6, $7}' OFS='\t' <( zcat ${i%_genus_column*}_genus_taxid.txt.gz)) > ${i%_genus_column*}_genus_taxa.txt
+    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%_genus_column*}_genus_taxid.txt) > ${i%_genus_column*}_genus_taxa.txt
   done
 	wait
 
@@ -2706,7 +2704,7 @@ else
 	wait
 
 
-  rm *_genus_taxid.txt.gz *_dup_inter.txt *_dup.txt.gz *_genus_column.txt *_genus_taxa.txt
+  rm *_genus_taxid.txt *_dup_inter.txt *_dup.txt.gz *_genus_column.txt *_genus_taxa.txt
 
   for i in $(ls *_genus_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19}' OFS='\t' <(zcat $i) > ${i%_genus_duplicates*}_genus_inter.txt
@@ -2776,7 +2774,7 @@ else
 
 	rm *_taxids_uniq.txt
 	for i in $(ls *_genus_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' <(zcat $i) | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
+		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_species_taxid*}_species_column.txt
 	done
 	wait
 
