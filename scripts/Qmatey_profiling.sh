@@ -2304,7 +2304,7 @@ else
 	wait
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) > ${i%_dup*}_species_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) > ${i%_dup*}_species_duplicates.txt
 		$gzip ${i%_dup*}_species_duplicates.txt
   done
 	wait
@@ -2701,7 +2701,7 @@ else
 	wait
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt) > ${i%_dup*}_genus_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt) > ${i%_dup*}_genus_duplicates.txt
 		$gzip ${i%_dup*}_genus_duplicates.txt
   done
 	wait
@@ -3083,7 +3083,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_dup.txt.gz}_family_taxa.txt) > ${i%_dup*}_family_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_dup.txt.gz}_family_taxa.txt) > ${i%_dup*}_family_duplicates.txt
 		$gzip ${i%_dup*}_family_duplicates.txt
   done
 	wait
@@ -3457,7 +3457,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_dup.txt.gz}_order_taxa.txt) > ${i%_dup*}_order_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_dup.txt.gz}_order_taxa.txt) > ${i%_dup*}_order_duplicates.txt
 		$gzip ${i%_dup*}_order_duplicates.txt
   done
 	wait
@@ -3832,7 +3832,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_dup.txt.gz}_class_taxa.txt) > ${i%_dup*}_class_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_dup.txt.gz}_class_taxa.txt) > ${i%_dup*}_class_duplicates.txt
 		$gzip ${i%_dup*}_class_duplicates.txt
   done
 	wait
@@ -4205,7 +4205,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in $(ls *_dup.txt.gz);do
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_dup.txt.gz}_phylum_taxa.txt) > ${i%_dup*}_phylum_duplicates_virome.txt
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_dup.txt.gz}_phylum_taxa.txt) > ${i%_dup*}_phylum_duplicates.txt
 		$gzip ${i%_dup*}_phylum_duplicates.txt
   done
 	wait
