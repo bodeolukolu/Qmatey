@@ -1237,7 +1237,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ -d splitccf ]]; then
 				cd splitccf
 			else
@@ -1411,7 +1411,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 				-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1505,7 +1505,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ -d splitccf ]]; then
 			  cd splitccf
 			else
@@ -1696,7 +1696,7 @@ else
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
   			-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
@@ -1767,7 +1767,7 @@ else
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 				-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1861,7 +1861,7 @@ else
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
   			-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
@@ -4998,103 +4998,4 @@ correlogram() {
 				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
 				)&
 			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	fi
-	wait
-	cd ${projdir}/metagenome/results/phylum_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
-}
-if [[ "$run_corr" == true ]]; then
-	correlogram &>> ${projdir}/log.out
-fi
-
-######################################################################################################################################################
-echo -e "${blue}\n############################################################################## ${white}\n"
-
-cd $projdir
-find . -depth -type d -exec rmdir {} + 2> /dev/null &&
-mkdir -p norm_ref
-
-rm ${projdir}/rankedlineage_edited.dmp
-
-cd $projdir
-mkdir -p ${projdir}/metagenome/results/results_uncultured
-mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
-mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
-cd ${projdir}/metagenome/
-if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt 2> /dev/null | wc -l)" -gt 0 ]]; then
-	mkdir gene_annotation_count
-	taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-	if test -f ./alignment/rRNA/rRNA_combined_compressed.megablast.gz; then
-		zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | \
-		cat - <(zcat ./alignment/rRNA/rRNA_combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}') | gzip > All_compressed.megablast.gz
-	else
-		zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | gzip > All_compressed.megablast.gz
-	fi
-	awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - <(zcat All_compressed.megablast.gz) | \
-	awk -F'\t' '!seen[$1$3]++' | awk -F'\t' '!seen[$1$2]++' | \
-	cat <(printf "tax_id\tsequence\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz
-	taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-	zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-	awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-	awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
-	rm All_compressed.megablast.gz
-
-	for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
-		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
-		<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
-		cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
-		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}genes_per_taxid.txt
-		) &
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	wait
-	for i in $(ls ./sighits/sighits_strain/*_sighits.txt.gz); do (
-		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
-		<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
-		cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
-		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*_sighits.txt.gz}genes_per_taxid_Diagnostic.txt
-		) &
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	wait
-	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
-	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
-	mv ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
-	zcat ./gene_annotation_count/*taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep -v '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
-
-fi
-
-if [[ "$normalization" == true ]]; then
-	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
-fi
-if [[ "$normalization" == false ]]; then
-	mv ${projdir}/metagenome ${projdir}/metagenome_no_normalize
-fi
-
-if [[ -z $samples_alt_dir ||  $samples_alt_dir == false ]]; then
- 	:
-else
-	rm samples
-fi
-cd $projdir
-rm -rf ${projdir}/metagenome*/sighits
-touch Analysis_Complete
-echo -e "\n\n${magenta}- Run Complete ${white}"
+				
