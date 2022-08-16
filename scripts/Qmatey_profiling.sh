@@ -1237,7 +1237,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d cultured ]]; then
 			if [[ -d splitccf ]]; then
 				cd splitccf
 			else
@@ -1411,7 +1411,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 				-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1505,7 +1505,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
 			if [[ -d splitccf ]]; then
 			  cd splitccf
 			else
@@ -1696,7 +1696,7 @@ else
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
   			-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
@@ -1767,7 +1767,7 @@ else
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${remote_db}" -perc_identity $percid -max_target_seqs $max_target \
 				-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1861,7 +1861,7 @@ else
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ "$(ls ${projdir}/metagenome/alignment/*_haplotig.megablast* 2> /dev/null | wc -l)" -lt 1 ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
   			-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
