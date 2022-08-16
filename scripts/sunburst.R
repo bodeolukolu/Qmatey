@@ -30,38 +30,38 @@ sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunb
 sunburst <- subset(sunburst, percent >= perc)
 sunburst <- subset(sunburst, select=-c(percent))
 remtaxa <- nrow(sunburst)
-if (taxlevel == "strain") {
-  sunburst_virus <- sunburst[grepl("viricota", sunburst$phylum),]
-  sunburst <- sunburst[!grepl("viricota", sunburst$phylum),]
-  sunburst_virus$species <- sunburst_virus$taxname
-  sunburst_virus_genus <- sunburst_virus[is.na(sunburst_virus$genus),]
-  sunburst_virus <- sunburst_virus[!(is.na(sunburst_virus$genus)),]
-  sunburst_virus_genus$genus <- sub("\\_.*","",sunburst_virus_genus$taxname)
-  sunburst_virus <- rbind(sunburst_virus, sunburst_virus_genus)
-  sunburst$genus <- sub("\\_.*","",sunburst$taxname)
-  sunburst$species <- sub("\\_.*","",(sub(".*?_","",sunburst$taxname)))
-  sunburst <- rbind(sunburst, sunburst_virus)
-}
+# if (taxlevel == "strain") {
+#   sunburst_virus <- sunburst[grepl("Viruses", sunburst$phylum),]
+#   sunburst <- sunburst[!grepl("viricota", sunburst$phylum),]
+#   sunburst_virus$species <- sunburst_virus$taxname
+#   sunburst_virus_genus <- sunburst_virus[is.na(sunburst_virus$genus),]
+#   sunburst_virus <- sunburst_virus[!(is.na(sunburst_virus$genus)),]
+#   sunburst_virus_genus$genus <- sub("\\_.*","",sunburst_virus_genus$taxname)
+#   sunburst_virus <- rbind(sunburst_virus, sunburst_virus_genus)
+#   sunburst$genus <- sub("\\_.*","",sunburst$taxname)
+#   sunburst$species <- sub("\\_.*","",(sub(".*?_","",sunburst$taxname)))
+#   sunburst <- rbind(sunburst, sunburst_virus)
+# }
 
 sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
 sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
 sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
 sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
 sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
-if (taxlevel == "strain") {
-  for (i in 1:nrow(sunburst)){
-    if(is.na(sunburst$species[i])){
-      sunburst$species[i] <- sunburst$taxname[i]
-    }
-  }
-}
-if (taxlevel == "sspecies") {
-  for (i in 1:nrow(sunburst)){
-    if(is.na(sunburst$species[i])){
-      sunburst$species[i] <- sunburst$taxname[i]
-    }
-  }
-}
+# if (taxlevel == "strain") {
+#   for (i in 1:nrow(sunburst)){
+#     if(is.na(sunburst$species[i])){
+#       sunburst$species[i] <- sunburst$taxname[i]
+#     }
+#   }
+# }
+# if (taxlevel == "species") {
+#   for (i in 1:nrow(sunburst)){
+#     if(is.na(sunburst$species[i])){
+#       sunburst$species[i] <- sunburst$taxname[i]
+#     }
+#   }
+# }
 sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7))
 
 layers <- gsub(",","_",layers)

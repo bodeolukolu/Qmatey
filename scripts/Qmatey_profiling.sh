@@ -1357,6 +1357,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 		fi
 		wait
+		cd ${projdir}/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
@@ -1364,7 +1365,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -1373,7 +1374,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		fi
 		wait
 
-
+		cd ${projdir}/metagenome/haplotig
 		for i in $(ls -S *metagenome.fasta.gz); do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
@@ -1446,7 +1447,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
@@ -1624,6 +1625,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		fi
 
 		wait
+		cd ${projdir}/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
@@ -1631,7 +1633,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -1641,6 +1643,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 
 
+		cd ${projdir}/metagenome/haplotig
 		for i in $(ls -S *metagenome.fasta.gz); do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
@@ -1711,6 +1714,7 @@ else
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 		fi
 		wait
+		cd ${projdir}/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
@@ -1718,7 +1722,7 @@ else
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -1727,6 +1731,7 @@ else
 		fi
 		wait
 
+		cd ${projdir}/metagenome/haplotig
 		for i in $(ls -S *metagenome.fasta.gz); do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
@@ -1798,7 +1803,7 @@ else
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
@@ -1874,6 +1879,7 @@ else
 		fi
 
 		wait
+		cd ${projdir}/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
@@ -1881,7 +1887,7 @@ else
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 				mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -1890,6 +1896,7 @@ else
 		fi
 		wait
 
+		cd ${projdir}/metagenome/haplotig
 		for i in $(ls -S *metagenome.fasta.gz); do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
@@ -1937,22 +1944,31 @@ fi
 #################################################################################################################
 
 
-
 if [[ "$taxids" == true ]]; then
 	:> ${projdir}/metagenome/All.txids
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
+  sort ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv All.tmp ./metagenome/All.txids
 	wait
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp
-	wait
-	awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | \
-	cat - ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp
-	rm ${projdir}/rankedlineage_tabdelimited.dmp
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
+	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
+	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp &&
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited.dmp | cut -f1,2 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited.dmp | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_species.dmp &&
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_species.dmp | awk '{gsub(/ [A-Z]/,"_&");gsub(/_ /,"_");}1' | awk -F'\t' '{sub(/ .*$/,"",$1);}1' | \
+	paste - ${projdir}/rankedlineage_edited_species.dmp | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited.dmp &&
+	rm ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/rankedlineage_edited_species.dmp
 else
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp
-	printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n" | cat - ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp
-	rm ${projdir}/rankedlineage_tabdelimited.dmp
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
+	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") ${projdir}/rankedlineage_tabdelimited.dmp > ${projdir}/rankedlineage_edited.dmp &&
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited.dmp | cut -f1,2 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited.dmp | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_species.dmp &&
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_species.dmp | awk '{gsub(/ [A-Z]/,"_&");gsub(/_ /,"_");}1' | awk -F'\t' '{sub(/ .*$/,"",$1);}1' | \
+	paste - ${projdir}/rankedlineage_edited_species.dmp | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited.dmp &&
+	rm ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/rankedlineage_edited_species.dmp
 fi
 
 lineagedb=${projdir}/lineage_subset.txt
@@ -2287,20 +2303,12 @@ else
   wait
 
 	for i in $(ls *_dup_inter.txt);do
-	   awk -F '\t'  '{print $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_species_taxid.txt
+	   awk -F '\t'  '{print $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_species_taxa.txt
 	done
 	wait
 	rm *_taxids_dup.txt
 
-  for i in $(ls *_species_taxid.txt);do
-    awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
-  done
-	wait
 
-  for i in $(ls *_species_column.txt);do
-    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' ${i%_species_column*}_species_taxid.txt) > ${i%_species_column*}_species_taxa.txt
-  done
-	wait
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) > ${i%_dup*}_species_duplicates.txt
@@ -2309,7 +2317,7 @@ else
 	wait
 
 
-  rm *_species_taxid.txt *_dup_inter.txt *_dup.txt.gz *_species_column.txt *_species_taxa.txt
+  rm *_species_taxid.txt *_dup_inter.txt *_dup.txt.gz *_species_taxa.txt
 
   for i in $(ls *_species_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19, $20}' OFS='\t' <(zcat $i) > ${i%_species_duplicates*}_species_inter.txt
@@ -2379,27 +2387,19 @@ else
 	wait
 
 	for i in $(ls *_uniq_inter.txt);do
-	   awk -F '\t'  '{print $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_uniq_inter*}_species_taxid.txt
+	   awk -F '\t'  '{print $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_uniq_inter*}_species_taxa.txt
 	done
 	wait
 
 	rm *_taxids_uniq.txt
-	for i in $(ls *_species_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $2}' > ${i%_species_taxid*}_species_column.txt
-	done
-	wait
 
-	for i in $(ls *_species_column.txt);do
-	   paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9}' OFS='\t' ${i%_species_column*}_species_taxid.txt) > ${i%_species_column*}_species_taxa.txt
-	done
-	wait
 
 	for i in $(ls *_unique_reads.txt.gz);do
 	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_species_unique_reads*}_species_taxa.txt) > ${i%_species_uniq*}_species_unique_uncultured.txt
 	done
 	wait
 
-	rm *_species_taxid.txt && rm *_uniq_inter.txt && rm *_species_column.txt && rm *_species_taxa.txt
+	rm *_species_taxid.txt && rm *_uniq_inter.txt && rm *_species_taxa.txt
 	for i in $(ls *_species_unique_uncultured.txt);do
 	   cat $i > ${i%*_species_unique_uncultured*}_unique_sequences.txt
 	done
@@ -2433,10 +2433,8 @@ cd ${projdir}/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
-awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits_temp.txt
-awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1" "$2}' | awk 'NR>1{gsub(/ /,"_");}1' | paste - rankedlineage_subhits_temp.txt | \
-awk '!($2=$3=$4="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"species");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -n"}' > rankedlineage_subhits.txt
-rm taxids_sighits.txt rankedlineage_subhits_temp.txt
+awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
+rm taxids_sighits.txt
 
 cd ${projdir}/metagenome/sighits/sighits_species/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/' > species_taxa_mean_temp1.txt
@@ -2682,20 +2680,11 @@ else
   wait
 
 	for i in $(ls *_dup_inter.txt);do
-	   awk -F '\t'  '{print $2, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_genus_taxid.txt
+	   awk -F '\t'  '{print $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_dup_inter*}_genus_taxa.txt
 	done
 	wait
 	rm *_taxids_dup.txt
 
-  for i in $(ls *_genus_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
-  done
-	wait
-
-  for i in $(ls *_genus_column.txt);do
-    paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%_genus_column*}_genus_taxid.txt) > ${i%_genus_column*}_genus_taxa.txt
-  done
-	wait
 
   for i in $(ls *_dup.txt.gz);do
     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt) > ${i%_dup*}_genus_duplicates.txt
@@ -2704,7 +2693,7 @@ else
 	wait
 
 
-  rm *_genus_taxid.txt *_dup_inter.txt *_dup.txt.gz *_genus_column.txt *_genus_taxa.txt
+  rm *_genus_taxid.txt *_dup_inter.txt *_dup.txt.gz *_genus_taxa.txt
 
   for i in $(ls *_genus_duplicates.txt.gz);do
     awk -F '\t' '{print $1, $10"~"$13, $2, $3, $4, $5, $6, $7, $8, $9, $11, $12, $14, $15, $16, $17, $18, $19}' OFS='\t' <(zcat $i) > ${i%_genus_duplicates*}_genus_inter.txt
@@ -2768,27 +2757,19 @@ else
 	wait
 
 	for i in $(ls *_uniq_inter.txt);do
-	   awk -F '\t'  '{print $2, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_uniq_inter*}_genus_taxid.txt
+	   awk -F '\t'  '{print $4, $5, $6, $7, $8, $9, $10}' OFS='\t' $i > ${i%_uniq_inter*}_genus_taxa.txt
 	done
 	wait
 
 	rm *_taxids_uniq.txt
-	for i in $(ls *_genus_taxid.txt);do
-		awk -F '\t' '{print $1"\t"$2}' $i | awk -F '\t' '$2=="NA"{$2=$1}1' - | awk -F ' ' '{print $1}' > ${i%_genus_taxid*}_genus_column.txt
-	done
-	wait
 
-	for i in $(ls *_genus_column.txt);do
-	   paste <(awk '{print $0}' OFS='\t' $i) <(awk -F '\t' '{print $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%_genus_column*}_genus_taxid.txt) > ${i%_genus_column*}_genus_taxa.txt
-	done
-	wait
 
 	for i in $(ls *_unique_reads.txt.gz);do
 	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' <(zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_genus_unique_reads*}_genus_taxa.txt) > ${i%_genus_uniq*}_genus_unique_uncultured.txt
 	done
 	wait
 
-	rm *_genus_taxid.txt && rm *_uniq_inter.txt && rm *_genus_column.txt && rm *_genus_taxa.txt
+	rm *_genus_taxid.txt && rm *_uniq_inter.txt && rrm *_genus_taxa.txt
 	for i in $(ls *_genus_unique_uncultured.txt);do
 	   cat $i > ${i%*_genus_unique_uncultured*}_unique_sequences.txt
 	done
@@ -2822,10 +2803,8 @@ cd ${projdir}/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
-awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits_temp.txt
-awk '{print $2}' rankedlineage_subhits_temp.txt | awk -F'_' '{print $1}' | paste - rankedlineage_subhits_temp.txt | \
-awk '!($2=$3=$4=$5="")' | tr -s " " | awk '{gsub(/ /,"\t");gsub(/taxname/,"genus");}1' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' > rankedlineage_subhits.txt
-rm taxids_sighits.txt rankedlineage_subhits_temp.txt
+awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
+rm taxids_sighits.txt
 
 cd ${projdir}/metagenome/sighits/sighits_genus/
 awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/' > genus_taxa_mean_temp1.txt
