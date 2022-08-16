@@ -2013,6 +2013,20 @@ if test -f $lineagedb; then
 fi
 
 
+
+cd ${projdir}/metagenome/alignment
+if [[ "$(ls ./uncultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
+	for i in *haplotig.megablast.gz; do
+		mv $i ./uncultured/uncultured_${i}
+	done
+fi
+if [[ "$(ls ./cultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
+	for i in *haplotig.megablast.gz; do
+		mv $i ./cultured/${i}
+	done
+fi
+
+
 #################################################################################################################
 strain_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level classification \n\e[97m########################################################\n"
