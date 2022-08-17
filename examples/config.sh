@@ -1,5 +1,5 @@
 
-# General parameters
+# General_parameters
 ####################################################
 threads=24
 walkaway=true
@@ -25,7 +25,7 @@ taxids=true
 map_taxids=NA
 
 
-# Taxonomic Filtering
+# Taxonomic_Profiling_and_Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
 minRD=2
@@ -42,7 +42,7 @@ sunburst_nlayers=phylum,genus,species
 compositional_corr=strain,species,genus,family,order,class,phylum
 
 
-# Advanced Parameters
+# Advanced_Parameters
 ####################################################
 nodes=1
 reads_per_megablast=1000
