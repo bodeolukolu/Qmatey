@@ -26,7 +26,13 @@ sunburst <- data.frame(sunburst)
 for (k in 1:(ncol(sunburst)-7)){
   sunburst[,k] <- as.numeric(as.character(sunburst[,k]))
 }
-sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunburst)-7))*100
+if (taxlevel == "strain") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-7)] > "0"))/(ncol(sunburst)-7))*100 }
+if (taxlevel == "species") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-6)] > "0"))/(ncol(sunburst)-6))*100 }
+if (taxlevel == "genus") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-5)] > "0"))/(ncol(sunburst)-5))*100 }
+if (taxlevel == "family") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-4)] > "0"))/(ncol(sunburst)-4))*100 }
+if (taxlevel == "order") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-3)] > "0"))/(ncol(sunburst)-3))*100 }
+if (taxlevel == "class") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-2)] > "0"))/(ncol(sunburst)-2))*100 }
+if (taxlevel == "phylum") { sunburst$percent <- ((rowSums(sunburst[,1:(ncol(sunburst)-1)] > "0"))/(ncol(sunburst)-1))*100 }
 sunburst <- subset(sunburst, percent >= perc)
 sunburst <- subset(sunburst, select=-c(percent))
 remtaxa <- nrow(sunburst)
@@ -62,7 +68,13 @@ sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
 #     }
 #   }
 # }
-sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7))
+if (taxlevel == "strain") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-7)])/(ncol(sunburst)-7)) }
+if (taxlevel == "species") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-6)])/(ncol(sunburst)-6)) }
+if (taxlevel == "genus") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-5)])/(ncol(sunburst)-5)) }
+if (taxlevel == "family") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-4)])/(ncol(sunburst)-4)) }
+if (taxlevel == "order") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-3)])/(ncol(sunburst)-3)) }
+if (taxlevel == "class") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-2)])/(ncol(sunburst)-2)) }
+if (taxlevel == "phylum") { sunburst$average <- (rowSums(sunburst[,1:(ncol(sunburst)-1)])/(ncol(sunburst)-1)) }
 
 layers <- gsub(",","_",layers)
 dir.create("sunburst", showWarnings = FALSE)

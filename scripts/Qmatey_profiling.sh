@@ -1943,13 +1943,14 @@ fi
 
 #################################################################################################################
 
+cd ${projdir}/metagenome/
 
 if [[ "$taxids" == true ]]; then
 	:> ${projdir}/metagenome/All.txids
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
-  sort ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv All.tmp ./metagenome/All.txids
+  sort ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv ${projdir}/metagenome/All.tmp ./metagenome/All.txids
 	wait
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
 	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
