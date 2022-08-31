@@ -10,11 +10,11 @@ perc <- as.numeric(args[6])
 libdir <- args[7]
 
 
-dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-9)] > "0")/(ncol(dfm)-10))*100
+dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-7)] > "0")/(ncol(dfm)-8))*100
 dfm <- subset(dfm, percent >= perc)
 dfm <- subset(dfm, select=-c(percent))
 remtaxa <- nrow(dfm)
-dfrm <- dfre[c(rownames(dfm)),]
+dfrm <- dfrm[c(rownames(dfm)),]
 dfu <- dfu[c(rownames(dfm)),]
 dfe <- dfe[c(rownames(dfm)),]
 dfre <- dfre[c(rownames(dfm)),]
@@ -174,7 +174,7 @@ mean_box(df, dfm)
 mean_box<-function(df, dfrm){
   #chop off species names
   mean <- subset(dfrm, select=-c(genus,family,order,class,kingdom,domain))
-  mean <- mean[c(2:(ncol(mean)-1),1,ncol(mean))]
+  mean <- mean[c(1:(ncol(mean)-1),ncol(mean),ncol(mean))]
   fence<-data.frame(matrix(nrow=nrow(mean), ncol = 2))
   taxa<-c()
   up<-c()
@@ -194,7 +194,7 @@ mean_box<-function(df, dfrm){
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
   u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = paste("Boxplot of Mean Relative Abundance (",remtaxa," taxa)",sep=""), xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
-  htmlwidgets::saveWidget(as_widget(u), paste("species_level_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
+  htmlwidgets::saveWidget(as_widget(u), paste("species_level_rel_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 mean_box(df, dfrm)
 
@@ -227,7 +227,7 @@ error_box<-function(df, dfe){
 }
 error_box(df, dfe)
 
-rel_error_box<-function(df, dfre){s
+rel_error_box<-function(df, dfre){
   #chop off species names
   rel_error <- subset(dfe, select=-c(genus,family,order,class,kingdom,domain))
   rel_error <- rel_error[c(2:(ncol(rel_error)-1),1,ncol(rel_error))]

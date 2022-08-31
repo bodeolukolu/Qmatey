@@ -9,11 +9,11 @@ dfre <- read.delim(args[5], header=T, sep="\t", check.names = FALSE, fill= TRUE)
 perc <- as.numeric(args[6])
 libdir <- args[7]
 
-dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-9)] > "0")/(ncol(dfm)-10))*100
+dfm$percent <- (rowSums(dfm[,2:(ncol(dfm)-9)] > "0")/(ncol(dfm)-10))*100 
 dfm <- subset(dfm, percent >= perc)
 dfm <- subset(dfm, select=-c(percent))
 remtaxa <- nrow(dfm)
-dfrm <- dfre[c(rownames(dfm)),]
+dfrm <- dfrm[c(rownames(dfm)),]
 dfu <- dfu[c(rownames(dfm)),]
 dfe <- dfe[c(rownames(dfm)),]
 dfre <- dfre[c(rownames(dfm)),]
@@ -52,7 +52,7 @@ data.pipe<-function(dfm,dfrm,dfu,dfe,dfre,cut){
       taxid[rowNum]<-mirror[row,ncol(mirror)-1]
       phylum[rowNum]<-mirror[row,ncol(mirror)]
       means[rowNum]<-mirror[row,col]
-      rmeans[rowNum]<-mirror[row,col]
+      rmeans[rowNum]<-dfrm[row,col+1]
       uniq[rowNum]<-dfu[row,col+1]
       err[rowNum]<-dfe[row,col+1]
       rerr[rowNum]<-dfre[row,col+1]
@@ -122,7 +122,7 @@ uniq_box<-function(df, dfu){
   up<-c()
   for (pl in 1:nrow(uniq)) {
     taxa[pl]<-uniq[pl,ncol(uniq)]
-    vec<-as.numeric(uniq[pl,2:(ncol(uniq)-1)])
+    vec<-as.numeric(uniq[pl,1:(ncol(uniq)-1)])
     iqr<-IQR(vec, na.rm = TRUE)
     # UpperInner Fence
     up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)
@@ -148,7 +148,7 @@ mean_box<-function(df, dfm){
   up<-c()
   for (pl in 1:nrow(mean)) {
     taxa[pl]<-mean[pl,ncol(mean)]
-    vec<-as.numeric(mean[pl,2:(ncol(mean)-1)])
+    vec<-as.numeric(mean[pl,1:(ncol(mean)-1)])
     iqr<-IQR(vec, na.rm = TRUE)
     # UpperInner Fence
     up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)
@@ -174,7 +174,7 @@ mean_box<-function(df, dfrm){
   up<-c()
   for (pl in 1:nrow(mean)) {
     taxa[pl]<-mean[pl,ncol(mean)]
-    vec<-as.numeric(mean[pl,2:(ncol(mean)-1)])
+    vec<-as.numeric(mean[pl,1:(ncol(mean)-1)])
     iqr<-IQR(vec, na.rm = TRUE)
     # UpperInner Fence
     up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)
@@ -188,7 +188,7 @@ mean_box<-function(df, dfrm){
   xlim<-max(fence$Upper)
   reform$Phylum[is.na(reform$Phylum)] = "Unknown"
   u<-plot_ly(reform, x = ~`covMean`, y = ~taxid, color = ~Phylum, type = "box", boxpoints = FALSE)%>%layout(title = paste("Boxplot of Mean Relative Abundance (",remtaxa," taxa)",sep=""), xaxis = list(range=c(0,xlim), title = "Mean Reads"), yaxis = list(size = 1, title = "Taxaname"))
-  htmlwidgets::saveWidget(as_widget(u), paste("strain_level_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
+  htmlwidgets::saveWidget(as_widget(u), paste("strain_level_rel_mean_reads_",perc,"perc.html",sep=""), selfcontained=FALSE)
 }
 mean_box(df, dfrm)
 
@@ -200,7 +200,7 @@ error_box<-function(df, dfe){
   up<-c()
   for (pl in 1:nrow(error)) {
     taxa[pl]<-error[pl,ncol(error)]
-    vec<-as.numeric(error[pl,2:(ncol(error)-1)])
+    vec<-as.numeric(error[pl,1:(ncol(error)-1)])
     iqr<-IQR(vec, na.rm = TRUE)
     # UpperInner Fence
     up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)
@@ -226,7 +226,7 @@ rel_error_box<-function(df, dfre){
   up<-c()
   for (pl in 1:nrow(rel_error)) {
     taxa[pl]<-rel_error[pl,ncol(rel_error)]
-    vec<-as.numeric(rel_error[pl,2:(ncol(rel_error)-1)])
+    vec<-as.numeric(rel_error[pl,1:(ncol(rel_error)-1)])
     iqr<-IQR(vec, na.rm = TRUE)
     # UpperInner Fence
     up[pl] <- quantile(vec, .75, na.rm = TRUE) + (1.5*iqr)

@@ -17,12 +17,13 @@ if (taxalevel == "strain"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_tax_id1 <- final$tax_id
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -68,12 +69,13 @@ if (taxalevel == "species"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_species1 <- final$species
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -119,12 +121,13 @@ if (taxalevel == "genus"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_genus1 <- final$genus
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -170,12 +173,13 @@ if (taxalevel == "family"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_family1 <- final$family
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -221,12 +225,13 @@ if (taxalevel == "order"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_order1 <- final$order
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -272,12 +277,13 @@ if (taxalevel == "class"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_class1 <- final$class
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
@@ -323,12 +329,13 @@ if (taxalevel == "phylum"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
+  final <- subset(final, final$mean_max >= final$q5)
   keep_phylum1 <- final$phylum
   
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
