@@ -32,12 +32,11 @@ if (taxalevel == "strain"){
     final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(taxname,species,genus,family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(tax_id,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_tax_id2 <- final$tax_id
   keep_tax_id <- intersect(keep_tax_id1, keep_tax_id2)
   
@@ -84,12 +83,11 @@ if (taxalevel == "species"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(genus,family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(species,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_species2 <- final$species
   keep_species <- intersect(keep_species1, keep_species2)
   
@@ -136,12 +134,11 @@ if (taxalevel == "genus"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(family,order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(genus,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_genus2 <- final$genus
   keep_genus <- intersect(keep_genus1, keep_genus2)
   
@@ -188,12 +185,11 @@ if (taxalevel == "family"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(order,class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(family,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_family2 <- final$family
   keep_family <- intersect(keep_family1, keep_family2)
   
@@ -240,12 +236,11 @@ if (taxalevel == "order"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(class,kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(order,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_order2 <- final$order
   keep_order <- intersect(keep_order1, keep_order2)
   
@@ -292,12 +287,11 @@ if (taxalevel == "class"){
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
-  final[,2:(ncol(final)-1)] [final[,2:(ncol(final)-1)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-2
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
+  final[,1:(ncol(final)-1)] [final[,1:(ncol(final)-1)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-3
+  final <- subset(final, select=c(class,phylum,miss))
+  final <- subset(final, final$miss < sampleN)
   keep_class2 <- final$class
   keep_class <- intersect(keep_class1, keep_class2)
   
@@ -320,37 +314,18 @@ if (taxalevel == "class"){
 }
 
 if (taxalevel == "phylum"){
-  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
-  final <- subset(final, select=-c(kingdom,domain))
-  final$mean_max <- apply(as.matrix(final[,2:(ncol(final))]), 1, max)
-  final <- subset(final, select=c(phylum,mean_max))
-  finalq <- final
-  finalq$mean_max[finalq$mean_max < 2] <- NA
-  finalq <- na.omit(finalq)
-  finalq <- finalq %>%
-    group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95))
-  finalq <- as.data.frame(finalq)
-  finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
-  final <- merge(final, finalq, by=c("phylum"), all.y = T)
-  final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
-  keep_phylum1 <- final$phylum
-  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   }
   final <- subset(final, select=-c(kingdom,domain))
-  final[,2:ncol(final)] [final[,2:ncol(final)] <= 1] <- NA
-  final$mean_max <- rowSums(is.na(final))
-  sampleN <- ncol(final)-1
-  final <- subset(final, select=c(tax_id,mean_max))
-  final <- subset(final, final$mean_max > 0)
-  final <- subset(final, final$mean_max > (sampleN/100))
-  keep_phylum2 <- final$phylum
-  keep_phylum <- intersect(keep_phylum1, keep_phylum2)
+  final[,1:ncol(final)] [final[,1:ncol(final)] <= 1] <- NA
+  final$miss <- rowSums(is.na(final))
+  sampleN <- ncol(final)-2
+  final <- subset(final, select=c(phylum,miss))
+  final <- subset(final, final$miss < sampleN)
+  keep_phylum <- final$phylum
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)

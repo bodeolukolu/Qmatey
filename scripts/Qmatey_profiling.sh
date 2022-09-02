@@ -817,10 +817,10 @@ ref_norm () {
 			#Host-reference alignment coverage relative to other samples is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
 			for i in $(ls -S *.bam); do
-				$samtools view -F 4 $i | awk '$5>=16{print $0}' | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_host_coverage.txt && \
+				$samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_host_coverage.txt && \
 				cat ${i%.bam}_host_coverage.txt >> host_coverage.txt && \
 				rm ${i%.bam}_host_coverage.txt  && \
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | awk '$5>0 && $5<16{print $0}') | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_microbiome_coverage.txt && \
+				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_microbiome_coverage.txt && \
 				cat ${i%.bam}_microbiome_coverage.txt >> microbiome_coverage.txt && \
 				rm ${i%.bam}_microbiome_coverage.txt
 			done
@@ -853,7 +853,7 @@ ref_norm () {
 
 			cd ${projdir}/metagenome/
 			for i in $(ls -S *.bam); do
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | awk '$5>0 && $5<16{print $0}') | grep -vwE "(@HD|@SQ|@PG)" | awk '{print ">"$1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
+				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print ">"$1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i
 			done
 			wait
@@ -890,7 +890,7 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
 			for i in $(ls -S *.bam); do
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | awk '$5>0 && $5<16{print $0}') | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
+				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
 				awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			done
 			wait
@@ -1160,7 +1160,7 @@ no_norm () {
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
 		for i in $(ls -S *.bam); do
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | awk '$5>0 && $5<16{print $0}') | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
+				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
 				awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			fi
 		done
