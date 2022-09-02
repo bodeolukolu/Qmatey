@@ -69,7 +69,7 @@ if (taxalevel == "species"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.1))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
@@ -121,7 +121,7 @@ if (taxalevel == "genus"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.15))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
@@ -173,7 +173,7 @@ if (taxalevel == "family"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.2))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
@@ -225,7 +225,7 @@ if (taxalevel == "order"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.25))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
@@ -277,7 +277,7 @@ if (taxalevel == "class"){
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
-    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.3))
+    summarize(q95 = quantile(mean_max, probs = 0.95), q5 = quantile(mean_max, probs = 0.05))
   finalq <- as.data.frame(finalq)
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
