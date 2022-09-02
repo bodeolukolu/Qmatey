@@ -65,7 +65,7 @@ if (taxalevel == "species"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(species,phylum,mean_max))
   finalq <- final
-  finalq[finalq < 3] <- NA
+  finalq[finalq < 2] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
@@ -117,7 +117,7 @@ if (taxalevel == "genus"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(genus,phylum,mean_max))
   finalq <- final
-  finalq[finalq < 4] <- NA
+  finalq[finalq < 3] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
@@ -169,7 +169,7 @@ if (taxalevel == "family"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(family,phylum,mean_max))
   finalq <- final
-  finalq[finalq < 5] <- NA
+  finalq[finalq < 4] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
@@ -221,7 +221,7 @@ if (taxalevel == "order"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(order,phylum,mean_max))
   finalq <- final
-  finalq[finalq < 6] <- NA
+  finalq[finalq < 5] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
@@ -273,7 +273,7 @@ if (taxalevel == "class"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final)-1)]), 1, max)
   final <- subset(final, select=c(class,phylum,mean_max))
   finalq <- final
-  finalq[finalq < 7] <- NA
+  finalq[finalq < 6] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
@@ -325,7 +325,7 @@ if (taxalevel == "phylum"){
   final$mean_max <- apply(as.matrix(final[,2:(ncol(final))]), 1, max)
   final <- subset(final, select=c(phylum,mean_max))
   finalq <- final
-  finalq[finalq < 8] <- NA
+  finalq[finalq < 7] <- NA
   finalq <- na.omit(finalq)
   finalq <- finalq %>%
     group_by(phylum) %>%
