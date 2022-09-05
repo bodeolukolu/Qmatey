@@ -2,33 +2,41 @@
 <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/Qmatey_logo.PNG" width="273" height="162">
 </p>
 
+
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet).
+Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet; at genus-level, valid hits will match uniquely to each genus name).
+
 
 ## Features
 * Exact-matching (and exact-matching of consensus) sequence.
 * User-friendly and fully automated: “walk-away” and “walk-through” mode
-* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and 16S/ITS amplicon sequencing.
+* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
-* Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read multiple times).
-* Optimization of parallelized MegaBLAST jobs.
-* Allows for various types of normalization.
+* Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
+* speed optimization of parallelized MegaBLAST jobs.
+* Allows for various types of normalization (relative abundance).
+- minimize false positives, false negatives, and multiple testing problems
+- Eliminate samples with highly enriched zero-inflated data (typically due to technical issues)
+- correlation network bsaed on CCLasso (correlation inference for compositional data through least absolute shrinkage and selection operator)
 * QC-plots to evaluate the predictive accuracy of profiles.
 * visualization of results
 
-
 Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
-### Developers
-* Brandon Kristy (ORNL, TN)
+## Developers
 * Alison K. Adams (UTK, TN)
+* Brandon Kristy (ORNL, TN)
 * Bode A. Olukolu (UTK, TN)
 
 
-## Contents
+# Contents
 - [Installation](#installation)
 - [Usage](#usage)
   - [Basic usage](#Basic_usage)
+  - [Project directory setup](#Project directory setup)
+  - [Prepare database for Local MegaBLAST](#Prepare database for Local MegaBLAST)
+  - [Limit search to taxon](#Limit search to taxon)
+  - [Create custom database](#Create custom database)
   - [Overview of workflow](#Overview_of_workflow)
   - [Configuration](#Configuration)
 - [Related Software](#Related_Software)
@@ -60,121 +68,261 @@ Qmatey_dir/Qmatey install
 * samtools
 * picard tools
 * java
-* pandoc
 * R version 3.5 or above
 * R dependencies: plotme, ggplot, plotly, reshape2, and ggcorrplot.
-* If you are performing a **local BLAST**, you will require an NCBI sequencing database compiled into one directory
+* If you are performing a **local BLAST**, you will require an NCBI sequence database downloaded to a directory
 
 
 ## Usage
+### Basic Usage
 Before running Qmatey, make sure you have created a project directory with the required files (config.sh, *.taxids, fasta/fastq files in samples folder, and reference fasta files in norm_ref folder)
-* Fastq data should be QC-filtered (paired-end and/or single-end reads allowed)
-* Obtain necessary reference genome(s) in FASTA format (within norm_ref folder): for normalization and removal of host sequence contamination.
-* For local BLAST: obtain and decompress NCBI database (other curated database). Qmatey can build database from input fasta and taxa id files
-* For remote BLAST (not recommended): specifiy NCBI database
-* Edit parameters in config.sh (template available in examples folder within software) files to match specific jobs.
+- **quality filtering**: Fastq data should be QC-filtered with high stringency to prevent false positive and false negatives (paired-end and/or single-end reads allowed)
+- **normalization and non-target sequences**: provide necessary reference genome(s) or spike-in standard in FASTA format (within norm_ref folder). These allows for normalization and removal of host sequence (particularly in endophytic metagenome/microbiome communities).
+- **local MegaBLAST**: obtain and decompress NCBI database or databases. Custom databases can be created within Qmatey by providing fasta and tax id files (see below).
+- **remote MegaBLAST**: specify remote in config.sh file (not recommended due to slow speed).
+- **edit parameters in config.sh**: template available in examples folder within Qmatey download.
+- **for help**: --help or -h
+- **for version**: --version or -v
 
 From the command line, type:
 ```
 $ bash <path-to-Qmatey-directiry/Qmatey> <path-to-project-directory>
 ```
 
-## Setting Up a Project Directory
+### Project directory setup
 A project directory should contain the following sub-directories:
-* Input Sequences
-  * This is where your QC-filtered sequencing data will go.
-* Configuration file
-  * The format of the configuration file can be taken from the tools directory of the Qmatey Repository.
-* **Optional**: Normalzation Reference Genomes **if you are normalizing data**
+- **Input Sequences**: This is where your QC-filtered sequencing data will go.
+- **Configuration file**: The format of the configuration file can be taken from the tools directory of the Qmatey Repository.
+- **Optional**: Normalzation Reference Genomes **if you are normalizing data**
   * This is where reference genomes for normalization will go. Reference genomes must be in **Fasta format**.
 
   <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="804" height="427">
 
 
-## Preparing A Database Directory for a Local BLAST
-If necessary, install the lftp tool to navigate NCBI's FTP site:
+### Prepare database for Local MegaBLAST
+If necessary, install the lftp tool. For more details about tool: https://lftp.yar.ru/lftp-man.html
+
 ```
+sudo apt update
 sudo apt-get install lftp
 ```
 To obtain an NCBI sequencing database, go to the FTP site ftp://ftp.ncbi.nlm.nih.gov/blast/db/.
 Create a database directory and select the sequencing database from the FTP site you wish to obtain using the following commands:
+
 ```
 mkdir database_directory
 cd database_directory
 wget ftp ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt*.tar.gz
 ```
-In the above code, I am extracting the nt.00.tar.gz nucleotide database file into my database directory. A complete sequencing database will require an extensive amount of space.
-
-Next, uncompress the database files and remove them with the following commands:
+Next, uncompress the database files and delete the original .tar.gz files:
 ```
 for f in nt*.tar.gz; do tar xzf "$f"; done
 rm nt*.tar.gz
 ```
 
-Your database directory should now have the desired, uncompressed database files.
+Your database directory should now have the desired, uncompressed database files, and ready to use.
 
 
-# Limit search to taxa levels
-use arguement: -taxids ### (e.g. -taxids 2 for bacteria)
-Viruses		10239
-Bacteria	2
-Archaea		2157
-Fungi		4751
-Ecdysozoa	1206794
-Animalia/Metazoan	33208
-viridiplantae		33090
+# Limit search to taxon
+To limit search of taxon in database, list of all taxids of interest within specific taxonomic groups (*.taxids files in examples folder) can be specified in MegaBLAST search.
+-**basis for excludinng taxa**: large multicellular organisms (plants and animals) are often host rather than players within metagenomic communities.
+-**mitigating false negatives due to endophytic microbial sequences assembled as host sequence**: organisms, particularly multicellular ones, often present a problem for exact-matchign for metagenomic studies. These genome sequences/assemblies often contain contaminating sequences from endophytic/epiphytic organisms. To avoid false negatives, exact matching is only performed among individuals within higher order taxonomic group (e.g. same phylum).
 
-The taxids.list for the taxa levels listed above are alreadyt pre-packaged into Qmatey but if you want custom taxids.list, follow the instructions below from NCBI:
-# Limiting a BLAST search with a high-level taxonomic node
-$ get_species_taxids.sh -n Enterobacterales
-Taxid: 91347
- rank: order
- division: enterobacteria
- scientific name: Enterobacterales
- common name:
-1 matches found
-$ get_species_taxids.sh -t 91347 > 91347.txids
-$ blastn –db nt –query QUERY –taxidlist 91347.txids –outfmt 7 –out OUTPUT.tab
-Go to:
-# Limiting a BLAST search with a species-level taxonomic node
-$ blastn –db nt –query QUERY –taxids 9606 –outfmt 7 –out OUTPUT.tab
-# To use the get_spcies_taxids.sh, you will need to install Entrez Direct (EDirect). Copy and paste the commands below into your terminal
 ```
-cd ~
-  /bin/bash
-  perl -MNet::FTP -e \
-    '$ftp = new Net::FTP("ftp.ncbi.nlm.nih.gov", Passive => 1);
-     $ftp->login; $ftp->binary;
-     $ftp->get("/entrez/entrezdirect/edirect.tar.gz");'
-  gunzip -c edirect.tar.gz | tar xf -
-  rm edirect.tar.gz
-  builtin exit
-  export PATH=${PATH}:$HOME/edirect >& /dev/null || setenv PATH "${PATH}:$HOME/edirect"
-  ./edirect/setup.sh
+-**pre-selected taxids (Viruses)**: 10239
+-**pre-selected taxids (Bacteria)**:  2
+-**pre-selected taxids (Archaea)**: 2157
+-**pre-selected taxids (Protista/Protista-like)**: 554915,554296,2608109,2686027,590648,2608240,2611352,2489521,2795258,2611341,2598132,2698737,660925,2683617,2686024,127916,98350,2018064,2687318,28009
+-**pre-selected taxids (Algea/Algea-like)**:3027,2763,38254,2806169,3041,96475,2218517,131220
+-**pre-selected taxids (Fungi)**: 4751
+-**pre-selected taxids (Oomycota)**:  4762
+-**pre-selected taxids (Nematoda)**: 6231
+-**pre-selected taxids (Arthropoda)**: 6656
 ```
-# Additionally, one may use the -negative_taxids and -negative_taxidlist options to exclude sequences by taxid
+
+Exlcuded taxon
+```
+Opisthokonta (except unicellular organisms, Fungi, Oomycota, Nematoda, Arthropda)
+Viridiplantae (except unicellular organisms, Algea)
+```
+To make generate a custom list of taxids.list, use the NCBI entrez-direct and BLAST tool get_species_taxids.sh as shown in script included with the Qmatey download (misc folder).
 
 
-## Configuration
+### Create custom database
+Provide fasta and map_taxids files. Qmatey will use NCBI BLAST tool, makeblastdb, and these files to create the custom database. Example files are provided with the Qmatey download (examples) folder)
 
-Variable | Usage | Input
--------------- | ------------------------------------------------------------------- | -----
-data_type      |  the type of data in your input_dir                                 | FASTQ or FASTA
-input_dir      | the path to QC-filtered sequencing data                             | /path to directory/
-norm_ref_dir        | the path to the normalization reference genomes                              | /path to directory/
-threads        | the maximum number of subprocesses that can run simultaneously      | integer
-tool_dir       | the path to Qmatey's tools                                          | /path to downloaded Qmatey repository/tools
-strain_level   | An option for strain-level taxonomic analysis                       | TRUE or FALSE
-species_level  | An option for species-level taxonomic analysis                      | TRUE or FALSE
-genus_level    | An option for genus-level taxonomic analysis                        | TRUE or FALSE
-family_level   | An option for family-level taxonomic analysis                       | TRUE or FALSE
-order_level    | An option for order-level taxonomic analysis                        | TRUE or FALSE
-class_level    | An option for class-level taxonomic analysis                        | TRUE or FALSE
-phylum_level   | An option for phylum-level taxonomic analysis                       | True or FALSE
-blast_location | An option to perform BLAST locally or remotely                      | LOCAL or REMOTE
-local_db_dir   | the path to a local NCBI sequencing database on your desktop        | /path to directory/database name or NA
-remote_db_dir  | the NCBI database for remote BLAST performance                    | e.g. nt, 16s, nr, etc. or NA
-normalization  | An option for reference-based normalization                         | TRUE OR FALSE
 
-# License
-<a href="https://github.com/bodeolukolu/Qmatey/blob/master/LICENSE">Apache License Version 2.0</a>
+### Overview of workflow
+- In progress
+
+### configuration
+Using a text editor, save a file containing any of the following variables as 'config.sh' file and include it in your project directory.
+
+**General parameters**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|threads|na|number of cores/processors|integer|Optional|
+|walkaway|true|run in walk-away or walk-through mode|true or false|Optional|
+|cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
+|samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
+|lib_type|RRS|RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
+
+
+**Normalzation**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|normalization|na|to compute relative abundance using various methods|true or false|Optional|
+
+
+**MegaBLAST**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|blast_location|na|local,remote, or custom|string|required|
+|local_db|na|directory: ./ncbi_db/nt/nt |comma delimited string(s)|required|
+|taxids|na|files mapping fasta sequences to taxid(s)|true or false|Optional|
+|input_dbfasta|na|provide fasta file if custom database|string|Optional|
+|map_taxids|na|provide files mapping fasta sequences to taxid(s) if custom database|string|Optional|
+
+
+
+**Taxonomic_Profiling_and_Filtering**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|taxonomic_level|na|strain,species,genus,family,order,class,phylum|string|Optional|
+|minRD|2|to eliminate reads with base call errors, removes unique sequences with read depth < value|integer|Optional|
+|min_strain_uniq|1,2|removes BLAST hits supported by only sequences <= value(s)|comma delimited integer(s)|Optional|
+|min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
+|min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
+|max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
+
+
+
+**Visualizations**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|sunburst_taxlevel|na|strain,species,genus,family,order,class|comma delimited string(s)|Optional|
+|sunburst_nlayers|na|phylum,genus,species shown in sunburst|comma delimited string(s)|Optional|
+|compositional_corr|na|strain,species,genus,family,order,class,phylum|comma delimited string(s)|Optional|
+
+
+
+**Advanced parameters**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|nodes|1|number of nodes|integer|Optional|
+|reads_per_megablast|na|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
+|genome_scaling|na|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
+|zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
+|qcov|50|minimum query coverage|integer|Optional|
+|exclude_rRNA|na|exclude rRNA for qRRS/WGS data: rRNA copy number variation can negatively impact abundance estimates|true or false|Optional|
+
+
+**Note: na indicates that variable is user-defined or hard-coded/computed intuitively, as well as a function of ploidy.*
+
+Below is an example of a configuration file:
+
+**config.sh**
+```
+### General_parameters
+####################################################
+threads=24
+walkaway=true
+cluster=false
+samples_alt_dir=false
+library_type=qRRS
+
+
+### Normalization
+####################################################
+normalization=true
+
+### MegaBLAST
+####################################################
+blast_location=local
+local_db=/media/sdd/ncbi_db/nt/nt
+local_db=/media/sdd/ncbi_db/nt/nr
+local_db=/media/sdb/ncbi_db/16S/16S_ribosomal_RNA,/media/sdb/ncbi_db/18S/18S_fungal_sequences,/media/sdb/ncbi_db/28S/28S_fungal_sequences,/media/sdb/ncbi_db/ITS/ITS_eukaryote_sequences
+local_db=/media/sdd/ncbi_db/refseq/refseq_rna,/media/sdd/ncbi_db/refseq/ref_viroids_rep_genomes,/media/sdd/ncbi_db/refseq/ref_prok_rep_genomes,/media/sdd/ncbi_db/refseq/ref_euk_rep_genomes
+taxids=true
+input_dbfasta=NA
+map_taxids=NA
+
+
+### Taxonomic_Profiling_and_Filtering
+####################################################
+taxonomic_level=strain,species,genus,family,order,class,phylum
+minRD=2
+min_strain_uniq=1,2
+min_percent_sample=10,20
+min_pos_corr=0.1,0.2,0.3
+max_neg_corr=0.1,0.2,0.3
+
+
+### Visualizations
+####################################################
+sunburst_taxlevel=strain,species,genus,family,order,class
+sunburst_nlayers=phylum,genus,species
+compositional_corr=strain,species,genus,family,order,class,phylum
+
+
+### Advanced_Parameters
+####################################################
+nodes=1
+reads_per_megablast=1000
+genome_scaling=true
+zero_inflated=0.01
+qcov=50
+exclude_rRNA=true
+```
+
+
+## Related Software
+- [ngsComposer: Empirical Base-call error-filtering and read preprocessing pipeline.](https://github.com/bodeolukolu/ngsComposer)
+- [GBSapp: automated pipeline for variant calling and filtering.](https://github.com/bodeolukolu/GBSapp)
+
+
+
+## Select Article Referencing GBSapp
+1. manuscript in preparation
+
+
+## Troubleshooting
+**Pre-Installation of R:**<br />
+```
+    - To view R version (or to check if installed), from the terminal type:
+          $ python --version
+
+    - For Ubuntu, install R using apt:
+          $ sudo apt update && sudo apt upgrade
+          $ sudo apt install r-base
+
+    - For macOS, install using homebrew:
+          brew install r
+**If samtools doesn't install properly:**<br />
+```
+While the installation of samtools are automated, the installation requires some dependencies. Consider typing the commands below in terminal:
+  $ sudo apt-get update
+  $ sudo apt-get install gcc
+  $ sudo apt-get install make
+  $ sudo apt-get install libbz2-dev
+  $ sudo apt-get install zlib1g-dev
+  $ sudo apt-get install libncurses5-dev
+  $ sudo apt-get install libncursesw5-dev
+  $ sudo apt-get install liblzma-dev
+  $ sudo apt-get install libcurl4-gnutls-dev
+  $ sudo apt-get install libssl-dev
+```
+**Problem with amount of memory and/or processors/cores specified:**<br />
+```
+- This might be due to specifing values greater than available resources
+- Re-submit job with appropriate values or modify header of the Qmatey_run.sh batch file.
+- If using compute cluster managers other than SLURM, header of Qmatey_run.sh batch can also be modified to fit the syntax of the cluster manager been used.
+```
+## Versioning
+Versioning will follow major.minor.patch <a href="https://semver.org">semantic versioning format</a>.
+
+## License
+<a href="https://github.com/bodeolukolu/GBSapp/blob/master/LICENSE">Apache License Version 2.0</a>

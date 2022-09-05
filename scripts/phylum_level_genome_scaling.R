@@ -4,6 +4,7 @@ args <- commandArgs(TRUE)
 taxalevel <- (args[1])
 libdir <- args[2]
 strain_min_uniq_thresh <- as.numeric(args[3])
+zero_inflated <- as.numeric(args[4])
 .libPaths( c( .libPaths(), libdir) )
 library(dplyr, quietly = T)
 
@@ -26,6 +27,13 @@ if (taxalevel == "strain"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_tax_id1 <- final$tax_id
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(tax_id,taxname,species,genus,family,order,class,phylum,kingdom,domain)))
+  final[final <= strain_min_uniq_thresh] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
     final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -47,14 +55,19 @@ if (taxalevel == "strain"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$tax_id %in% keep_tax_id,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$tax_id %in% keep_tax_id,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$tax_id %in% keep_tax_id,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$tax_id %in% keep_tax_id,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$tax_id %in% keep_tax_id,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
@@ -77,6 +90,13 @@ if (taxalevel == "species"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_species1 <- final$species
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(species,genus,family,order,class,phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -98,14 +118,19 @@ if (taxalevel == "species"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$species %in% keep_species,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$species %in% keep_species,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$species %in% keep_species,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$species %in% keep_species,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$species %in% keep_species,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
@@ -128,6 +153,13 @@ if (taxalevel == "genus"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_genus1 <- final$genus
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(genus,family,order,class,phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -149,14 +181,19 @@ if (taxalevel == "genus"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$genus %in% keep_genus,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$genus %in% keep_genus,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$genus %in% keep_genus,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$genus %in% keep_genus,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$genus %in% keep_genus,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
@@ -179,6 +216,13 @@ if (taxalevel == "family"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_family1 <- final$family
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(family,order,class,phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -200,14 +244,19 @@ if (taxalevel == "family"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$family %in% keep_family,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$family %in% keep_family,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$family %in% keep_family,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$family %in% keep_family,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$family %in% keep_family,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
@@ -230,6 +279,13 @@ if (taxalevel == "order"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_order1 <- final$order
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(order,class,phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -251,14 +307,19 @@ if (taxalevel == "order"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$order %in% keep_order,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$order %in% keep_order,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$order %in% keep_order,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$order %in% keep_order,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$order %in% keep_order,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
@@ -281,6 +342,13 @@ if (taxalevel == "class"){
   final <- subset(final, final$mean_max >= final$q5)
   keep_class1 <- final$class
   
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(class,phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -302,18 +370,30 @@ if (taxalevel == "class"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$class %in% keep_class,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$class %in% keep_class,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$class %in% keep_class,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$class %in% keep_class,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$class %in% keep_class,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
 if (taxalevel == "phylum"){
+  final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
+  final <- t(subset(final, select=-c(phylum,kingdom,domain)))
+  final[final <= 2] <- NA; final <- as.data.frame(final)
+  final$zinflate <- rowSums(is.na(final))/(ncol(final)-1)
+  final <- subset(final, final$zinflate <= zero_inflated)
+  rm_samples <- row.names(final)
+  
   if (file.exists(paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""))) {
       final <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   } else {
@@ -327,6 +407,7 @@ if (taxalevel == "phylum"){
   final <- subset(final, final$miss < sampleN)
   keep_phylum <- final$phylum
   
+  
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   norm_mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -334,14 +415,19 @@ if (taxalevel == "phylum"){
   rel_stderr <- read.delim(file=paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   
   uniq_seq <- uniq_seq[uniq_seq$phylum %in% keep_phylum,]
+  uniq_seq <- uniq_seq[ , !names(uniq_seq) %in% c(rm_samples)]
   write.table(uniq_seq,paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   mean <- mean[mean$phylum %in% keep_phylum,]
+  mean <- mean[ , !names(mean) %in% c(rm_samples)]
   write.table(mean,paste(taxalevel,"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   norm_mean <- norm_mean[norm_mean$phylum %in% keep_phylum,]
+  norm_mean <- norm_mean[ , !names(norm_mean) %in% c(rm_samples)]
   write.table(norm_mean,paste(taxalevel,"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   stderr <- stderr[stderr$phylum %in% keep_phylum,]
+  stderr <- stderr[ , !names(stderr) %in% c(rm_samples)]
   write.table(stderr,paste(taxalevel,"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
   rel_stderr <- rel_stderr[rel_stderr$phylum %in% keep_phylum,]
+  rel_stderr <- rel_stderr[ , !names(rel_stderr) %in% c(rm_samples)]
   write.table(rel_stderr,paste(taxalevel,"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
 }
 
