@@ -2203,7 +2203,11 @@ cp -r strain_level strain_level_hold
 for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	cd ./strain_level
 	if [[ "$genome_scaling" == true ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+		if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+		else
+			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+		fi
 	fi
 
 	file=${projdir}/exclude_taxa.txt
@@ -2643,7 +2647,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt
@@ -3081,7 +3089,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt
@@ -3523,7 +3535,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt
@@ -3963,7 +3979,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt
@@ -4404,7 +4424,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt
@@ -4845,7 +4869,11 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $zero_inflated &>/dev/null
+	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	else
+		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	fi
 fi
 
 file=${projdir}/exclude_taxa.txt

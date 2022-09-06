@@ -5,6 +5,7 @@ taxalevel <- (args[1])
 libdir <- args[2]
 strain_min_uniq_thresh <- as.numeric(args[3])
 zero_inflated <- as.numeric(args[4])
+wgs <- as.numeric(args[5])
 .libPaths( c( .libPaths(), libdir) )
 library(dplyr, quietly = T)
 
@@ -24,7 +25,7 @@ if (taxalevel == "strain"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_tax_id1 <- final$tax_id
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -87,7 +88,7 @@ if (taxalevel == "species"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_species1 <- final$species
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -150,7 +151,7 @@ if (taxalevel == "genus"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_genus1 <- final$genus
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -213,7 +214,7 @@ if (taxalevel == "family"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_family1 <- final$family
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -276,7 +277,7 @@ if (taxalevel == "order"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_order1 <- final$order
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -339,7 +340,7 @@ if (taxalevel == "class"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
   final <- subset(final, final$keep > 0)
-  final <- subset(final, final$mean_max >= final$q5)
+  if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_class1 <- final$class
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
