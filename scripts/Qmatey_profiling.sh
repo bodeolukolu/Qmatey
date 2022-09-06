@@ -2371,7 +2371,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_species
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
     ) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -2460,7 +2460,7 @@ else
 
 
   for i in $(ls *_species_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_species_unique_reads*}_taxids_uniq.txt ) &
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_species_unique_reads*}_taxids_uniq.txt ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
@@ -2550,7 +2550,7 @@ cd ${projdir}/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
-awk '{gsub(/ /,"_"); print }' | awk '{print $3, $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_"); print }' | awk '{print $3, $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 
 cd ${projdir}/metagenome/sighits/sighits_species/
@@ -2800,7 +2800,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_genus
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
 
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2895,7 +2895,7 @@ else
   wait
 
   for i in $(ls *_genus_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_genus_unique_reads*}_taxids_uniq.txt ) &
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_genus_unique_reads*}_taxids_uniq.txt ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
@@ -2987,7 +2987,7 @@ cd ${projdir}/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
-awk '{gsub(/ /,"_"); print }' | awk '{print $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_"); print }' | awk '{print $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 
 cd ${projdir}/metagenome/sighits/sighits_genus/
@@ -3240,7 +3240,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_family
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
 
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3335,7 +3335,7 @@ else
 
   wait
   for i in $(ls *_family_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_family_unique_reads*}_taxids_uniq.txt
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_family_unique_reads*}_taxids_uniq.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3429,7 +3429,7 @@ cd ${projdir}/metagenome/sighits/sighits_family
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
-awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd ${projdir}/metagenome/sighits/sighits_family/
@@ -3682,7 +3682,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_order
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3774,7 +3774,7 @@ else
 
   wait
   for i in $(ls *_order_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_order_unique_reads*}_taxids_uniq.txt
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_order_unique_reads*}_taxids_uniq.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3869,7 +3869,7 @@ cd ${projdir}/metagenome/sighits/sighits_order
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
-awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd ${projdir}/metagenome/sighits/sighits_order/
@@ -4123,7 +4123,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_class
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
 
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4217,7 +4217,7 @@ else
 
   wait
   for i in $(ls *_class_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_class_unique_reads*}_taxids_uniq.txt
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_class_unique_reads*}_taxids_uniq.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4310,7 +4310,7 @@ cd ${projdir}/metagenome/sighits/sighits_class
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
-awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd ${projdir}/metagenome/sighits/sighits_class/
@@ -4563,7 +4563,7 @@ else
 
   cd ${projdir}/metagenome/sighits/sighits_phylum
   for i in $(ls *_dup.txt.gz);do (
-  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_dup*}_taxids_dup.txt
+  	awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
 
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4658,7 +4658,7 @@ else
 
   wait
   for i in $(ls *_phylum_unique_reads.txt.gz);do (
-    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' | sort -u -n> ${i%_phylum_unique_reads*}_taxids_uniq.txt
+    awk -F '\t' '{print $8";"}' <(zcat ${i}) | awk -F ';' '{print $1}' > ${i%_phylum_unique_reads*}_taxids_uniq.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4751,7 +4751,7 @@ cd ${projdir}/metagenome/sighits/sighits_phylum
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
-awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0 | "sort -u"}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd ${projdir}/metagenome/sighits/sighits_phylum/
