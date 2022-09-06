@@ -1965,10 +1965,15 @@ if [[ "$taxids" == true ]]; then
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
 	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
-	cat ${projdir}/rankedlineage_edited_other_cultured_species.txt ${projdir}/rankedlineage_edited_other_uncultured.txt > ${projdir}/rankedlineage_edited_other_species.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
 	wait
 	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
 	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured.txt > ${projdir}/rankedlineage_edited_other_genus.txt
 	mv ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
@@ -1989,10 +1994,15 @@ else
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
 	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
-	cat ${projdir}/rankedlineage_edited_other_cultured_species.txt ${projdir}/rankedlineage_edited_other_uncultured.txt > ${projdir}/rankedlineage_edited_other_species.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
 	wait
 	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
 	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured.txt > ${projdir}/rankedlineage_edited_other_genus.txt
 	mv ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
