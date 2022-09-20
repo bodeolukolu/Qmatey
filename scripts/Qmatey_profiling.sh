@@ -109,6 +109,10 @@ fi
 if [[ -z $max_target ]]; then
 	export max_target=1000000
 fi
+if [[ -z "$cross_taxon_validation" ]]; then
+	export cross_taxon_validation=true
+fi
+
 
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -117,7 +121,8 @@ if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$libr
   fi
 fi
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-  if (echo $local_db | grep -q 'nt'); then
+  export min_strain_uniq=1
+	if (echo $local_db | grep -q 'nt'); then
     if [[ -z $reads_per_megablast ]]; then
       export reads_per_megablast=20
     fi
@@ -829,10 +834,10 @@ ref_norm () {
 				rm ${i%.bam}_microbiome_coverage.txt
 			done
 			wait
-			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$4,"\t",$2}' | cat <(printf 'Sample_ID\tmetagenome_reads\ttotal_reads\n') - > coverage_normalize.txt
-			maximum=$(sort -nr -k2,2 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
-			awk -v maximum=$maximum 'NR>1{print $1,maximum/$2}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt
-			awk 'NR>1{print $1,($3/($2+$3))*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_metagenome\n') - > ./results/metagenome_derived_perc.txt
+			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2-$4,"\t",$4,"\t",$2}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\n') - > coverage_normalize.txt
+			maximum=$(sort -nr -k3,3 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
+			awk -v maximum=$maximum 'NR>1{print $1,maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt
+			awk 'NR>1{print $1,"\t",($2/$4)*100,"\t",($3/$4)*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_Metagenome\tPercent_Host\n') - > ./results/metagenome_derived_perc.txt
 			rm host_coverage.txt microbiome_coverage.txt
 		fi
 
@@ -2072,7 +2077,7 @@ fi
 #################################################################################################################
 strain_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Strain-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for strain-level profiling"
+echo -e "${YELLOW}- performing exact matching for strain-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_strain
 cd ${projdir}/metagenome/results
@@ -2313,12 +2318,14 @@ if [[ "$strain_level" == "true" ]]; then
 		wait
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for strain-level profiling ${white}\n"
 fi
 
 #################################################################################################################
 species_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Species-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for species-level profiling"
+echo -e "${YELLOW}- performing exact matching for species-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_species
 cd ${projdir}/metagenome/results
@@ -2744,12 +2751,14 @@ if [[ "$species_level" == "true" ]]; then
 		time species_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for species-level profiling ${white}\n"
 fi
 
 ###########################################################################################
 genus_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Genus-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for genus-level profiling"
+echo -e "${YELLOW}- performing exact matching for genus-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_genus
 cd ${projdir}/metagenome/results
@@ -3188,12 +3197,14 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 		time genus_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for genus-level profiling ${white}\n"
 fi
 
 ############################################################################
 family_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Family-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for family-level profiling"
+echo -e "${YELLOW}- performing exact matching for family-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_family
 cd ${projdir}/metagenome/results
@@ -3634,12 +3645,14 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 		time family_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for family-level profiling ${white}\n"
 fi
 
 #########################################################################
 order_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Order-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for order-level profiling"
+echo -e "${YELLOW}- performing exact matching for order-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_order
 cd ${projdir}/metagenome/results
@@ -4079,13 +4092,15 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 		time order_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for order-level profiling ${white}\n"
 fi
 
 ##########################################################################
 ##########################################################################
 class_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Class-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for class-level profiling"
+echo -e "${YELLOW}- performing exact matching for class-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_class
 cd ${projdir}/metagenome/results
@@ -4524,11 +4539,13 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 		time class_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for class-level profiling ${white}\n"
 fi
 ##########################################################################
 phylum_level() {
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
-echo -e "${YELLOW}- performing exact-matching algorithm for phylum-level profiling"
+echo -e "${YELLOW}- performing exact matching for phylum-level profiling"
 cd ${projdir}/metagenome/sighits
 mkdir -p sighits_phylum
 cd ${projdir}/metagenome/results
@@ -4974,6 +4991,75 @@ if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 		time phylum_level 2>> ${projdir}/log.out
 		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
+else
+	echo -e "${magenta}- skipping exact matching for phylum-level profiling ${white}\n"
+fi
+
+
+##########################################################################
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing cross-taxon validation and filtering \n\e[97m########################################################\n"
+cross_taxon_validate() {
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at class level"
+	cd ${projdir}/metagenome/results/class_level
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../phylum_level/phylum" "./class" "phylum" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../class_level_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at order level"
+	cd ${projdir}/metagenome/results/order_level
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../class_level_validated/class" "./order" "class" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../order_level_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at family level"
+	cd ${projdir}/metagenome/results/family_level
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../order_level_validated/order" "./family" "order" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../family_level_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at genus level"
+	cd ${projdir}/metagenome/results/genus_level
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../family_level_validated/family" "./genus" "family" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../genus_level_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at species level"
+	cd ${projdir}/metagenome/results/species_level
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../genus_level_validated/genus" "./species" "genus" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../species_level_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 1)"
+	cd ${projdir}/metagenome/results/strain_level_minUniq_1
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "./strain" "species" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../strain_level_minUniq_1_validated
+	wait
+	#############################
+	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 2)"
+	cd ${projdir}/metagenome/results/strain_level_minUniq_2
+	mkdir -p validated
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "./strain" "species" "${Qmatey_dir}/tools/R" "./validated/" &&
+	mv ./validated ../strain_level_minUniq_2_validated
+	wait
+	#############################
+
+	cd ${projdir}/metagenome/results/
+	Rscript "${Qmatey_dir}/scripts/ctv_visualization.R" "${Qmatey_dir}/tools/R" &&
+	wait
+
+}
+cd $projdir
+if [[ "$cross_taxon_validation" == true ]]; then
+	time cross_taxon_validate &>> ${projdir}/log.out
+else
+	echo -e "${magenta}- skipping exact matching for phylum-level profiling ${white}\n"
 fi
 
 
@@ -5012,48 +5098,50 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 		wait
 	else
 		cd ${projdir}/metagenome/results
-		for culture_type in $(ls -d *${tsun}_level); do
+		for culture_type in $(ls -d *${tsun}_level*); do
 			cd $culture_type
-			mean=${tsun}_taxainfo_mean.txt
-			mean_norm=${tsun}_taxainfo_mean_normalized.txt
-			if [[ -z $mean_norm ]]; then
-				mean_norm=$mean
-			fi
+			if [[ ! -d "sunburst" ]] ;then
+				mean=${tsun}_taxainfo_mean.txt
+				mean_norm=${tsun}_taxainfo_mean_normalized.txt
+				if [[ -z $mean_norm ]]; then
+					mean_norm=$mean
+				fi
 
-			if [[ -z $min_percent_sample ]]; then
-				min_percent_sample=5,10,20
-			fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-			if [[ "$tsun" == species ]] ; then
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						wait
-					fi
-				done
-				wait
+				if [[ "$tsun" == species ]] ; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+						if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							wait
+						fi
+					done
+					wait
+				fi
+				if [[ "$tsun" == genus ]] || [[ "$tsun" == family ]] || [[ "$tsun" == order ]] || [[ "$tsun" == class ]]; then
+					sunburst_nlayers2=phylum,$tsun
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+						if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							wait
+						fi
+					done
+					wait
+				fi
+				if [[ "$tsun" == phylum ]]; then
+					sunburst_nlayers2=phylum
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
+						if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							wait
+						fi
+					done
+					wait
+				fi
+				cd ../
 			fi
-			if [[ "$tsun" == genus ]] || [[ "$tsun" == family ]] || [[ "$tsun" == order ]] || [[ "$tsun" == class ]]; then
-				sunburst_nlayers2=phylum,$tsun
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						wait
-					fi
-				done
-				wait
-			fi
-			if [[ "$tsun" == phylum ]]; then
-				sunburst_nlayers2=phylum
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/sunburst.R" "$mean_norm" "$min_perc" "${sunburst_nlayers2}" "${Qmatey_dir}/tools/R" $tsun 2>/dev/null )&
-					if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						wait
-					fi
-				done
-				wait
-			fi
-			cd ../
 		done
 		wait
 	fi
@@ -5081,51 +5169,55 @@ correlogram() {
 		if test -f $file; then
 			echo -e "${YELLOW}- creating strain-level visualizations"
 			cd ${projdir}/metagenome/results/"${strain_minUniq}"
-			strain_level_mean=strain_taxainfo_mean_filtered.txt
-			strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
-			strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
-			strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
+			if test ! -f *corr.txt; then
+				strain_level_mean=strain_taxainfo_mean_filtered.txt
+				strain_level_uniq=strain_taxainfo_unique_sequences_filtered.txt
+				strain_level_stderr=strain_taxainfo_quantification_accuracy_filtered.txt
+				strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy_filtered.txt
 
-			if [[ -z $min_percent_sample ]]; then
-				min_percent_sample=5,10,20
-			fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-			if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]]&& test -f $strain_level_mean; then
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-					)&
-				 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					 wait
-				 fi
-				done
-				wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]]&& test -f $strain_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
 			fi
 		else
 			echo -e "${YELLOW}- creating strain-level visualizations"
 			cd ${projdir}/metagenome/results/"${strain_minUniq}"
-			strain_level_mean=strain_taxainfo_mean.txt
-			strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
-			strain_level_uniq=strain_taxainfo_unique_sequences.txt
-			strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
-			strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
-			if [[ -z $strain_level_mean_norm ]]; then
-				:
-			else
-				strain_level_mean=strain_taxainfo_mean_normalized.txt
-			fi
-			if [[ -z $min_percent_sample ]]; then
-				min_percent_sample=5,10,20
-			fi
+			if test ! -f *corr.txt; then
+				strain_level_mean=strain_taxainfo_mean.txt
+				strain_level_mean_norm=strain_taxainfo_mean_normalized.txt
+				strain_level_uniq=strain_taxainfo_unique_sequences.txt
+				strain_level_stderr=strain_taxainfo_quantification_accuracy.txt
+				strain_level_rel_stderr=strain_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $strain_level_mean_norm ]]; then
+					:
+				else
+					strain_level_mean=strain_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-			if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]]&& test -f $strain_level_mean; then
-				for min_perc in ${min_percent_sample//,/ }; do (
-					Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-					)&
-				 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-					 wait
-				 fi
-				done
-				wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]]&& test -f $strain_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
 			fi
 		fi
 		wait
@@ -5138,350 +5230,398 @@ correlogram() {
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating species-level visualizations"
-		cd ${projdir}/metagenome/results/species_level
-		species_level_mean=species_taxainfo_mean_filtered.txt
-		species_level_uniq=species_taxainfo_unique_sequences_filtered.txt
-		species_level_stderr=species_taxainfo_quantification_accuracy_filtered.txt
-		species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy_filtered.txt
+	for speciesdir in $(ls -d species_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating species-level visualizations"
+			cd ${projdir}/metagenome/results/$speciesdir
+			if test ! -f *corr.txt; then
+				species_level_mean=species_taxainfo_mean_filtered.txt
+				species_level_uniq=species_taxainfo_unique_sequences_filtered.txt
+				species_level_stderr=species_taxainfo_quantification_accuracy_filtered.txt
+				species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating species-level visualizations"
-		cd ${projdir}/metagenome/results/species_level
-		species_level_mean=species_taxainfo_mean.txt
-		species_level_mean_norm=species_taxainfo_mean_normalized.txt
-		species_level_uniq=species_taxainfo_unique_sequences.txt
-		species_level_stderr=species_taxainfo_quantification_accuracy.txt
-		species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $species_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			species_level_mean=species_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating species-level visualizations"
+			cd ${projdir}/metagenome/results/$speciesdir
+			if test ! -f *corr.txt; then
+				species_level_mean=species_taxainfo_mean.txt
+				species_level_mean_norm=species_taxainfo_mean_normalized.txt
+				species_level_uniq=species_taxainfo_unique_sequences.txt
+				species_level_stderr=species_taxainfo_quantification_accuracy.txt
+				species_level_rel_stderr=species_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $species_level_mean_norm ]]; then
+					:
+				else
+					species_level_mean=species_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]]&& test -f $species_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/species_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 
 	#### genus: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating genus-level visualizations"
-		cd ${projdir}/metagenome/results/genus_level
-		genus_level_mean=genus_taxainfo_mean_filtered.txt
-		genus_level_uniq=genus_taxainfo_unique_sequences_filtered.txt
-		genus_level_stderr=genus_taxainfo_quantification_accuracy_filtered.txt
-		genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy_filtered.txt
+	for genusdir in $(ls -d genus_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating genus-level visualizations"
+			cd ${projdir}/metagenome/results/$genusdir
+			if test ! -f *corr.txt; then
+				genus_level_mean=genus_taxainfo_mean_filtered.txt
+				genus_level_uniq=genus_taxainfo_unique_sequences_filtered.txt
+				genus_level_stderr=genus_taxainfo_quantification_accuracy_filtered.txt
+				genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating genus-level visualizations"
-		cd ${projdir}/metagenome/results/genus_level
-		genus_level_mean=genus_taxainfo_mean.txt
-		genus_level_mean_norm=genus_taxainfo_mean_normalized.txt
-		genus_level_uniq=genus_taxainfo_unique_sequences.txt
-		genus_level_stderr=genus_taxainfo_quantification_accuracy.txt
-		genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $genus_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			genus_level_mean=genus_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating genus-level visualizations"
+			cd ${projdir}/metagenome/results/$genusdir
+			if test ! -f *corr.txt; then
+				genus_level_mean=genus_taxainfo_mean.txt
+				genus_level_mean_norm=genus_taxainfo_mean_normalized.txt
+				genus_level_uniq=genus_taxainfo_unique_sequences.txt
+				genus_level_stderr=genus_taxainfo_quantification_accuracy.txt
+				genus_level_rel_stderr=genus_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $genus_level_mean_norm ]]; then
+					:
+				else
+					genus_level_mean=genus_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]]&& test -f $genus_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/genus_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+
 
 	#### family: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating family-level visualizations"
-		cd ${projdir}/metagenome/results/family_level
-		family_level_mean=family_taxainfo_mean_filtered.txt
-		family_level_uniq=family_taxainfo_unique_sequences_filtered.txt
-		family_level_stderr=family_taxainfo_quantification_accuracy_filtered.txt
-		family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy_filtered.txt
+	for familydir in $(ls -d family_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating family-level visualizations"
+			cd ${projdir}/metagenome/results/$familydir
+			if test ! -f *corr.txt; then
+				family_level_mean=family_taxainfo_mean_filtered.txt
+				family_level_uniq=family_taxainfo_unique_sequences_filtered.txt
+				family_level_stderr=family_taxainfo_quantification_accuracy_filtered.txt
+				family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating family-level visualizations"
-		cd ${projdir}/metagenome/results/family_level
-		family_level_mean=family_taxainfo_mean.txt
-		family_level_mean_norm=family_taxainfo_mean_normalized.txt
-		family_level_uniq=family_taxainfo_unique_sequences.txt
-		family_level_stderr=family_taxainfo_quantification_accuracy.txt
-		family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $family_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			family_level_mean=family_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating family-level visualizations"
+			cd ${projdir}/metagenome/results/$familydir
+			if test ! -f *corr.txt; then
+				family_level_mean=family_taxainfo_mean.txt
+				family_level_mean_norm=family_taxainfo_mean_normalized.txt
+				family_level_uniq=family_taxainfo_unique_sequences.txt
+				family_level_stderr=family_taxainfo_quantification_accuracy.txt
+				family_level_rel_stderr=family_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $family_level_mean_norm ]]; then
+					:
+				else
+					family_level_mean=family_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]]&& test -f $family_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/family_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+
 
 	#### order: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating order-level visualizations"
-		cd ${projdir}/metagenome/results/order_level
-		order_level_mean=order_taxainfo_mean_filtered.txt
-		order_level_uniq=order_taxainfo_unique_sequences_filtered.txt
-		order_level_stderr=order_taxainfo_quantification_accuracy_filtered.txt
-		order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy_filtered.txt
+	for orderdir in $(ls -d order_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating order-level visualizations"
+			cd ${projdir}/metagenome/results/$orderdir
+			if test ! -f *corr.txt; then
+				order_level_mean=order_taxainfo_mean_filtered.txt
+				order_level_uniq=order_taxainfo_unique_sequences_filtered.txt
+				order_level_stderr=order_taxainfo_quantification_accuracy_filtered.txt
+				order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating order-level visualizations"
-		cd ${projdir}/metagenome/results/order_level
-		order_level_mean=order_taxainfo_mean.txt
-		order_level_mean_norm=order_taxainfo_mean_normalized.txt
-		order_level_uniq=order_taxainfo_unique_sequences.txt
-		order_level_stderr=order_taxainfo_quantification_accuracy.txt
-		order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $order_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			order_level_mean=order_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating order-level visualizations"
+			cd ${projdir}/metagenome/results/$orderdir
+			if test ! -f *corr.txt; then
+				order_level_mean=order_taxainfo_mean.txt
+				order_level_mean_norm=order_taxainfo_mean_normalized.txt
+				order_level_uniq=order_taxainfo_unique_sequences.txt
+				order_level_stderr=order_taxainfo_quantification_accuracy.txt
+				order_level_rel_stderr=order_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $order_level_mean_norm ]]; then
+					:
+				else
+					order_level_mean=order_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]]&& test -f $order_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/order_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+
 
 	#### class: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating class-level visualizations"
-		cd ${projdir}/metagenome/results/class_level
-		class_level_mean=class_taxainfo_mean_filtered.txt
-		class_level_uniq=class_taxainfo_unique_sequences_filtered.txt
-		class_level_stderr=class_taxainfo_quantification_accuracy_filtered.txt
-		class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy_filtered.txt
+	for classdir in $(ls -d class_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating class-level visualizations"
+			cd ${projdir}/metagenome/results/$classdir
+			if test ! -f *corr.txt; then
+				class_level_mean=class_taxainfo_mean_filtered.txt
+				class_level_uniq=class_taxainfo_unique_sequences_filtered.txt
+				class_level_stderr=class_taxainfo_quantification_accuracy_filtered.txt
+				class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating class-level visualizations"
-		cd ${projdir}/metagenome/results/class_level
-		class_level_mean=class_taxainfo_mean.txt
-		class_level_mean_norm=class_taxainfo_mean_normalized.txt
-		class_level_uniq=class_taxainfo_unique_sequences.txt
-		class_level_stderr=class_taxainfo_quantification_accuracy.txt
-		class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $class_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			class_level_mean=class_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating class-level visualizations"
+			cd ${projdir}/metagenome/results/$classdir
+			if test ! -f *corr.txt; then
+				class_level_mean=class_taxainfo_mean.txt
+				class_level_mean_norm=class_taxainfo_mean_normalized.txt
+				class_level_uniq=class_taxainfo_unique_sequences.txt
+				class_level_stderr=class_taxainfo_quantification_accuracy.txt
+				class_level_rel_stderr=class_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $class_level_mean_norm ]]; then
+					:
+				else
+					class_level_mean=class_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]]&& test -f $class_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		cd ${projdir}/metagenome/results/class_level
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/class_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+
 
 	#### phylum: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	if test -f $file; then
-		echo -e "${YELLOW}- creating phylum-level visualizations"
-		cd ${projdir}/metagenome/results/phylum_level
-		phylum_level_mean=phylum_taxainfo_mean_filtered.txt
-		phylum_level_uniq=phylum_taxainfo_unique_sequences_filtered.txt
-		phylum_level_stderr=phylum_taxainfo_quantification_accuracy_filtered.txt
-		phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy_filtered.txt
+	for phylumdir in $(ls -d phylum_level*); do
+		if test -f $file; then
+			echo -e "${YELLOW}- creating phylum-level visualizations"
+			cd ${projdir}/metagenome/results/$phylumdir
+			if test ! -f *corr.txt; then
+				phylum_level_mean=phylum_taxainfo_mean_filtered.txt
+				phylum_level_uniq=phylum_taxainfo_unique_sequences_filtered.txt
+				phylum_level_stderr=phylum_taxainfo_quantification_accuracy_filtered.txt
+				phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy_filtered.txt
 
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
-		fi
-	else
-		echo -e "${YELLOW}- creating phylum-level visualizations"
-		cd ${projdir}/metagenome/results/phylum_level
-		phylum_level_mean=phylum_taxainfo_mean.txt
-		phylum_level_mean_norm=phylum_taxainfo_mean_normalized.txt
-		phylum_level_uniq=phylum_taxainfo_unique_sequences.txt
-		phylum_level_stderr=phylum_taxainfo_quantification_accuracy.txt
-		phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy.txt
-		if [[ -z $phylum_level_mean_norm ]]; then
-			:
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		else
-			phylum_level_mean=phylum_taxainfo_mean_normalized.txt
-		fi
-		if [[ -z $min_percent_sample ]]; then
-			min_percent_sample=5,10,20
-		fi
+			echo -e "${YELLOW}- creating phylum-level visualizations"
+			cd ${projdir}/metagenome/results/$phylumdir
+			if test ! -f *corr.txt; then
+				phylum_level_mean=phylum_taxainfo_mean.txt
+				phylum_level_mean_norm=phylum_taxainfo_mean_normalized.txt
+				phylum_level_uniq=phylum_taxainfo_unique_sequences.txt
+				phylum_level_stderr=phylum_taxainfo_quantification_accuracy.txt
+				phylum_level_rel_stderr=phylum_taxainfo_rel_quantification_accuracy.txt
+				if [[ -z $phylum_level_mean_norm ]]; then
+					:
+				else
+					phylum_level_mean=phylum_taxainfo_mean_normalized.txt
+				fi
+				if [[ -z $min_percent_sample ]]; then
+					min_percent_sample=5,10,20
+				fi
 
-		if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
-			for min_perc in ${min_percent_sample//,/ }; do (
-				Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-				)&
-			 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				 wait
-			 fi
-			done
-			wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]]&& test -f $phylum_level_mean; then
+					for min_perc in ${min_percent_sample//,/ }; do (
+						Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						)&
+					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+						 wait
+					 fi
+					done
+					wait
+				fi
+			fi
 		fi
-	fi
+		wait
+		cd ${projdir}/metagenome/results/phylum_level
+		mkdir -p compositional_correlation
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		cd ${projdir}/metagenome/results
+	done
 	wait
-	cd ${projdir}/metagenome/results/phylum_level
-	mkdir -p compositional_correlation
-	mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 }
 if [[ "$run_corr" == true ]]; then
 	correlogram &>> ${projdir}/log.out
@@ -5489,72 +5629,77 @@ fi
 
 ######################################################################################################################################################
 echo -e "${blue}\n############################################################################## ${white}\n"
+annotate() {
+	cd $projdir
+	find . -depth -type d -exec rmdir {} + 2> /dev/null &&
+	mkdir -p norm_ref
 
-cd $projdir
-find . -depth -type d -exec rmdir {} + 2> /dev/null &&
-mkdir -p norm_ref
+	rm ${projdir}/rankedlineage_edited.dmp
 
-rm ${projdir}/rankedlineage_edited.dmp
+	cd $projdir
+	mkdir -p ${projdir}/metagenome/results/results_uncultured
+	mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
+	mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
+	cd ${projdir}/metagenome/
 
-cd $projdir
-mkdir -p ${projdir}/metagenome/results/results_uncultured
-mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
-mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
-cd ${projdir}/metagenome/
-if [[ "$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt 2> /dev/null | wc -l)" -gt 0 ]]; then
-	mkdir gene_annotation_count
-	taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-	if test -f ./alignment/rRNA/rRNA_combined_compressed.megablast.gz; then
-		zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | \
-		cat - <(zcat ./alignment/rRNA/rRNA_combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}') | gzip > All_compressed.megablast.gz
-	else
-		zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | gzip > All_compressed.megablast.gz
+	if [[ "$(ls ./results/strain_level_minUniq_*_validated/strain_taxainfo_mean_normalized.txt 2> /dev/null | wc -l)" -gt 0 ]]; then
+		mkdir gene_annotation_count
+		taxid_genes=$(ls ./results/strain_level_minUniq_*_validated/strain_taxainfo_mean_normalized.txt | tail -n1)
+		if test -f ./alignment/rRNA/rRNA_combined_compressed.megablast.gz; then
+			zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | \
+			cat - <(zcat ./alignment/rRNA/rRNA_combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}') | gzip > All_compressed.megablast.gz
+		else
+			zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | gzip > All_compressed.megablast.gz
+		fi
+		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - <(zcat All_compressed.megablast.gz) | \
+		awk -F'\t' '!seen[$1$3]++' | awk -F'\t' '!seen[$1$2]++' | \
+		cat <(printf "tax_id\tsequence\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz
+		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
+		zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
+		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
+		rm All_compressed.megablast.gz
+
+		for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
+			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
+			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+			<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
+			cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
+			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
+			zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+			awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
+			awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}_genes_per_taxid.txt
+			) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			 wait
+			fi
+		done
+		wait
+		for i in $(ls ./sighits/sighits_strain/*_sighits.txt.gz); do (
+			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
+			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+			<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
+			cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
+			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
+			zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+			awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
+			awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*_sighits.txt.gz}_genes_per_taxid_Diagnostic.txt
+			) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+			 wait
+			fi
+		done
+		wait
+		mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
+		mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
+		mv ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
+		zcat ./gene_annotation_count/*taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep -v '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
+
 	fi
-	awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - <(zcat All_compressed.megablast.gz) | \
-	awk -F'\t' '!seen[$1$3]++' | awk -F'\t' '!seen[$1$2]++' | \
-	cat <(printf "tax_id\tsequence\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz
-	taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-	zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-	awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-	awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
-	rm All_compressed.megablast.gz
+}
+cd $projdir
+time annotate &>> ${projdir}/log.out
 
-	for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
-		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
-		<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
-		cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
-		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}genes_per_taxid.txt
-		) &
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	wait
-	for i in $(ls ./sighits/sighits_strain/*_sighits.txt.gz); do (
-		taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
-		<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
-		cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
-		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
-		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
-		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*_sighits.txt.gz}genes_per_taxid_Diagnostic.txt
-		) &
-		if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-		 wait
-		fi
-	done
-	wait
-	mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
-	mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
-	mv ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
-	zcat ./gene_annotation_count/*taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep -v '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
-
-fi
 
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
