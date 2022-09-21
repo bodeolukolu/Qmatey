@@ -47,3 +47,4 @@ genome_scaling=true
 zero_inflated=0.01
 qcov=50
 exclude_rRNA=true
+annotate_seq=false

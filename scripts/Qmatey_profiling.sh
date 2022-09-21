@@ -112,7 +112,9 @@ fi
 if [[ -z "$cross_taxon_validation" ]]; then
 	export cross_taxon_validation=true
 fi
-
+if [[ -z "$annotate_seq" ]]; then
+	export annotate_seq=false
+fi
 
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -5698,8 +5700,9 @@ annotate() {
 	fi
 }
 cd $projdir
-time annotate &>> ${projdir}/log.out
-
+if [[ "$annotate_seq" == true ]]; then
+	time annotate &>> ${projdir}/log.out
+fi
 
 if [[ "$normalization" == true ]]; then
 	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize

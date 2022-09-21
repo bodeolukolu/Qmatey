@@ -193,7 +193,6 @@ Using a text editor, save a file containing any of the following variables as 'c
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |taxonomic_level|na|strain,species,genus,family,order,class,phylum|string|Optional|
 |minRD|2|to eliminate reads with base call errors, removes unique sequences with read depth < value|integer|Optional|
-|min_strain_uniq|1,2|removes BLAST hits supported by only sequences <= value(s)|comma delimited integer(s)|Optional|
 |min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
 |min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
 |max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
@@ -218,7 +217,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |qcov|50|minimum query coverage|integer|Optional|
 |exclude_rRNA|na|exclude rRNA for qRRS/WGS data: rRNA copy number variation can negatively impact abundance estimates|true or false|Optional|
-
+|annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
 
 **Note: na indicates that variable is user-defined or hard-coded/computed intuitively, as well as a function of ploidy.*
 
@@ -255,7 +254,6 @@ map_taxids=NA
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
 minRD=2
-min_strain_uniq=1,2
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
@@ -276,6 +274,7 @@ genome_scaling=true
 zero_inflated=0.01
 qcov=50
 exclude_rRNA=true
+annotate_seq=false
 ```
 
 
