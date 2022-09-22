@@ -32,13 +32,13 @@ if (args[2] == "strain"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,staxids=stats1$staxids), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -83,13 +83,13 @@ if (args[2] == "species"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,species=stats1$species), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -134,13 +134,13 @@ if (args[2] == "genus"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,genus=stats1$genus), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -185,13 +185,13 @@ if (args[2] == "family"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,family=stats1$family), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -236,13 +236,13 @@ if (args[2] == "order"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,order=stats1$order), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -287,13 +287,13 @@ if (args[2] == "class"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,class=stats1$class), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
@@ -338,13 +338,13 @@ if (args[2] == "phylum"){
   if (nrow(stats1) > 0) {
     stats1 <- aggregate(stats1$abundance, by=list(sseqid=stats1$sseqid,stitle=stats1$stitle,phylum=stats1$phylum), FUN=sum)
     colnames(stats1)[4] <- c("abundance")
-    stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
-    stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
-    stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(ribosomal_RNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
+    # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
     stats1$abundance2 <- stats1$abundance
-    stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
-    stats1$abundance[stats1$stitle == "rRNA"] <- NA
+    # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
+    # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
