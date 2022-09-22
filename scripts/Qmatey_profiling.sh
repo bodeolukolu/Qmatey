@@ -292,7 +292,7 @@ else
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ "$(ls -A ../se)" ]]; then
 			echo -e "${magenta}- only single-end reads available in se-folder ${white}\n"
-			for i in $(ls *.f* ); do
+			for i in *.f*; do
 				if [[ "$i" == *.R1* ]]; then
 					mv $i ../${i/.R1/}
 				elif [[ "$i" == *_R1* ]]; then
@@ -308,7 +308,7 @@ else
 	if [[ -z "$(ls -A ../se)" ]]; then
 		if [[ "$(ls -A ../pe)" ]]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
-			for i in $(ls *R1.f*); do
+			for i in *R1.f*; do
 				mv ${i%R1.f*}R2.f* ../
 				if [[ "$i" == *.R1* ]]; then
 					mv $i ../${i/.R1/}
@@ -331,7 +331,7 @@ else
 	cd ${projdir}/samples/pe
 	if [[ "$(ls -A ../se)" ]]; then
 		if [[ "$(ls -A ../pe)" ]]; then
-			for i in $(ls *R1.f*); do
+			for i in *R1.f*; do
 				mv ${i%R1.f*}R2.f* ../
 				if [[ "$i" == *.R1* ]]; then
 					cat $i ../se/${i%.R1.f*}* > ../${i}
@@ -408,7 +408,7 @@ else
 		done
 		wait
 
-		for lenfile in $(ls *_length_distribution.txt); do cat $lenfile >> length_distribution.txt && rm $lenfile; done
+		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
 		wait
 		rm *_length_distribution.txt
 		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
@@ -686,7 +686,7 @@ ref_norm () {
 		wait
 		#sample read depth is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
-		for i in $(ls -S *_compressed.fasta.gz); do
+		for i in *_compressed.fasta.gz; do
 			zcat $i 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
 			cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 			rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
@@ -807,7 +807,7 @@ ref_norm () {
 			#Aligning compressed sample files (read-depth accounted for) to the master reference genomes
 			#Exludes all host/reference genome data from the samples -- leaving only metagenomic reads
 			echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
-			for i in $(ls *_compressed.fasta.gz); do
+			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd ${projdir}/norm_ref
 					$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
@@ -827,7 +827,7 @@ ref_norm () {
 			rm host_coverage.txt microbiome_coverage.txt 2> /dev/null
 			#Host-reference alignment coverage relative to other samples is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
-			for i in $(ls -S *.bam); do
+			for i in *.bam; do
 				$samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_host_coverage.txt && \
 				cat ${i%.bam}_host_coverage.txt >> host_coverage.txt && \
 				rm ${i%.bam}_host_coverage.txt  && \
@@ -846,7 +846,7 @@ ref_norm () {
 		if [[ "${norm_method}" == samples ]]; then
 			#Exludes all host/reference genome data from the samples -- leaving only metagenomic reads
 			echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
-			for i in $(ls *_compressed.fasta.gz); do
+			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd ${projdir}/norm_ref
 					$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
@@ -863,7 +863,7 @@ ref_norm () {
 			rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
 			cd ${projdir}/metagenome/
-			for i in $(ls -S *.bam); do
+			for i in *.bam; do
 				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print ">"$1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i
 			done
@@ -872,7 +872,7 @@ ref_norm () {
 			cd ${projdir}/samples/
 			#sample read depth is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
-			for i in $(ls -S *_compressed.fasta.gz); do
+			for i in *_compressed.fasta.gz; do
 				zcat $i 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
 				cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
@@ -888,7 +888,7 @@ ref_norm () {
 	if [[ -z "$(ls -A ${projdir}/norm_ref/*.dict 2> /dev/null)" ]]; then
 		cd ${projdir}/samples
 		echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
-		for i in $(ls -S *_compressed.fasta.gz); do
+		for i in *_compressed.fasta.gz; do
 			normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
 			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat $i 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 		done
@@ -899,7 +899,7 @@ ref_norm () {
 		if [[ "${norm_method}" == spike_host ]]; then
 			cd ${projdir}/metagenome
 			echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
-			for i in $(ls -S *.bam); do
+			for i in *.bam; do
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
 				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
 				awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
@@ -911,7 +911,7 @@ ref_norm () {
 		if [[ "${norm_method}" == samples ]]; then
 			cd ${projdir}/samples
 			echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
-			for i in $(ls -S *_compressed.fasta.gz); do
+			for i in *_compressed.fasta.gz; do
 				normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat $i 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 			done
@@ -1150,7 +1150,7 @@ no_norm () {
 		#Aligning compressed sample files (read-depth accounted for) to the master reference genomes
 		#Exludes all host/reference genome data from the samples -- leaving only metagenomic reads
 		echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
-		for i in $(ls *_compressed.fasta.gz); do
+		for i in *_compressed.fasta.gz; do
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 				cd ${projdir}/norm_ref/
 				$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
@@ -1169,7 +1169,7 @@ no_norm () {
 
 		cd ${projdir}/metagenome
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
-		for i in $(ls -S *.bam); do
+		for i in *.bam; do
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
 				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
 				awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
@@ -1386,7 +1386,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 
 		cd ${projdir}/metagenome/haplotig
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -1481,7 +1481,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 
 
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 			if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -1655,7 +1655,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 
 		cd ${projdir}/metagenome/haplotig
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -1743,7 +1743,7 @@ else
 		wait
 
 		cd ${projdir}/metagenome/haplotig
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -1837,7 +1837,7 @@ else
 
 
 
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 			if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -1908,7 +1908,7 @@ else
 		wait
 
 		cd ${projdir}/metagenome/haplotig
-		for i in $(ls -S *metagenome.fasta.gz); do (
+		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
 				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
@@ -2088,10 +2088,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz); do (
+	for i in *_haplotig.megablast.gz; do (
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-				for emg in $(ls ${projdir}/taxids/*.txids); do
+				for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1] {print $0}' <(zcat ${i} | awk '$6==100') <(zcat ${i%} | awk '$6==100') | awk '$3 >= 32 {print $0}' | awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | gzip > ${i%.gz}strain.gz &&
 					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
@@ -2336,10 +2336,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_species/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at species-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do (
+	for i in *_haplotig.megablast.gz;do (
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-2 {print $0}' <(zcat $i | awk '$6>=99') <(zcat $i | awk '$6>=99') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -2769,10 +2769,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_genus/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at genus-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do (
+	for i in *_haplotig.megablast.gz;do (
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-4 {print $0}' <(zcat ${i} | awk '$6>=98') <(zcat ${i} | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -3215,10 +3215,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_family/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at family-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do (
+	for i in *_haplotig.megablast.gz;do (
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -3663,10 +3663,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_order/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at order-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do (
+	for i in *_haplotig.megablast.gz;do (
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -4111,10 +4111,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_class/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at class-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do(
+	for i in *_haplotig.megablast.gz;do(
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -4556,10 +4556,10 @@ cd ${projdir}/metagenome/alignment
 if find ../sighits/sighits_phylum/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at phylum-level already available for each sample"
 else
-	for i in $(ls -S *_haplotig.megablast.gz);do (
+	for i in *_haplotig.megablast.gz;do (
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
-			  for emg in $(ls ${projdir}/taxids/*.txids); do
+			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
@@ -5005,49 +5005,49 @@ cross_taxon_validate() {
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at class level"
 	cd ${projdir}/metagenome/results/class_level
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../phylum_level/phylum" "./class" "phylum" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../phylum_level/phylum" "class" "phylum" "${Qmatey_dir}/tools/R" "./validated/class" &&
 	mv ./validated ../class_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at order level"
 	cd ${projdir}/metagenome/results/order_level
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../class_level_validated/class" "./order" "class" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../class_level_validated/class" "order" "class" "${Qmatey_dir}/tools/R" "./validated/order" &&
 	mv ./validated ../order_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at family level"
 	cd ${projdir}/metagenome/results/family_level
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../order_level_validated/order" "./family" "order" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../order_level_validated/order" "family" "order" "${Qmatey_dir}/tools/R" "./validated/family" &&
 	mv ./validated ../family_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at genus level"
 	cd ${projdir}/metagenome/results/genus_level
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../family_level_validated/family" "./genus" "family" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../family_level_validated/family" "genus" "family" "${Qmatey_dir}/tools/R" "./validated/genus" &&
 	mv ./validated ../genus_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at species level"
 	cd ${projdir}/metagenome/results/species_level
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../genus_level_validated/genus" "./species" "genus" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../genus_level_validated/genus" "species" "genus" "${Qmatey_dir}/tools/R" "./validated/species" &&
 	mv ./validated ../species_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 1)"
 	cd ${projdir}/metagenome/results/strain_level_minUniq_1
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "./strain" "species" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
 	mv ./validated ../strain_level_minUniq_1_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 2)"
 	cd ${projdir}/metagenome/results/strain_level_minUniq_2
 	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "./strain" "species" "${Qmatey_dir}/tools/R" "./validated/" &&
+	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
 	mv ./validated ../strain_level_minUniq_2_validated
 	wait
 	#############################
@@ -5076,7 +5076,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 	cd ${projdir}/metagenome/results
 
 	if [[ "$tsun" == strain ]]; then
-		for strain_minUniq in $(ls -d *strain_level_minUniq_*); do
+		for strain_minUniq in *strain_level_minUniq_*/; do
 		  cd ${strain_minUniq}
 		  mean=${tsun}_taxainfo_mean.txt
 		  mean_norm=${tsun}_taxainfo_mean_normalized.txt
@@ -5100,7 +5100,7 @@ for tsun in ${sunburst_taxlevel//,/ }; do
 		wait
 	else
 		cd ${projdir}/metagenome/results
-		for culture_type in $(ls -d *${tsun}_level*); do
+		for culture_type in *${tsun}_level*/; do
 			cd $culture_type
 			if [[ ! -d "sunburst" ]] ;then
 				mean=${tsun}_taxainfo_mean.txt
@@ -5167,7 +5167,7 @@ correlogram() {
 	#### strain: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for strain_minUniq in $(ls -d strain_level_minUniq_*); do
+	for strain_minUniq in strain_level_minUniq_*/; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating strain-level visualizations"
 			cd ${projdir}/metagenome/results/"${strain_minUniq}"
@@ -5232,7 +5232,7 @@ correlogram() {
 	#### species: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for speciesdir in $(ls -d species_level*); do
+	for speciesdir in species_level*/; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating species-level visualizations"
 			cd ${projdir}/metagenome/results/$speciesdir
@@ -5297,7 +5297,7 @@ correlogram() {
 	#### genus: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for genusdir in $(ls -d genus_level*); do
+	for genusdir in genus_level*; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating genus-level visualizations"
 			cd ${projdir}/metagenome/results/$genusdir
@@ -5363,7 +5363,7 @@ correlogram() {
 	#### family: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for familydir in $(ls -d family_level*); do
+	for familydir in family_level*/; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating family-level visualizations"
 			cd ${projdir}/metagenome/results/$familydir
@@ -5429,7 +5429,7 @@ correlogram() {
 	#### order: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for orderdir in $(ls -d order_level*); do
+	for orderdir in order_level*/; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating order-level visualizations"
 			cd ${projdir}/metagenome/results/$orderdir
@@ -5495,7 +5495,7 @@ correlogram() {
 	#### class: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for classdir in $(ls -d class_level*); do
+	for classdir in class_level*; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating class-level visualizations"
 			cd ${projdir}/metagenome/results/$classdir
@@ -5562,7 +5562,7 @@ correlogram() {
 	#### phylum: compositionality-corrected p-values, q-values, and Z-scores for all pairwise correlations
 	######################################################################################################
 	cd ${projdir}/metagenome/results
-	for phylumdir in $(ls -d phylum_level*); do
+	for phylumdir in phylum_level*/; do
 		if test -f $file; then
 			echo -e "${YELLOW}- creating phylum-level visualizations"
 			cd ${projdir}/metagenome/results/$phylumdir
@@ -5662,7 +5662,7 @@ annotate() {
 		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
 		rm All_compressed.megablast.gz
 
-		for i in $(ls ./alignment/cultured/*haplotig.megablast.gz); do (
+		for i in ./alignment/cultured/*haplotig.megablast.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
 			<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
@@ -5677,7 +5677,7 @@ annotate() {
 			fi
 		done
 		wait
-		for i in $(ls ./sighits/sighits_strain/*_sighits.txt.gz); do (
+		for i in ./sighits/sighits_strain/*_sighits.txt.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
 			<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
