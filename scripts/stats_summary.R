@@ -36,14 +36,14 @@ if (args[2] == "strain"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("staxids","uniqseq"), summarise, Nt = length(staxids))
     stats3 <- as.data.frame(table(stats2$staxids)); colnames(stats3)[1] <- c("staxids")
     stats1 <- merge(stats1, stats3, by=c("staxids"), all.x=TRUE)
@@ -87,14 +87,14 @@ if (args[2] == "species"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("species","uniqseq"), summarise, Nt = length(species))
     stats3 <- as.data.frame(table(stats2$species)); colnames(stats3)[1] <- c("species")
     stats1 <- merge(stats1, stats3, by=c("species"), all.x=TRUE)
@@ -138,14 +138,14 @@ if (args[2] == "genus"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("genus","uniqseq"), summarise, Nt = length(genus))
     stats3 <- as.data.frame(table(stats2$genus)); colnames(stats3)[1] <- c("genus")
     stats1 <- merge(stats1, stats3, by=c("genus"), all.x=TRUE)
@@ -189,14 +189,14 @@ if (args[2] == "family"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("family","uniqseq"), summarise, Nt = length(family))
     stats3 <- as.data.frame(table(stats2$family)); colnames(stats3)[1] <- c("family")
     stats1 <- merge(stats1, stats3, by=c("family"), all.x=TRUE)
@@ -240,14 +240,14 @@ if (args[2] == "order"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("order","uniqseq"), summarise, Nt = length(order))
     stats3 <- as.data.frame(table(stats2$order)); colnames(stats3)[1] <- c("order")
     stats1 <- merge(stats1, stats3, by=c("order"), all.x=TRUE)
@@ -291,14 +291,14 @@ if (args[2] == "class"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("class","uniqseq"), summarise, Nt = length(class))
     stats3 <- as.data.frame(table(stats2$class)); colnames(stats3)[1] <- c("class")
     stats1 <- merge(stats1, stats3, by=c("class"), all.x=TRUE)
@@ -342,14 +342,14 @@ if (args[2] == "phylum"){
     # stats1$stitle <- gsub("(ribosomal_RNA).*", "\\1", stats1$stitle)
     # stats1$stitle <- gsub(".*(rRNA)", "\\1", stats1$stitle)
     # stats1$stitle <- gsub("(rRNA).*", "\\1", stats1$stitle)
-    stats1$abundance2 <- stats1$abundance
+    # stats1$abundance2 <- stats1$abundance
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
-    stats1 <- subset(stats1, select=c(3,4,5))
+    stats1 <- subset(stats1, select=c(3,4))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
-    stats1 <- subset(stats1, select=-c(abundance2))
+    # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("phylum","uniqseq"), summarise, Nt = length(phylum))
     stats3 <- as.data.frame(table(stats2$phylum)); colnames(stats3)[1] <- c("phylum")
     stats1 <- merge(stats1, stats3, by=c("phylum"), all.x=TRUE)
