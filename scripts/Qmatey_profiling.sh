@@ -256,6 +256,63 @@ mkdir sighits
 mkdir results
 mkdir ./results/ref_aligned_summaries
 
+echo -e "\e[97m########################################################\n \e[38;5;210m Generating simulation of synthetic/mock community sequencing \n\e[97m########################################################\n"
+simulate_reads () {
+cd "${projdir}"/mock/
+	for i in *.f; do
+		if [[ "$simulation" =~ "complete_digest" ]]; then
+			if [[ -z "$RE2" ]]; then
+				if [[ $(file $Genome_Assembly 2> /dev/null) =~ gzip ]]; then
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
+					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' |
+					grep "^$RE1.*$RE1" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
+				else
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
+					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' |
+					grep "^$RE1.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
+				fi
+			fi
+
+			if [[ -z "$RE3" ]]; then
+				if [[ $(file $Genome_Assembly 2> /dev/null) =~ gzip ]]; then
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
+					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' |
+					grep "^$RE1.*$RE2$\|^$RE2.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
+				else
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
+					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
+					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' |
+					grep "^$RE1.*$RE2$\|^$RE2.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
+				fi
+			fi
+		fi
+		if [[ "$library_type" =~ "partial_digest" ]]; then
+		fi
+		if [[ "$library_type" =~ "shotgun" ]]; then
+		fi
+	done
+	Rscript "./digest.R" Genome_digest_all.frags Genome_digest_sub.frags $Genome_name
+}
+cd "${projdir}"
+if [[ ! -z "$simulation" == true ]] && [[ ! -z "simulation_motif" ]]; then
+		time simulate_reads &>> ${projdir}/log.out
+fi
+
 #################################################################################################################
 #Organize fastq files for metagenomic processing
 #Combine paired-end read data for downstream analysis
@@ -289,7 +346,8 @@ else
 				fi
 			done
 		fi
-	fi
+	fi		if [[ complete_digest, partial_digest, or shotgun ]]; then
+		fi
 
 	cd "${projdir}"/samples/se
 	if [[ -z "$(ls -A ../pe)" ]]; then

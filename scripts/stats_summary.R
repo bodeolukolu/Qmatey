@@ -57,7 +57,7 @@ if (args[2] == "strain"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("staxids"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
@@ -159,7 +159,7 @@ if (args[2] == "genus"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("genus"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
@@ -210,7 +210,7 @@ if (args[2] == "family"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("family"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
@@ -261,7 +261,7 @@ if (args[2] == "order"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("order"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
@@ -312,7 +312,7 @@ if (args[2] == "class"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("class"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
@@ -363,7 +363,7 @@ if (args[2] == "phylum"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("phylum"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
