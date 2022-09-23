@@ -311,7 +311,7 @@ cd "${projdir}"/mock/
 	Rscript "./digest.R" Genome_digest_all.frags Genome_digest_sub.frags $Genome_name
 }
 cd "${projdir}"
-if [[ ! -z "$simulation" == true ]] && [[ ! -z "simulation_motif" ]]; then
+if [[ ! -z "$simulation" ]] && [[ ! -z "simulation_motif" ]]; then
 		time simulate_reads &>> ${projdir}/log.out
 fi
 
