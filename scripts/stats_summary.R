@@ -42,7 +42,7 @@ if (args[2] == "strain"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("staxids","uniqseq"), summarise, Nt = length(staxids))
     stats3 <- as.data.frame(table(stats2$staxids)); colnames(stats3)[1] <- c("staxids")
@@ -93,7 +93,7 @@ if (args[2] == "species"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("species","uniqseq"), summarise, Nt = length(species))
     stats3 <- as.data.frame(table(stats2$species)); colnames(stats3)[1] <- c("species")
@@ -144,7 +144,7 @@ if (args[2] == "genus"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("genus","uniqseq"), summarise, Nt = length(genus))
     stats3 <- as.data.frame(table(stats2$genus)); colnames(stats3)[1] <- c("genus")
@@ -195,7 +195,7 @@ if (args[2] == "family"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("family","uniqseq"), summarise, Nt = length(family))
     stats3 <- as.data.frame(table(stats2$family)); colnames(stats3)[1] <- c("family")
@@ -246,7 +246,7 @@ if (args[2] == "order"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("order","uniqseq"), summarise, Nt = length(order))
     stats3 <- as.data.frame(table(stats2$order)); colnames(stats3)[1] <- c("order")
@@ -297,7 +297,7 @@ if (args[2] == "class"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("class","uniqseq"), summarise, Nt = length(class))
     stats3 <- as.data.frame(table(stats2$class)); colnames(stats3)[1] <- c("class")
@@ -348,7 +348,7 @@ if (args[2] == "phylum"){
     stats1 <- subset(stats1, select=c(3,4,5))
     stats1$uniqseq <- 0
     stats1$uniqseq[stats1$abundance >= 0] <- 1
-    stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
+    # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("phylum","uniqseq"), summarise, Nt = length(phylum))
     stats3 <- as.data.frame(table(stats2$phylum)); colnames(stats3)[1] <- c("phylum")
