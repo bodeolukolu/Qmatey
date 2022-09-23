@@ -6,6 +6,8 @@ walkaway=true
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+simulation=complete_digest
+simulation_motif=ATGCAT,CATG
 
 
 # Normalization

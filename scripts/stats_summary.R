@@ -91,8 +91,8 @@ if (args[2] == "species"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("species"), summarise, Nt = length(species))
@@ -142,8 +142,8 @@ if (args[2] == "genus"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("genus"), summarise, Nt = length(genus))
@@ -193,8 +193,8 @@ if (args[2] == "family"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("family"), summarise, Nt = length(family))
@@ -244,8 +244,8 @@ if (args[2] == "order"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("order"), summarise, Nt = length(order))
@@ -295,8 +295,8 @@ if (args[2] == "class"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("class"), summarise, Nt = length(class))
@@ -346,8 +346,8 @@ if (args[2] == "phylum"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
     stats2 <- ddply(stats1, c("phylum"), summarise, Nt = length(phylum))

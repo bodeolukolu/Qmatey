@@ -167,6 +167,8 @@ Using a text editor, save a file containing any of the following variables as 'c
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
+|simulation|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
+|simulation_motif|ATGCAT,CATG|genome fragmentation based on motif i.e. REnase site(s) or random|string|Optional|
 
 
 **Normalzation**
@@ -232,6 +234,8 @@ walkaway=true
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+simulation=digest
+simulation_motif=ATGCAT,CATG
 
 
 ### Normalization
