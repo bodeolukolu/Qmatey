@@ -40,21 +40,21 @@ if (args[2] == "strain"){
     # stats1$abundance[stats1$stitle == "ribosomal_RNA"] <- NA
     # stats1$abundance[stats1$stitle == "rRNA"] <- NA
     stats1 <- subset(stats1, select=c(3,4))
-    stats1$uniqseq <- 0
-    stats1$uniqseq[stats1$abundance >= 0] <- 1
+    # stats1$uniqseq <- 0
+    # stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("staxids","uniqseq"), summarise, Nt = length(staxids))
+    stats2 <- ddply(stats1, c("staxids"), summarise, Nt = length(staxids))
     stats3 <- as.data.frame(table(stats2$staxids)); colnames(stats3)[1] <- c("staxids")
     stats1 <- merge(stats1, stats3, by=c("staxids"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("staxids"), summarise,
                     N    = length(staxids),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("staxids"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("staxids"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -95,17 +95,17 @@ if (args[2] == "species"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("species","uniqseq"), summarise, Nt = length(species))
+    stats2 <- ddply(stats1, c("species"), summarise, Nt = length(species))
     stats3 <- as.data.frame(table(stats2$species)); colnames(stats3)[1] <- c("species")
     stats1 <- merge(stats1, stats3, by=c("species"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("species"), summarise,
                     N    = length(species),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("species"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("species"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -146,17 +146,17 @@ if (args[2] == "genus"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("genus","uniqseq"), summarise, Nt = length(genus))
+    stats2 <- ddply(stats1, c("genus"), summarise, Nt = length(genus))
     stats3 <- as.data.frame(table(stats2$genus)); colnames(stats3)[1] <- c("genus")
     stats1 <- merge(stats1, stats3, by=c("genus"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("genus"), summarise,
                     N    = length(genus),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("genus"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("genus"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -197,17 +197,17 @@ if (args[2] == "family"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("family","uniqseq"), summarise, Nt = length(family))
+    stats2 <- ddply(stats1, c("family"), summarise, Nt = length(family))
     stats3 <- as.data.frame(table(stats2$family)); colnames(stats3)[1] <- c("family")
     stats1 <- merge(stats1, stats3, by=c("family"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("family"), summarise,
                     N    = length(family),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("family"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("family"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -248,17 +248,17 @@ if (args[2] == "order"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("order","uniqseq"), summarise, Nt = length(order))
+    stats2 <- ddply(stats1, c("order"), summarise, Nt = length(order))
     stats3 <- as.data.frame(table(stats2$order)); colnames(stats3)[1] <- c("order")
     stats1 <- merge(stats1, stats3, by=c("order"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("order"), summarise,
                     N    = length(order),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("order"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("order"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -299,17 +299,17 @@ if (args[2] == "class"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("class","uniqseq"), summarise, Nt = length(class))
+    stats2 <- ddply(stats1, c("class"), summarise, Nt = length(class))
     stats3 <- as.data.frame(table(stats2$class)); colnames(stats3)[1] <- c("class")
     stats1 <- merge(stats1, stats3, by=c("class"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("class"), summarise,
                     N    = length(class),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("class"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("class"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
@@ -350,17 +350,17 @@ if (args[2] == "phylum"){
     stats1$uniqseq[stats1$abundance >= 0] <- 1
     # stats1$abundance <- ifelse(is.na(stats1$abundance), stats1$abundance2, stats1$abundance)
     # stats1 <- subset(stats1, select=-c(abundance2))
-    stats2 <- ddply(stats1, c("phylum","uniqseq"), summarise, Nt = length(phylum))
+    stats2 <- ddply(stats1, c("phylum"), summarise, Nt = length(phylum))
     stats3 <- as.data.frame(table(stats2$phylum)); colnames(stats3)[1] <- c("phylum")
     stats1 <- merge(stats1, stats3, by=c("phylum"), all.x=TRUE)
-    stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
+    # stats1$abundance[stats1$uniqseq == "0" & stats1$Freq == "2" ] <- NA
     stats1 <- ddply(stats1, c("phylum"), summarise,
                     N    = length(phylum),
                     mean = mean(abundance, na.rm=TRUE),
                     sd   = sd(abundance, na.rm=TRUE)
     )
     stats2 <- merge(stats2, stats3, by=c("phylum"), all.x=TRUE)
-    stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
+    # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("phylum"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
     stats1 <- subset(stats1, select=c(1,3,2,8))
