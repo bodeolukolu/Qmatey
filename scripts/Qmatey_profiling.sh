@@ -348,9 +348,7 @@ else
 				fi
 			done
 		fi
-	fi		if [[ complete_digest, partial_digest, or shotgun ]]; then
-		fi
-
+	fi
 	cd "${projdir}"/samples/se
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ "$(ls -A ../se)" ]]; then
