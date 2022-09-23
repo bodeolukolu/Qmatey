@@ -256,7 +256,7 @@ mkdir sighits
 mkdir results
 mkdir ./results/ref_aligned_summaries
 
-echo -e "\e[97m########################################################\n \e[38;5;210m Generating simulation of synthetic/mock community sequencing \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210m Generating synthetic/mock community sequences for simulation \n\e[97m########################################################\n"
 simulate_reads () {
 cd "${projdir}"/mock/
 	for i in *.f; do
@@ -302,8 +302,10 @@ cd "${projdir}"/mock/
 			fi
 		fi
 		if [[ "$library_type" =~ "partial_digest" ]]; then
+			:
 		fi
 		if [[ "$library_type" =~ "shotgun" ]]; then
+			:
 		fi
 	done
 	Rscript "./digest.R" Genome_digest_all.frags Genome_digest_sub.frags $Genome_name
