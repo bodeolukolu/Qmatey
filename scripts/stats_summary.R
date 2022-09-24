@@ -108,7 +108,7 @@ if (args[2] == "species"){
     # stats2$Nt[stats2$uniqseq == "0" & stats2$Freq == "2" ] <- NA; stats2 <- na.omit(stats2)
     stats1 <- merge(stats1, stats2, by=c("species"), all.x=TRUE)
     stats1$se <- stats1$sd/stats1$Nt    
-    stats1 <- subset(stats1, select=c(1,3,2,8))
+    stats1 <- subset(stats1, select=c(1,3,2,7))
     colnames(stats1) <- c("taxid","mean","uniq_reads","stderr")
     stats1$rel_stderr <- (stats1$stderr/stats1$mean)*100
   }
