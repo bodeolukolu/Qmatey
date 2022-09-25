@@ -597,6 +597,11 @@ cluster="$(grep cluster config.sh)"
 cluster=${cluster//*=}
 nthread="$(grep threads config.sh)"
 nthread=${nthread//*=}
+simulation_lib="$(grep simulation_lib config.sh)"
+simulation_lib=${simulation_lib//*=}
+simulation_motif="$(grep simulation_motif config.sh)"
+simulation_motif=${simulation_motif//*=}
+
 
 if [ -z "$string" ]; then
  string=true
@@ -604,6 +609,39 @@ fi
 if [ "$cluster"  == false ]; then
  unset cluster
 fi
+
+
+if [ -d "${projdir}/simulate_genomes/" ]; then
+	echo -e "${magenta}- Do you want to perform simulation based on WGS data in directory < ${projdir}/simulate_genomes >? ${white}\n"
+	read -p "- y(YES) or n(NO) " -t 36000 -n 1 -r
+	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+		printf '\n'
+		echo -e "${magenta}- skipping simulation ${white}\n"
+    echo "simulate_reads=0" | cat config.sh - > unixformat.sh
+    mv unixformat.sh config.sh
+	else
+		printf '\n'
+		if [[ -z "$simulation_lib" ]] || [[ -z "$simulation_motif" ]]; then
+			echo -e "${magenta}- \n- please specify simulation parameters. simulation_lib and simulation_motif are required ${white}\n"
+			echo -e "${magenta}- \n- Qmatey will exit in 5 seconds ${white}\n"
+			sleep 5 && exit 1
+		fi
+		if [[ "$(ls ./samples/* | wc -l)" -gt 0 ]] || [[ ! -d "simulate_genomes" ]]; then
+			echo -e "${magenta}- \n- samples folder needs to be empty and WGS datasets needs to be provided in directory <${projdir}/simulate_genomes> ${white}\n"
+			echo -e "${magenta}- \n- Qmatey will exit in 5 seconds ${white}\n"
+			sleep 5 && exit 1
+		fi
+    echo "simulate_reads=1" | cat config.sh - > unixformat.sh
+    mv unixformat.sh config.sh
+	fi
+else
+  echo "simulate_reads=0" | cat config.sh - > unixformat.sh
+  mv unixformat.sh config.sh
+fi
+
+
+
+
 string_norm="$(grep normalization config.sh)"
 string_norm=${string_norm//*=}
 if [ -z "$string_norm"  ]; then
@@ -625,7 +663,7 @@ string_sunburst="$(grep run_sunburst config.sh)"
 string_sunburst=${string_sunburst//*=}
 if [ -z "$string_norm"  ]; then
 	echo -e "${magenta}- Expecting variable run_sunburst (visualization of diversity & relative abundance): true or false> ${white}"
-	echo -e "${magenta}- Do you wish to visualization of diversity & relative abundance? ${white}"
+	echo -e "${magenta}- Do you wish to generate visualization of diversity & relative abundance? ${white}"
 	read -p "- y(YES) or n(NO)? " -n 1 -r
 	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 		printf "\n"
@@ -640,7 +678,6 @@ fi
 
 
 if [[ "$string" == false ]]; then
-  echo -e "${magenta}- Qmatey will run in walk-through mode? ${white}"
   if [ -z "$nthread" ]; then
     echo -e "${magenta}- Qmatey will use (total processors/cores)-2? ${white}"
     echo -e "${magenta}- Quit (ctrl + c), else Qmatey will continue in 5 seconds ${white}"
@@ -666,7 +703,6 @@ fi
 
 if [[ "$string" == true ]]; then
 if [ -z $cluster ]; then
-  echo -e "${magenta}- Qmatey will run in walkaway mode? ${white}"
   if [ -z "$nthread" ]; then
     echo -e "${magenta}- Qmatey will use (total processors/cores)-2? ${white}"
     echo -e "${magenta}- Quit (ctrl + c), else Qmatey will continue in 5 seconds ${white}"
@@ -703,7 +739,6 @@ if [[ "$cluster" == true ]]; then
     sleep 5
     exit 1
   fi
-  echo -e "${magenta}- Qmatey will run in walkaway mode? ${white}"
   printf "#""!""/bin/bash \n#SBATCH -c ${nthread} \n\n" > cluster_header.sh
   printf "walkaway=true \n\n" > walkaway.txt
   cat cluster_header.sh <(grep -v '^[[:space:]]*$' config.sh | awk '{gsub(/^/,"export "); gsub(/export #/,"#");}1') norm_method.sh walkaway.txt fetchdir.txt $string2 $string3 | awk '{ sub("\r$",""); print}' > Qmatey_run.sh

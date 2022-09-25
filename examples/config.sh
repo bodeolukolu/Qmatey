@@ -2,12 +2,15 @@
 # General_parameters
 ####################################################
 threads=24
-walkaway=true
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
-simulation=complete_digest
+
+# simulation_parameters
+####################################################
+simulation_lib=complete_digest
 simulation_motif=ATGCAT,CATG
+fragment_size_range=100,550
 
 
 # Normalization

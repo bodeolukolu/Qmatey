@@ -53,6 +53,13 @@ fi
 
 
 cd "${projdir}"
+
+if [[ -z "$fragment_size_range" ]]; then
+	export fragment_size_range=100,550
+fi
+if [[ -z "$coverage" ]]; then
+	export coverage=100
+fi
 if [[ -z "$fastMegaBLAST" ]]; then
 	export fastMegaBLAST=true
 fi
@@ -258,62 +265,103 @@ mkdir ./results/ref_aligned_summaries
 
 echo -e "\e[97m########################################################\n \e[38;5;210m Generating synthetic/mock community sequences for simulation \n\e[97m########################################################\n"
 simulate_reads () {
-cd "${projdir}"/mock/
-	for i in *.f; do
-		if [[ "$simulation" =~ "complete_digest" ]]; then
-			if [[ -z "$RE2" ]]; then
-				if [[ $(file $Genome_Assembly 2> /dev/null) =~ gzip ]]; then
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
-					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
-					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' |
-					grep "^$RE1.*$RE1" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
-				else
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
-					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
-					awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1);}1' |
-					grep "^$RE1.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
-				fi
-			fi
+	cd "${projdir}"/simulate_genomes/
+	for simdir in */ ; do
+		cd $simdir && gunzip *.gz 2> /dev/null
+		while IFS="" read -r p || [ -n "$p" ]; do
+			gcat=$(echo $p | awk '{print $1}')
+			gfile=$(echo $p | awk '{print $2}')
+			:> ../${simdir}.fasta
+			for tabundance in {1.."$gcat"}; do
+				cat $gfile >> ../../samples/${simdir}.fasta
+			done
+		done < abundance.txt
+		$gzip ../../samples/${simdir}.fasta
+		cd ../
+	done
+	minfrag=${fragment_size_range//,/ }
+	maxfrag=${fragment_size_range#*,}
+	if [[ "$simulation" =~ "complete_digest" ]] || [[ "$library_type" =~ "partial_digest" ]]; then
+		echo $simulation_motif | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase.txt
+		RE1=$(grep 'RE1' REnase.txt | awk '{print $2}')
+		RE2=$(grep 'RE2' REnase.txt | awk '{print $2}')
+		RE3=$(grep 'RE3' REnase.txt | awk '{print $2}')
+		if [[ -z "$RE3" ]]; then RE3=$RE1; fi
+		if [[ -z "$RE2" ]]; then RE2=$RE1; fi
+	fi
 
-			if [[ -z "$RE3" ]]; then
-				if [[ $(file $Genome_Assembly 2> /dev/null) =~ gzip ]]; then
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
-					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat $Genome_Assembly) | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
-					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' |
-					grep "^$RE1.*$RE2$\|^$RE2.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
-				else
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
-					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_all.frags
-					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' $Genome_Assembly | \
-					awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | \
-					awk -v RE1=$RE1 -v RE2=$RE2 '{gsub(RE1,RE1"\n"RE1);gsub(RE2,RE2"\n"RE2);}1' |
-					grep "^$RE1.*$RE2$\|^$RE2.*$RE1$" | awk '{ print length }' | sort -nr -k1,1 > Genome_digest_sub.frags
-				fi
-			fi
+	for unsim in *.fasta.gz; do
+		if [[ "$library_type" =~ "complete_digest" ]]; then
+			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+			awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' | awk -v RE2=$RE2 '{gsub(RE2,RE2"\n"RE2)}1' | awk -v RE3=$RE3 '{gsub(RE3,RE3"\n"RE3)}1' | \
+			grep "^$RE1.*$RE1$\|^$RE2.*$RE2$\|^$RE3.*$RE3$\|^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
+			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
+			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ../sample/${unsim}.tmp
+			mv ../sample/${unsim}.tmp ../sample/${unsim}
 		fi
 		if [[ "$library_type" =~ "partial_digest" ]]; then
-			:
+			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
+			start=1
+			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
+			for (( gline=$start; gline<=$end; gline++ )); do
+				awk -v gline=$gline 'NR == gline' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
+				cutpos=$(shuf -i 500000-1500000 -n1)
+				while [[ "$(wc -L "hold2_${unsim%.gz}" | awk '{print $1}')" -gt "$maxfrag" ]]; do
+					awk '{print $0}' "hold2_${unsim%.gz}" | fold -w $cutpos > hold2_${unsim%.gz}.tmp &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					cutpos=$((cutpos / 2))
+					if [[ "$cutpos" -le "$maxfrag" ]]; then
+						break
+					else
+						cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
+					fi
+					wait
+				done
+				cat hold2_${unsim%.gz} >> ${unsim%.gz}.tmp && rm hold2_${unsim%.gz}
+			done
+			sed 's/[^'"$RE1"']*\('"$RE1"'.*\)/\1/' ${unsim%.gz}.tmp | sed 's!'"$RE1"'[^'"$RE1"']*$!'"$RE1"'!' | \
+			sed 's/[^'"$RE2"']*\('"$RE2"'.*\)/\1/' | sed 's!'"$RE2"'[^'"$RE2"']*$!'"$RE2"'!' | \
+			sed 's/[^'"$RE23"']*\('"$RE3"'.*\)/\1/' | sed 's!'"$RE3"'[^'"$RE3"']*$!'"$RE3"'!' | \
+			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
+			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ${unsim} &&
+			rm hold* *.tmp
 		fi
 		if [[ "$library_type" =~ "shotgun" ]]; then
-			:
+			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
+			start=1
+			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
+			for (( gline=$start; gline<=$end; gline++ )); do
+				awk -v gline=$gline 'NR == gline' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
+				cutpos=$(shuf -i 500000-1500000 -n1)
+				while [[ "$(wc -L "hold2_${unsim%.gz}" | awk '{print $1}')" -gt "$maxfrag" ]]; do
+					awk '{print $0}' "hold2_${unsim%.gz}" | fold -w $cutpos > hold2_${unsim%.gz}.tmp &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					cutpos=$((cutpos / 2))
+					if [[ "$cutpos" -le "$maxfrag" ]]; then
+						break
+					else
+						cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
+					fi
+					wait
+				done
+				cat hold2_${unsim%.gz} >> ${unsim%.gz}.tmp && rm hold2_${unsim%.gz}
+			done
+			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' ${unsim%.gz}.tmp | awk '{print length"\t"$1}' | \
+			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ${unsim} &&
+			rm hold* *.tmp
 		fi
 	done
-	Rscript "./digest.R" Genome_digest_all.frags Genome_digest_sub.frags $Genome_name
 }
 cd "${projdir}"
-if [[ ! -z "$simulation" ]] && [[ ! -z "simulation_motif" ]]; then
-		time simulate_reads &>> ${projdir}/log.out
+if [ "$simulate_reads" == 1 ]; then
+	echo -e "${magenta}- generating sequence reads for simulated metagenome profiling of synthetic/mock community ${white}\n"
+	time simulate_reads &>> log.out
 fi
+
+
 
 #################################################################################################################
 #Organize fastq files for metagenomic processing
@@ -322,6 +370,15 @@ echo -e "\e[97m########################################################\n \e[38;
 organize_fq_files () {
 cd "${projdir}"
 cd samples
+if [[ "simulate_reads" == 1 ]] && [[ "$simulation_lib" == "complete_digest" ]] && [[ "$simulation_lib" == "partial_digest" ]]; then
+	export library_type=qRRS
+fi
+if [[ "simulate_reads" == 1 ]] && [[ "$simulation_lib" == "shotgun" ]]; then
+	export library_type=shotgun
+fi
+
+
+
 if test -f filename_reformatted.txt; then
 	echo -e "${magenta}- \n- file names reformatting was previously performed  ${white}\n"
 else

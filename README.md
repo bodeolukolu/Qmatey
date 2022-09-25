@@ -4,18 +4,20 @@
 
 
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epitet; at genus-level, valid hits will match uniquely to each genus name).
+Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epiteth; at genus-level, valid hits will match uniquely to each genus name).
 
 
 ## Features
 * Exact-matching (and exact-matching of consensus) sequence.
-* User-friendly and fully automated: “walk-away” and “walk-through” mode
-* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
+* User-friendly and fully automated
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
+* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
+* Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and random shearing of genomes).
 * Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
 * speed optimization of parallelized MegaBLAST jobs.
 * Allows for various types of normalization (relative abundance).
-- minimize false positives, false negatives, and multiple testing problems
+- minimize false positives, false negatives, and multiple testing problems.
+* implements a novel "cross-taxon validation" method.
 - Eliminate samples with highly enriched zero-inflated data (typically due to technical issues)
 - correlation network bsaed on CCLasso (correlation inference for compositional data through least absolute shrinkage and selection operator)
 * QC-plots to evaluate the predictive accuracy of profiles.
@@ -163,12 +165,17 @@ Using a text editor, save a file containing any of the following variables as 'c
 |Variable      |Default       |Usage         |Input         |required/Optional|
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |threads|na|number of cores/processors|integer|Optional|
-|walkaway|true|run in walk-away or walk-through mode|true or false|Optional|
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
-|simulation|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
-|simulation_motif|ATGCAT,CATG|genome fragmentation based on motif i.e. REnase site(s) or random|string|Optional|
+
+**Simulation parameters**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|simulation_lib|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
+|simulation_motif|ATGCAT,CATG|genome fragmentation based: (i) "REnas site motif(s)", or (ii) "random" |string|Optional|
+|fragment_size_range|100,550|minimum and maximum genomic fragment size (comma-separated) |string|Optional|
 
 
 **Normalzation**
@@ -230,12 +237,15 @@ Below is an example of a configuration file:
 ### General_parameters
 ####################################################
 threads=24
-walkaway=true
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
-simulation=digest
+
+### simulation_parameters
+####################################################
+simulation=complete_digest
 simulation_motif=ATGCAT,CATG
+fragment_size_range=100,550
 
 
 ### Normalization
