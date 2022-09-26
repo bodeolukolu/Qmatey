@@ -55,7 +55,7 @@ ctv <- subset(ctv, select=c(Cross_taxon_comparison,false_positive,false_negative
 ctv <- melt(ctv, id="Cross_taxon_comparison")
 ctv$value <- as.numeric(ctv$value)
 
-plot <- ggplot(ctv,aes(x=Cross_taxon_validation,y=value,group=variable,color=variable))+
+plot <- ggplot(ctv,aes(x=Cross_taxon_comparison,y=value,group=variable,color=variable))+
   geom_line(size=1.5)+ylim(0,1)+
   geom_point()+xlab("Cross Taxon Comparison (unvalidated)")+
   ylab("Value")+ theme_bw() + theme(legend.position="bottom") + 
