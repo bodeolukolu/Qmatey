@@ -176,6 +176,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |simulation_lib|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
 |simulation_motif|ATGCAT,CATG|genome fragmentation based: (i) "REnas site motif(s)", or (ii) "random" |string|Optional|
 |fragment_size_range|100,550|minimum and maximum genomic fragment size (comma-separated) |string|Optional|
+|read_length|150|read length for each of R1 and R2 reads |string|Optional|
 
 
 **Normalzation**
@@ -246,6 +247,7 @@ library_type=qRRS
 simulation=complete_digest
 simulation_motif=ATGCAT,CATG
 fragment_size_range=100,550
+read_length=150
 
 
 ### Normalization

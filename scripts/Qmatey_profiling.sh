@@ -276,7 +276,7 @@ simulate_reads () {
 				cat $gfile >> ../../samples/${simdir}.fasta
 			done
 		done < abundance.txt
-		$gzip ../../samples/${simdir}.fasta
+		$gzip ../${simdir}.fasta
 		cd ../
 	done
 	minfrag=${fragment_size_range//,/ }
@@ -297,8 +297,8 @@ simulate_reads () {
 			awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' | awk -v RE2=$RE2 '{gsub(RE2,RE2"\n"RE2)}1' | awk -v RE3=$RE3 '{gsub(RE3,RE3"\n"RE3)}1' | \
 			grep "^$RE1.*$RE1$\|^$RE2.*$RE2$\|^$RE3.*$RE3$\|^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
-			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ../sample/${unsim}.tmp
-			mv ../sample/${unsim}.tmp ../sample/${unsim}
+			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim}.tmp
+			mv ${unsim}.tmp ${unsim}
 		fi
 		if [[ "$library_type" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
@@ -325,7 +325,7 @@ simulate_reads () {
 			sed 's/[^'"$RE2"']*\('"$RE2"'.*\)/\1/' | sed 's!'"$RE2"'[^'"$RE2"']*$!'"$RE2"'!' | \
 			sed 's/[^'"$RE23"']*\('"$RE3"'.*\)/\1/' | sed 's!'"$RE3"'[^'"$RE3"']*$!'"$RE3"'!' | \
 			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
-			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ${unsim} &&
+			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
 		fi
 		if [[ "$library_type" =~ "shotgun" ]]; then
@@ -350,9 +350,16 @@ simulate_reads () {
 				cat hold2_${unsim%.gz} >> ${unsim%.gz}.tmp && rm hold2_${unsim%.gz}
 			done
 			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' ${unsim%.gz}.tmp | awk '{print length"\t"$1}' | \
-			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ${unsim} &&
+			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
 		fi
+	done
+	for unsim in *.fasta.gz; do
+		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
+		awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R1.fasta.gz &&
+		awk '{print $2}' <(zcat ${unsim}) | rev | awk -v len=$read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
+		awk '{print ">read"NR"_"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R1.fasta.gz &&
+		wait
 	done
 }
 cd "${projdir}"
@@ -397,13 +404,13 @@ else
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ -z "$(ls -A ../se)" ]]; then
 			cd ../
-			for i in $(ls *.f* | grep -v R2.f); do
+			while IFS="" read -r i || [ -n "$i" ]; do
 				if [[ "$i" == *.R1* ]]; then
 					mv $i ${i/.R1/}
 				elif [[ "$i" == *_R1* ]]; then
 					mv $i ${i/_R1/}
 				fi
-			done
+			done <(ls *.f* | grep -v R2.f)
 		fi
 	fi
 	cd "${projdir}"/samples/se
@@ -474,14 +481,14 @@ else
 	fi
 	cd ../
 	mkdir hold
-	for i in $(ls *.f* | grep -v R2.f); do
+	while IFS="" read -r i || [ -n "$i" ]; do
 		checkfiles=$( ls ${i%.f*}.* | wc -l )
 		if [[ "$checkfiles" -gt 1 ]]; then
 			cat ${i%.f*}.* > ./hold/$i
 			rm -r ${i%.f*}.*
 			mv ./hold/$i ./
 		fi
-	done
+	done <(ls *.f* | grep -v R2.f)
 	wait
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
@@ -496,7 +503,7 @@ if test -f flushed_reads.txt; then
 	echo -e "${magenta}- \n- improved flushed ends of reads was previously performed  ${white}\n"
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
+		while IFS="" read -r i || [ -n "$i" ]; do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
@@ -523,7 +530,7 @@ else
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done
+		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
 		wait
 
 		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
@@ -534,7 +541,7 @@ else
 		rm length_distribution.txt
 
 
-		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
+		while IFS="" read -r i || [ -n "$i" ]; do (
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 		    fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 		  else
@@ -567,12 +574,12 @@ else
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done
+		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
 		wait
 	fi
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-	  for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
+	  while IFS="" read -r i || [ -n "$i" ]; do (
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 	    else
@@ -601,11 +608,11 @@ else
 	        mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 	      fi
 	    fi
- ) &
+ 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done
+		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
 		wait
 	fi
 	find . -type d -empty -delete
@@ -705,7 +712,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
+		while IFS="" read -r i || [ -n "$i" ]; do
 
 			if [[ $(file $i 2> /dev/null 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -800,7 +807,7 @@ ref_norm () {
 					wait
 				fi
 			fi
-		done
+		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
 		wait
 		#sample read depth is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
@@ -820,7 +827,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
+		while IFS="" read -r i || [ -n "$i" ]; do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -917,7 +924,7 @@ ref_norm () {
 					wait
 				fi
 			fi
-		done
+		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
 		wait
 
 		cd "${projdir}"/samples
@@ -1061,7 +1068,7 @@ no_norm () {
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		cd "${projdir}"/samples
 
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
+		while IFS="" read -r i || [ -n "$i" ]; do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -1158,13 +1165,13 @@ no_norm () {
 					wait
 				fi
 			fi
-		done
+		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
 		wait
 	else
 		cd "${projdir}"/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
+		while IFS="" read -r i || [ -n "$i" ]; do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -1261,7 +1268,7 @@ no_norm () {
 					wait
 				fi
 			fi
-		done
+		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
 		wait
 
 		cd "${projdir}"/samples
@@ -2336,19 +2343,21 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	fi
 
 	file=${projdir}/exclude_taxa.txt
-	if test -f $file; then
-		cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt &&
-		cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt &&
-		cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt &&
-		cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt &&
-		while read -r line; do
-			for i in $( ls *filtered.txt ); do
-				awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-			done
-			wait
-		done < $file
-		wait
-	fi
+	# if test -f $file; then
+	# 	cat strain_taxainfo_mean.txt > strain_taxainfo_mean_filtered.txt &&
+	# 	cat strain_taxainfo_unique_sequences.txt > strain_taxainfo_unique_sequences_filtered.txt &&
+	# 	cat strain_taxainfo_quantification_accuracy.txt > strain_taxainfo_quantification_accuracy_filtered.txt &&
+	# 	cat strain_taxainfo_rel_quantification_accuracy.txt > strain_taxainfo_rel_quantification_accuracy_filtered.txt &&
+	# 	wait
+	# 	while IFS="" read -r line || [ -n "$line" ]; do
+	# 		while IFS="" read -r i || [ -n "$i" ]; do
+	# 			awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt &&
+	# 			mv ${i%.txt}_temp.txt $i &&
+	# 			wait
+	# 		done <(ls *filtered.txt)
+	# 	done < $file
+	# 	wait
+	# fi
 
 
 	if test -f $file; then
@@ -2782,19 +2791,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat species_taxainfo_mean.txt > species_taxainfo_mean_filtered.txt &&
-  cat species_taxainfo_unique_sequences.txt > species_taxainfo_unique_sequences_filtered.txt &&
-  cat species_taxainfo_quantification_accuracy.txt > species_taxainfo_quantification_accuracy_filtered.txt &&
-  cat species_taxainfo_rel_quantification_accuracy.txt > species_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat species_taxainfo_mean.txt > species_taxainfo_mean_filtered.txt &&
+#   cat species_taxainfo_unique_sequences.txt > species_taxainfo_unique_sequences_filtered.txt &&
+#   cat species_taxainfo_quantification_accuracy.txt > species_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat species_taxainfo_rel_quantification_accuracy.txt > species_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating species-level visualizations"
@@ -2892,7 +2901,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat ${i} | awk '$6>=98') <(zcat ${i} | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-4 {print $0}' <(zcat ${i} | awk '$6>=97') <(zcat ${i} | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -2902,7 +2911,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-4 {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-4 {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -3226,19 +3235,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat genus_taxainfo_mean.txt > genus_taxainfo_mean_filtered.txt &&
-  cat genus_taxainfo_unique_sequences.txt > genus_taxainfo_unique_sequences_filtered.txt &&
-  cat genus_taxainfo_quantification_accuracy.txt > genus_taxainfo_quantification_accuracy_filtered.txt &&
-  cat genus_taxainfo_rel_quantification_accuracy.txt > genus_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat genus_taxainfo_mean.txt > genus_taxainfo_mean_filtered.txt &&
+#   cat genus_taxainfo_unique_sequences.txt > genus_taxainfo_unique_sequences_filtered.txt &&
+#   cat genus_taxainfo_quantification_accuracy.txt > genus_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat genus_taxainfo_rel_quantification_accuracy.txt > genus_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating genus-level visualizations"
@@ -3338,7 +3347,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3348,7 +3357,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -3674,19 +3683,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat family_taxainfo_mean.txt > family_taxainfo_mean_filtered.txt &&
-  cat family_taxainfo_unique_sequences.txt > family_taxainfo_unique_sequences_filtered.txt &&
-  cat family_taxainfo_quantification_accuracy.txt > family_taxainfo_quantification_accuracy_filtered.txt &&
-  cat family_taxainfo_rel_quantification_accuracy.txt > family_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat family_taxainfo_mean.txt > family_taxainfo_mean_filtered.txt &&
+#   cat family_taxainfo_unique_sequences.txt > family_taxainfo_unique_sequences_filtered.txt &&
+#   cat family_taxainfo_quantification_accuracy.txt > family_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat family_taxainfo_rel_quantification_accuracy.txt > family_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating family-level visualizations"
@@ -3786,7 +3795,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3796,7 +3805,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -4120,19 +4129,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat order_taxainfo_mean.txt > order_taxainfo_mean_filtered.txt &&
-  cat order_taxainfo_unique_sequences.txt > order_taxainfo_unique_sequences_filtered.txt &&
-  cat order_taxainfo_quantification_accuracy.txt > order_taxainfo_quantification_accuracy_filtered.txt &&
-  cat order_taxainfo_rel_quantification_accuracy.txt > order_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat order_taxainfo_mean.txt > order_taxainfo_mean_filtered.txt &&
+#   cat order_taxainfo_unique_sequences.txt > order_taxainfo_unique_sequences_filtered.txt &&
+#   cat order_taxainfo_quantification_accuracy.txt > order_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat order_taxainfo_rel_quantification_accuracy.txt > order_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating order-level visualizations"
@@ -4567,19 +4576,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat class_taxainfo_mean.txt > class_taxainfo_mean_filtered.txt &&
-  cat class_taxainfo_unique_sequences.txt > class_taxainfo_unique_sequences_filtered.txt &&
-  cat class_taxainfo_quantification_accuracy.txt > class_taxainfo_quantification_accuracy_filtered.txt &&
-  cat class_taxainfo_rel_quantification_accuracy.txt > class_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat class_taxainfo_mean.txt > class_taxainfo_mean_filtered.txt &&
+#   cat class_taxainfo_unique_sequences.txt > class_taxainfo_unique_sequences_filtered.txt &&
+#   cat class_taxainfo_quantification_accuracy.txt > class_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat class_taxainfo_rel_quantification_accuracy.txt > class_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating class-level visualizations"
@@ -5014,19 +5023,19 @@ if [[ "$genome_scaling" == true ]]; then
 fi
 
 file=${projdir}/exclude_taxa.txt
-if test -f $file; then
-  cat phylum_taxainfo_mean.txt > phylum_taxainfo_mean_filtered.txt &&
-  cat phylum_taxainfo_unique_sequences.txt > phylum_taxainfo_unique_sequences_filtered.txt &&
-  cat phylum_taxainfo_quantification_accuracy.txt > phylum_taxainfo_quantification_accuracy_filtered.txt &&
-  cat phylum_taxainfo_rel_quantification_accuracy.txt > phylum_taxainfo_rel_quantification_accuracy_filtered.txt &&
-  while read -r line; do
-    for i in $( ls *filtered.txt ); do
-      awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
-    done
-		wait
-  done < $file
-	wait
-fi
+# if test -f $file; then
+#   cat phylum_taxainfo_mean.txt > phylum_taxainfo_mean_filtered.txt &&
+#   cat phylum_taxainfo_unique_sequences.txt > phylum_taxainfo_unique_sequences_filtered.txt &&
+#   cat phylum_taxainfo_quantification_accuracy.txt > phylum_taxainfo_quantification_accuracy_filtered.txt &&
+#   cat phylum_taxainfo_rel_quantification_accuracy.txt > phylum_taxainfo_rel_quantification_accuracy_filtered.txt &&
+#   while read -r line; do
+#     for i in $( ls *filtered.txt ); do
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
+#     done
+# 		wait
+#   done < $file
+# 	wait
+# fi
 
 if test -f $file; then
 	echo -e "${YELLOW}- creating phylum-level visualizations"
