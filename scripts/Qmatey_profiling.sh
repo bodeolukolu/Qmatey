@@ -404,13 +404,13 @@ else
 	if [[ -z "$(ls -A ../pe)" ]]; then
 		if [[ -z "$(ls -A ../se)" ]]; then
 			cd ../
-			while IFS="" read -r i || [ -n "$i" ]; do
+			for i in $(ls *.f* | grep -v R2.f); do
 				if [[ "$i" == *.R1* ]]; then
 					mv $i ${i/.R1/}
 				elif [[ "$i" == *_R1* ]]; then
 					mv $i ${i/_R1/}
 				fi
-			done <(ls *.f* | grep -v R2.f)
+			done
 		fi
 	fi
 	cd "${projdir}"/samples/se
@@ -481,14 +481,14 @@ else
 	fi
 	cd ../
 	mkdir hold
-	while IFS="" read -r i || [ -n "$i" ]; do
+	for i in $(ls *.f* | grep -v R2.f); do
 		checkfiles=$( ls ${i%.f*}.* | wc -l )
 		if [[ "$checkfiles" -gt 1 ]]; then
 			cat ${i%.f*}.* > ./hold/$i
 			rm -r ${i%.f*}.*
 			mv ./hold/$i ./
 		fi
-	done <(ls *.f* | grep -v R2.f)
+	done
 	wait
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
@@ -503,7 +503,7 @@ if test -f flushed_reads.txt; then
 	echo -e "${magenta}- \n- improved flushed ends of reads was previously performed  ${white}\n"
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-		while IFS="" read -r i || [ -n "$i" ]; do (
+		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 			else
@@ -530,7 +530,7 @@ else
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
+		done
 		wait
 
 		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
@@ -541,7 +541,7 @@ else
 		rm length_distribution.txt
 
 
-		while IFS="" read -r i || [ -n "$i" ]; do (
+		for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 		  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 		    fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 		  else
@@ -574,12 +574,12 @@ else
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
+		done
 		wait
 	fi
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-	  while IFS="" read -r i || [ -n "$i" ]; do (
+	  for i in $(ls -S *.f* | grep -v _compressed.f 2> /dev/null); do (
 	    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 	      fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
 	    else
@@ -612,7 +612,7 @@ else
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
-		done <(ls -S *.f* | grep -v _compressed.f 2> /dev/null)
+		done
 		wait
 	fi
 	find . -type d -empty -delete
@@ -712,7 +712,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		while IFS="" read -r i || [ -n "$i" ]; do
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -807,7 +807,7 @@ ref_norm () {
 					wait
 				fi
 			fi
-		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
+		done
 		wait
 		#sample read depth is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
@@ -827,7 +827,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		while IFS="" read -r i || [ -n "$i" ]; do
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -924,7 +924,7 @@ ref_norm () {
 					wait
 				fi
 			fi
-		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
+		done
 		wait
 
 		cd "${projdir}"/samples
@@ -1068,7 +1068,7 @@ no_norm () {
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		cd "${projdir}"/samples
 
-		while IFS="" read -r i || [ -n "$i" ]; do
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -1165,13 +1165,13 @@ no_norm () {
 					wait
 				fi
 			fi
-		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
+		done
 		wait
 	else
 		cd "${projdir}"/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		while IFS="" read -r i || [ -n "$i" ]; do
+		for i in $(ls -S *.f* | grep -v R2.f | grep -v _compressed.f); do
 
 			if [[ $(file $i 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -1268,7 +1268,7 @@ no_norm () {
 					wait
 				fi
 			fi
-		done <(ls -S *.f* | grep -v R2.f | grep -v _compressed.f)
+		done
 		wait
 
 		cd "${projdir}"/samples
