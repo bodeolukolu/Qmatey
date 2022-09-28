@@ -453,13 +453,13 @@ fi
 
 
 cd ${projdir}
-normzalization="$(grep normlization config.sh)"
-normzalization=${normzalization//*=}
-if [[ -z "${normzalization}" ]]; then
-  normzalization=true
+normalization="$(grep normalization config.sh)"
+normalization=${normalization//*=}
+if [[ -z "${normalization}" ]]; then
+  normalization=true
 fi
-if [[ "${normzalization}" == true ]]; then
-  echo -e "${yellow} \e[31m Options for data normlization to obtain relative abundance/expression:"
+if [[ "${normalization}" == true ]]; then
+  echo -e "${yellow} \e[31m Options for data normalization to obtain relative abundance/expression:"
   echo -e "${yellow} \e[31m \tMethod-1: Use spiked-in standard total read coverage (synthetic oligo/coomunity)"
   echo -e "${yellow} \e[31m \tMethod-2: Use host genome total read coverage (only for endophytic community and/or fairly consistent host genomc DNA contribution)"
   echo -e "${yellow} \e[31m \tMethod-3: Use sample total read coverage (relative abundance between samples)"
@@ -474,15 +474,16 @@ if [[ "${normzalization}" == true ]]; then
     echo export norm_method=spike_host > norm_method.sh
   fi
 fi
-if [[ "${normzalization}" == false ]]; then
-  echo -e "${yellow} \e[31m Data normlization will not be performed i.e., absolute abundance/expression:"
+if [[ "${normalization}" == false ]]; then
+  echo -e "${yellow} \e[31m Data normalization will not be performed i.e., absolute abundance/expression:"
+  echo export norm_method=false > norm_method.sh
 fi
 
 if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
-  if [[ "${normzalization}" == true ]]; then
+  if [[ "${normalization}" == true ]]; then
     echo -e "${magenta} \e[31m normalization reference folder is empty (required for normalization methods 1 and 2)"
     echo -e "${magenta} \e[31m also, Qmatey will not subtract/eliminate reads derived from host genome/transciptome\n\n"
-    echo -e "${magenta} \e[31m Qmatey can explore an alternative approach (below) for normzalization:\n"
+    echo -e "${magenta} \e[31m Qmatey can explore an alternative approach (below) for normalization:\n"
     echo -e "${magenta}- would you like to use read coverage of samples for normalization (method-3, assumes normalized conc. of input DNA) ${white}"
     read -p "- y(YES) or n(NO) " -n 1 -r
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
