@@ -355,9 +355,9 @@ simulate_reads () {
 		fi
 	done
 	for unsim in *.fasta.gz; do
-		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
+		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$max_read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
 		awk '{print ">read"NR"_fraglength"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R1.fasta.gz &&
-		awk '{print $2}' <(zcat ${unsim}) | rev | awk -v len=$read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
+		awk '{print $2}' <(zcat ${unsim}) | rev | awk -v len=$max_read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
 		awk '{print ">read"NR"_fraglength"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R1.fasta.gz &&
 		wait
 	done
