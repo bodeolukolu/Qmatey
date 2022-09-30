@@ -412,6 +412,7 @@ simulate_reads () {
 		rm total_unique_* summary_sim.txt
 		wait
 	done
+	rm -rf ${projdir}/simulate_genomes/refgenome
 }
 cd "${projdir}"
 if [ "$simulate_reads" == 1 ]; then
