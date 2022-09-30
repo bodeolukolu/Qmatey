@@ -283,8 +283,8 @@ simulate_reads () {
 		:> ../${simdir%/*}.fasta
 		for (( gline=$start; gline<=$end; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do
-				gcat=$(echo $p | awk -F"\t" '{print $1}')
-				gfile=$(echo $p | awk -F"\t" '{print $2}')
+				gcat=$(echo $p | awk '{print $1}')
+				gfile=$(echo $p | awk '{$1=""}')
 				for t in $(seq 1 "$gcat"); do
 					cat $gfile >> ../${simdir%/*}.fasta
 				done
