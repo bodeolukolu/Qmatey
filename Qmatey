@@ -169,8 +169,9 @@ samples_alt_dir=${samples_alt_dir//*=}
 if [[ -z $samples_alt_dir ]]; then
   samples_alt_dir==false
 fi
+mkdir -p samples
 if [[ $samples_alt_dir == false ]]; then
-	mkdir -p samples
+	:
 else
 	if [ -d ./samples ] && [ "$(ls -A ./samples 2> /dev/null | wc -l)" -gt 0 ]; then
 		echo -e "${magenta}- sample files exist in ./project_directory/samples/ ${white}\n"
@@ -475,7 +476,7 @@ if [[ "${normalization}" == true ]]; then
   fi
 fi
 if [[ "${normalization}" == false ]]; then
-  echo -e "${yellow} \e[31m Data normalization will not be performed i.e., absolute abundance/expression:"
+  echo -e "${yellow} \e[31m Data normalization will not be performed i.e. output will be only absolute abundance/expression"
   echo export norm_method=false > norm_method.sh
 fi
 
