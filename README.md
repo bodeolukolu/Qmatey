@@ -4,13 +4,14 @@
 
 
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each specific epiteth; at genus-level, valid hits will match uniquely to each genus name).
+Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome data (fully or partial assemblies).
 
 
 ## Features
 * Exact-matching (and exact-matching of consensus) sequence.
 * User-friendly and fully automated
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
+* simulates metagenome sequencing (options: completely-digested, partially-digested, and randomly-sheared/shotgun libraries) and profiling.
 * Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
 * Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and random shearing of genomes).
 * Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
@@ -177,6 +178,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |simulation_motif|ATGCAT,CATG|genome fragmentation based: (i) "REnas site motif(s)", or (ii) "random" |string|Optional|
 |fragment_size_range|50,600|minimum and maximum genomic fragment size (comma-separated) |string|Optional|
 |read_length|150|read length for each of R1 and R2 reads |string|Optional|
+|gcov|30|whole genome sequencing coverage |string|Optional|
 
 
 **Normalzation**
@@ -248,6 +250,7 @@ simulation=complete_digest
 simulation_motif=ATGCAT,CATG
 fragment_size_range=100,550
 read_length=150
+gcov=30
 
 
 ### Normalization

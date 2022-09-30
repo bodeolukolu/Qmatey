@@ -1,0 +1,3 @@
+10	Escherichia_coli_str_K12_substr._MG1655.fasta
+5	Pseudomonas_aeruginosa_PAO1.fasta
+1	Pseudomonas_putida_NBRC_14164.fasta

@@ -10,8 +10,9 @@ library_type=qRRS
 ####################################################
 simulation_lib=complete_digest
 simulation_motif=ATGCAT,CATG
-fragment_size_range=100,550
+fragment_size_range=50,600
 read_length=150
+gcov=30
 
 
 # Normalization
