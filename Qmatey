@@ -170,10 +170,10 @@ if [[ -z $samples_alt_dir ]]; then
   samples_alt_dir==false
 fi
 if [[ $samples_alt_dir == false ]]; then
-	:
+	mkdir -p samples
 else
-	if [ -d ./samples ] && [ "$(ls -A ./samples)" ]; then
-		echo -e "${magenta}- samples already exist in ./project_directory/samples/ ${white}\n"
+	if [ -d ./samples ] && [ "$(ls -A ./samples 2> /dev/null | wc -l)" -gt 0 ]; then
+		echo -e "${magenta}- sample files exist in ./project_directory/samples/ ${white}\n"
 		echo -e "${magenta}- cannot use both <alternate_samples_directory> and <./project_directory/samples/ ${white}\n"
 		echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}\n"
 		sleep 5; exit 0
@@ -181,7 +181,7 @@ else
 	if [ ! -d ./samples ]; then
 		ln -s $samples_alt_dir .
 	fi
-	if [ -d ./samples ] && [ -z "$(ls -A ./samples)" ]; then
+	if [ -d ./samples ] && [ "$(ls -A ./samples 2> /dev/null | wc -l)" -eq 0 ]; then
 		rmdir samples
 		ln -s $samples_alt_dir .
 	fi
@@ -479,7 +479,8 @@ if [[ "${normalization}" == false ]]; then
   echo export norm_method=false > norm_method.sh
 fi
 
-if [[ -z "$(ls -A ./norm_ref/ 2> /dev/null)" ]]; then
+mkdir -p norm_ref
+if [[ "$(ls -A ./norm_ref/ 2> /dev/null | wc -l)" -eq 0 ]]; then
   if [[ "${normalization}" == true ]]; then
     echo -e "${magenta} \e[31m normalization reference folder is empty (required for normalization methods 1 and 2)"
     echo -e "${magenta} \e[31m also, Qmatey will not subtract/eliminate reads derived from host genome/transciptome\n\n"
