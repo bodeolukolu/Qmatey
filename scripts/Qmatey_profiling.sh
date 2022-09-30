@@ -54,6 +54,7 @@ fi
 
 cd "${projdir}"
 mkdir -p norm_ref
+mkdir -p samples
 if [[ -z "$fragment_size_range" ]]; then
 	export fragment_size_range=50,600
 fi
