@@ -629,7 +629,7 @@ if [ -d "${projdir}/simulate_genomes/" ]; then
 			echo -e "${magenta}- \n- Qmatey will exit in 5 seconds ${white}\n"
 			sleep 5 && exit 1
 		fi
-		if [[ "$(ls ./samples/* | wc -l)" -gt 0 ]] || [[ ! -d "simulate_genomes" ]]; then
+		if [[ "$(ls ./samples/* 2> /dev/null | wc -l)" -gt 0 ]] || [[ ! -d "simulate_genomes" ]]; then
 			echo -e "${magenta}- \n- samples folder needs to be empty and WGS datasets needs to be provided in directory <${projdir}/simulate_genomes> ${white}\n"
 			echo -e "${magenta}- \n- Qmatey will exit in 5 seconds ${white}\n"
 			sleep 5 && exit 1

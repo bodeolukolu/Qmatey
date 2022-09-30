@@ -190,7 +190,11 @@ fi
 
 
 if [[ -z "$(ls -A ./samples)" ]]; then
-	echo -e "$1 \e[31m samples folder is empty, Qmatey will exit"; sleep 10; exit 0
+	if [[ -d ./simulate_genomes ]]; then
+		:
+	else
+		echo -e "$1 \e[31m samples folder is empty, Qmatey will exit"; sleep 10; exit 0
+	fi
 else
 	:
 fi
