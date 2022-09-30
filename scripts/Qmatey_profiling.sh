@@ -55,6 +55,7 @@ fi
 cd "${projdir}"
 mkdir -p norm_ref
 mkdir -p samples
+max_read_length=150
 if [[ -z "$fragment_size_range" ]]; then
 	export fragment_size_range=50,600
 fi
@@ -63,6 +64,9 @@ if [[ -z "$gcov" ]]; then
 fi
 if [[ "$gcov" -lt 3 ]]; then
 	export gcov=3
+fi
+if [[ -z "$max_read_length" ]]; then
+	export max_read_length=150
 fi
 if [[ -z "$fastMegaBLAST" ]]; then
 	export fastMegaBLAST=true
