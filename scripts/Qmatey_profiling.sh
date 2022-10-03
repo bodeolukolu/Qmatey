@@ -277,17 +277,17 @@ echo -e "\e[97m########################################################\n \e[38;
 simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
-		cd $simdir && gunzip *.gz 2> /dev/null &&
+		cd "$simdir" && gunzip ./*.gz 2> /dev/null &&
 		awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,"");}1' abundance.txt > abundance.tmp && mv abundance.tmp abundance.txt &&
 		:> ../"${simdir%/*}".fasta &&
-		for (( gline=1; gline<=$gcov; gline++ )); do
+		for (( gline=1; gline<=gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
-				for t in $(seq 1 "$(echo $p | awk '{print $1}')"); do
-					cat "$(echo $p | awk '{print $2}')".fasta >> ../"${simdir%/*}"_taxa_"$(echo $p | awk '{print $2}')".fasta &&
-					wait
+				endt=$(echo $p | awk '{print $1}')
+				for t in $(seq 1 "$endt"); do
+					cat "$(echo $p | awk '{print $2}')".fasta >> ../"${simdir%/*}"_taxa_"$(echo $p | awk '{print $2}')".fasta
 				done
 				wait ) &
-				if [[ $(jobs -r -p | wc -l) -ge N ]]; then
+				if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 					wait
 				fi
 			done < abundance.txt
@@ -296,7 +296,7 @@ simulate_reads () {
 			rm ../"${simdir%/*}"_taxa_*.fasta &&
 			wait
 		done
-		$gzip ../${simdir%/*}.fasta &&
+		shuf ../"${simdir%/*}".fasta | $gzip > ../"${simdir%/*}".fasta.gz &&
 		cd ../
 	done
 
@@ -350,7 +350,8 @@ simulate_reads () {
 			for (( gline=1; gline<=$end; gline+=100 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
+				maxfragtest=$((maxfrag * 2))
+				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfragtest" ]] || [[ "$cutpos" -gt "$maxfragtest" ]]; do
 					fold -w $cutpos "hold2_${unsim%.gz}" > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
@@ -397,6 +398,7 @@ simulate_reads () {
 			rm * && rm ../${mockfile%.fasta}.sam
 			cd ../$simdir
 		done < abundance.txt
+		awk '{gsub(/../,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 		cd ../
 		wait
 	done
