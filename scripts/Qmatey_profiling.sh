@@ -296,7 +296,7 @@ simulate_reads () {
 			rm ../"${simdir%/*}"_taxa_*.fasta &&
 			wait
 		done
-		shuf ../"${simdir%/*}".fasta | $gzip > ../"${simdir%/*}".fasta.gz &&
+		$gzip ../"${simdir%/*}".fasta &&
 		cd ../
 	done
 
@@ -314,7 +314,7 @@ simulate_reads () {
 	for unsim in *.fasta.gz; do
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | \
 			awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' | awk -v RE2=$RE2 '{gsub(RE2,RE2"\n"RE2)}1' | awk -v RE3=$RE3 '{gsub(RE3,RE3"\n"RE3)}1' | \
 			grep "^$RE1.*$RE1$\|^$RE2.*$RE2$\|^$RE3.*$RE3$\|^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
@@ -323,7 +323,7 @@ simulate_reads () {
 		fi
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf > ./hold1_${unsim%.gz} &&
 			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
 			for (( gline=1; gline<=$end; gline+=100 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
@@ -345,7 +345,7 @@ simulate_reads () {
 		fi
 		if [[ "$simulation_lib" =~ "shotgun" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf > ./hold1_${unsim%.gz} &&
 			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
 			for (( gline=1; gline<=$end; gline+=100 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
@@ -398,7 +398,7 @@ simulate_reads () {
 			rm * && rm ../${mockfile%.fasta}.sam
 			cd ../$simdir
 		done < abundance.txt
-		awk '{gsub(/../,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 		cd ../
 		wait
 	done
