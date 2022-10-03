@@ -277,9 +277,9 @@ echo -e "\e[97m########################################################\n \e[38;
 simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
-		cd $simdir && gunzip *.gz 2> /dev/null
-		awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,"");}1' abundance.txt > abundance.tmp && mv abundance.tmp abundance.txt
-		:> ../"${simdir%/*}".fasta
+		cd $simdir && gunzip *.gz 2> /dev/null &&
+		awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,"");}1' abundance.txt > abundance.tmp && mv abundance.tmp abundance.txt &&
+		:> ../"${simdir%/*}".fasta &&
 		for (( gline=1; gline<=$gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
 				for t in $(seq 1 "$(echo $p | awk '{print $1}')"); do
@@ -292,34 +292,14 @@ simulate_reads () {
 				fi
 			done < abundance.txt
 			wait
-			cat ../"${simdir%/*}"_taxa_*.fasta >> ../"${simdir%/*}".fasta
-			rm ../"${simdir%/*}"_taxa_*.fasta
+			cat ../"${simdir%/*}"_taxa_*.fasta >> ../"${simdir%/*}".fasta &&
+			rm ../"${simdir%/*}"_taxa_*.fasta &&
 			wait
 		done
-		$gzip ../${simdir%/*}.fasta
+		$gzip ../${simdir%/*}.fasta &&
 		cd ../
 	done
 
-	cd "${projdir}"/simulate_genomes/
-	rm * 2> /dev/null
-	for simdir in */ ; do
-		cd $simdir && gunzip *.gz 2> /dev/null
-		start=1
-		end="$gcov"
-		:> ../${simdir%/*}.fasta
-		awk '{gsub(/ /,"_");}1' abundance.tmp && mv abundance.tmp abundance.txt
-		for (( gline=$start; gline<=$end; gline++ )); do
-			while IFS="" read -r p || [ -n "$p" ]; do
-				gcat=$(echo $p | awk '{print $1}')
-				gfile=$(echo $p | awk '{print $2}')
-				for t in $(seq 1 "$gcat"); do
-					cat $gfile >> ../${simdir%/*}.fasta
-				done
-			done < abundance.txt
-		done
-		$gzip ../${simdir%/*}.fasta
-		cd ../
-	done
 	minfrag=${fragment_size_range%,*}
 	maxfrag=${fragment_size_range#*,}
 	if [[ "$simulation_lib"  =~ "complete_digest" ]] || [[ "$simulation_lib"  =~ "partial_digest" ]]; then
@@ -344,10 +324,9 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
-			start=1
 			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
-			for (( gline=$start; gline<=$end; gline++ )); do
-				awk -v gline=$gline 'NR == gline' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
+			for (( gline=1; gline<=$end; gline+=100 )); do
+				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w $cutpos "hold2_${unsim%.gz}" > hold2_${unsim%.gz}.tmp &&
@@ -367,10 +346,9 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "shotgun" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' > ./hold1_${unsim%.gz} &&
-			start=1
 			end="$(wc -l ./hold1_${unsim%.gz} | awk '{print $1}')"
-			for (( gline=$start; gline<=$end; gline++ )); do
-				awk -v gline=$gline 'NR == gline' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
+			for (( gline=1; gline<=$end; gline+=100 )); do
+				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w $cutpos "hold2_${unsim%.gz}" > hold2_${unsim%.gz}.tmp &&
