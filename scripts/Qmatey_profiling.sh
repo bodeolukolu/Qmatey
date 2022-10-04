@@ -114,7 +114,7 @@ else
 fi
 
 if [[ -z $minRD ]]; then
-	export minRD=2
+	export minRD=1
 fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1,2
@@ -389,15 +389,21 @@ simulate_reads () {
 			grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
 			mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
 			grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
-			awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt &&
-			Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
-			Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -l) &&
-			Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
-			printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-			rm * && rm ../${mockfile%.fasta}.sam
+			awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
+			wait
+			if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+				Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
+				Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -c) &&
+				Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
+				printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+				wait
+			fi
+			rm * 2> /dev/null && rm ../${mockfile%.fasta}.sam 2> /dev/null
 			cd ../$simdir
 		done < abundance.txt
-		awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		fi
 		cd ../
 		wait
 	done
