@@ -12,7 +12,7 @@ Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NC
 * User-friendly and fully automated
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
 * simulates metagenome sequencing (options: completely-digested, partially-digested, and randomly-sheared/shotgun libraries) and profiling.
-* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
+* Input data: whole genome shotgun sequencing (WGS; ; includes rRNA), reduced representation sequencing (RRS/qRRS; includes rRNA), and amplicon sequencing (e.g. 16S/ITS).
 * Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and random shearing of genomes).
 * Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
 * speed optimization of parallelized MegaBLAST jobs.
@@ -224,11 +224,11 @@ Using a text editor, save a file containing any of the following variables as 'c
 |Variable      |Default       |Usage         |Input         |required/Optional|
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |nodes|1|number of nodes|integer|Optional|
-|reads_per_megablast|na|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
-|genome_scaling|na|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
+|reads_per_megablast|1000 or 20|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
+|genome_scaling|true|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |qcov|50|minimum query coverage|integer|Optional|
-|exclude_rRNA|na|exclude rRNA for qRRS/WGS data: rRNA copy number variation can negatively impact abundance estimates|true or false|Optional|
+|exclude_rRNA|false|exclude rRNA for qRRS/WGS data: rRNA copy number variation can negatively impact abundance estimates|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
 
 **Note: na indicates that variable is user-defined or hard-coded/computed intuitively, as well as a function of ploidy.*
@@ -292,7 +292,7 @@ reads_per_megablast=1000
 genome_scaling=true
 zero_inflated=0.01
 qcov=50
-exclude_rRNA=true
+exclude_rRNA=false
 annotate_seq=false
 ```
 

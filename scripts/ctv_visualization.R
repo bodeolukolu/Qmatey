@@ -81,6 +81,13 @@ family <- read.delim(file="./family_level_validated/family_taxainfo_unique_seque
 genus <- read.delim(file="./genus_level_validated/genus_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 species <- read.delim(file="./species_level_validated/species_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 strain <- read.delim(file="./strain_level_minUniq_1_validated/strain_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
+phylum <- subset(phylum, domain != "Viruses")
+class <- subset(class, domain != "Viruses")
+order <- subset(order, domain != "Viruses")
+family <- subset(family, domain != "Viruses")
+genus <- subset(genus, domain != "Viruses")
+species <- subset(species, domain != "Viruses")
+species<- subset(species, domain != "Viruses")
 ctv <- as.data.frame(matrix(nrow=0,ncol=10))
 
 n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxaname))
