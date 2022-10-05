@@ -315,8 +315,8 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | \
-			awk -v RE1=$RE1 '{gsub(RE1,RE1"\n"RE1)}1' | awk -v RE2=$RE2 '{gsub(RE2,RE2"\n"RE2)}1' | awk -v RE3=$RE3 '{gsub(RE3,RE3"\n"RE3)}1' | \
-			grep "^$RE1.*$RE1$\|^$RE2.*$RE2$\|^$RE3.*$RE3$\|^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
+			awk -v RE1="$RE1" '{gsub(RE1,RE1"\n"RE1);}1' | awk -v RE2="$RE2" '{gsub(RE2,RE2"\n"RE2);}1' | awk -v RE3="$RE3" '{gsub(RE3,RE3"\n"RE3);}1' | \
+			grep "^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim}.tmp
 			mv ${unsim}.tmp ${unsim}
@@ -398,6 +398,7 @@ simulate_reads () {
 				printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
 				wait
 			fi
+
 			rm * 2> /dev/null && rm ../${mockfile%.fasta}.sam 2> /dev/null
 			cd ../$simdir
 		done < abundance.txt
