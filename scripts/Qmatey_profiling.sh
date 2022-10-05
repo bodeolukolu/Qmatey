@@ -329,7 +329,7 @@ simulate_reads () {
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
-					cat "hold2_${unsim%.gz}" | sed -e "s/.\{"$cutpos"\}/&\n/g" > hold2_${unsim%.gz}.tmp &&
+					cat "hold2_${unsim%.gz}" | fold -w "$cutpos" > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
@@ -351,7 +351,7 @@ simulate_reads () {
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' hold1_${unsim%.gz} > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L hold2_${unsim%.gz} | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
-					cat "hold2_${unsim%.gz}" | sed -e "s/.\{"$cutpos"\}/&\n/g" > hold2_${unsim%.gz}.tmp &&
+					cat "hold2_${unsim%.gz}" | fold -w "$cutpos" > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
