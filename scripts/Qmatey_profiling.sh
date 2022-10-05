@@ -131,7 +131,7 @@ fi
 if [[ -z "$annotate_seq" ]]; then
 	export annotate_seq=false
 fi
-
+mkdir -p "${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
@@ -596,7 +596,7 @@ else
 
 		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
 		wait
-		awk '{print length($0)}' length_distribution.txt | sort -n > tmp.txt; mv tmp.txt length_distribution.txt
+		awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt; mv tmp.txt length_distribution.txt
 		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 		rm length_distribution.txt
 
@@ -905,7 +905,7 @@ ref_norm () {
 			rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
 		done
 		wait
-		maximum=$(sort -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
+		maximum=$(sort -T "${projdir}"/tmp -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
 		awk -v maximum=$maximum '{print $1,maximum/$2}' ${projdir}/metagenome/microbiome_coverage.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > ${projdir}/metagenome/coverage_normalization_factor.txt
 		rm ${projdir}/metagenome/microbiome_coverage.txt
 
@@ -1044,7 +1044,7 @@ ref_norm () {
 			done
 			wait
 			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2-$4,"\t",$4,"\t",$2}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\n') - > coverage_normalize.txt
-			maximum=$(sort -nr -k3,3 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
+			maximum=$(sort -T "${projdir}"/tmp -nr -k3,3 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
 			awk -v maximum=$maximum 'NR>1{print $1,maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt
 			awk 'NR>1{print $1,"\t",($2/$4)*100,"\t",($3/$4)*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_Metagenome\tPercent_Host\n') - > ./results/metagenome_derived_perc.txt
 			rm host_coverage.txt microbiome_coverage.txt
@@ -1088,7 +1088,7 @@ ref_norm () {
 				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
 			done
 			wait
-			maximum=$(sort -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
+			maximum=$(sort -T "${projdir}"/tmp -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
 			awk -v maximum=$maximum '{print $1,maximum/$2}' ${projdir}/metagenome/microbiome_coverage.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > ${projdir}/metagenome/coverage_normalization_factor.txt
 			rm ${projdir}/metagenome/microbiome_coverage.txt
 		fi
@@ -1492,12 +1492,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 				echo -e "${YELLOW}- performing a local BLAST in multi-node mode"
 				cd "${projdir}"/metagenome/haplotig/splitccf/splitccf_node1
-				for ccf in $(ls * | sort -V); do
+				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 					mv $ccf ${projdir}/metagenome/alignment/$ccf
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -V); do (
+					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 							-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
@@ -1527,12 +1527,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 
 			else
-				for ccf in $(ls * | sort -V); do
+				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 					mv $ccf ../../alignment/$ccf
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -V); do (
+					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 							-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
@@ -1661,10 +1661,10 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -1673,20 +1673,20 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		wait
@@ -1759,12 +1759,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 				echo -e "${YELLOW}- performing custom BLAST in multi-node mode"
 				cd "${projdir}"/metagenome/haplotig/splitccf/splitccf_node1
-				for ccf in $(ls * | sort -V); do
+				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 					mv $ccf ${projdir}/metagenome/alignment/$ccf
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -V); do (
+					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 							-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
@@ -1794,12 +1794,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 
 			else
-				for ccf in $(ls * | sort -V); do
+				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 					mv $ccf ../../alignment/$ccf
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -V); do (
+					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 							-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
@@ -2017,10 +2017,10 @@ else
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -2029,20 +2029,20 @@ else
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
 			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -V -k1,1n | \
+			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		wait
@@ -2172,7 +2172,7 @@ if [[ "$taxids" == true ]]; then
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
-  sort ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv ${projdir}/metagenome/All.tmp ${projdir}/metagenome/All.txids
+  sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv ${projdir}/metagenome/All.tmp ${projdir}/metagenome/All.txids
 	wait
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
 	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
@@ -2306,7 +2306,7 @@ else
 				for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1] {print $0}' <(zcat ${i} | awk '$6==100') <(zcat ${i%} | awk '$6==100') | awk '$3 >= 32 {print $0}' | awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | gzip > ${i%.gz}strain.gz &&
-					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
+					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 					awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 					awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
@@ -2320,7 +2320,7 @@ else
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 				next} $3 >= max[$1] {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | awk '$3 >= 32 {print $0}' | $gzip > ${i%.gz}strain.gz &&
-				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
+				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 				awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
@@ -2339,7 +2339,7 @@ fi
 echo -e "${YELLOW}- compiling taxonomic information"
 cd "${projdir}"/metagenome/sighits/sighits_strain
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk -F '\t' '{print $8";"}' <(zcat sighits.txt.gz) | awk -F ';' '{print $1}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk -F '\t' '{print $8";"}' <(zcat sighits.txt.gz) | awk -F ';' '{print $1}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
@@ -2671,7 +2671,7 @@ else
   wait
 
   for i in *_species_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_species_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_species_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -2679,7 +2679,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_species_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_species_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -2687,7 +2687,7 @@ else
 	wait
 
   for i in *_multialign_species_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_species_reads*}_species_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > ${i%_multialign_species_reads*}_species_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_species_reads*}_species_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > ${i%_multialign_species_reads*}_species_OTU.txt
 		) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -2785,19 +2785,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' | awk '{print $3, $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_species/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/' > species_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/species/' > species_taxa_mean_temp1.txt
 echo -e 'species' | cat - species_taxa_mean_temp1.txt > species_taxa_mean_temp.txt && rm species_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/'  > species_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/species/'  > species_taxa_unique_sequences_temp1.txt
 echo -e 'species' | cat - species_taxa_unique_sequences_temp1.txt > species_taxa_unique_sequences_temp.txt && rm species_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/species/'  > species_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/species/'  > species_taxa_quantification_accuracy_temp1.txt
 echo -e 'species' | cat - species_taxa_quantification_accuracy_temp1.txt > species_taxa_quantification_accuracy_temp.txt && rm species_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/species/'  > species_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/species/'  > species_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'species' | cat - species_taxa_rel_quantification_accuracy_temp1.txt > species_taxa_rel_quantification_accuracy_temp.txt && rm species_taxa_rel_quantification_accuracy_temp1.txt
 
 species_level=species
@@ -3113,7 +3113,7 @@ else
   wait
 
   for i in *_genus_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_genus_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_genus_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -3121,7 +3121,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_genus_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_genus_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -3129,7 +3129,7 @@ else
 	wait
 
   for i in *_multialign_genus_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_genus_reads*}_genus_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16, $17}' OFS='\t' > ${i%_multialign_genus_reads*}_genus_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_genus_reads*}_genus_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16, $17}' OFS='\t' > ${i%_multialign_genus_reads*}_genus_OTU.txt
 		) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -3228,19 +3228,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
 awk '{gsub(/ /,"_"); print }' | awk '{print $4, $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_genus/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/' > genus_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/genus/' > genus_taxa_mean_temp1.txt
 echo -e 'genus' | cat - genus_taxa_mean_temp1.txt > genus_taxa_mean_temp.txt && rm genus_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/'  > genus_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/genus/'  > genus_taxa_unique_sequences_temp1.txt
 echo -e 'genus' | cat - genus_taxa_unique_sequences_temp1.txt > genus_taxa_unique_sequences_temp.txt && rm genus_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/genus/'  > genus_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/genus/'  > genus_taxa_quantification_accuracy_temp1.txt
 echo -e 'genus' | cat - genus_taxa_quantification_accuracy_temp1.txt > genus_taxa_quantification_accuracy_temp.txt && rm genus_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/genus/'  > genus_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/genus/'  > genus_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'genus' | cat - genus_taxa_rel_quantification_accuracy_temp1.txt > genus_taxa_rel_quantification_accuracy_temp.txt && rm genus_taxa_rel_quantification_accuracy_temp1.txt
 
 genus_level=genus
@@ -3558,7 +3558,7 @@ else
 
 
   for i in *_family_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_family_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_family_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -3566,7 +3566,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_family_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_family_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -3574,7 +3574,7 @@ else
 	wait
 
   for i in *_multialign_family_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_family_reads*}_family_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16}' OFS='\t' > ${i%_multialign_family_reads*}_family_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_family_reads*}_family_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16}' OFS='\t' > ${i%_multialign_family_reads*}_family_OTU.txt
     ) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -3676,19 +3676,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_family
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $5, $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_family/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/family/' > family_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/family/' > family_taxa_mean_temp1.txt
 echo -e 'family' | cat - family_taxa_mean_temp1.txt > family_taxa_mean_temp.txt && rm family_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/family/'  > family_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/family/'  > family_taxa_unique_sequences_temp1.txt
 echo -e 'family' | cat - family_taxa_unique_sequences_temp1.txt > family_taxa_unique_sequences_temp.txt && rm family_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/family/'  > family_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/family/'  > family_taxa_quantification_accuracy_temp1.txt
 echo -e 'family' | cat - family_taxa_quantification_accuracy_temp1.txt > family_taxa_quantification_accuracy_temp.txt && rm family_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/family/'  > family_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/family/'  > family_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'family' | cat - family_taxa_rel_quantification_accuracy_temp1.txt > family_taxa_rel_quantification_accuracy_temp.txt && rm family_taxa_rel_quantification_accuracy_temp1.txt
 
 family_level=family
@@ -4003,7 +4003,7 @@ else
   wait
 
   for i in *_order_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_order_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_order_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4011,7 +4011,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_order_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_order_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4019,7 +4019,7 @@ else
 	wait
 
   for i in *_multialign_order_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_order_reads*}_order_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15}' OFS='\t' > ${i%_multialign_order_reads*}_order_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_order_reads*}_order_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15}' OFS='\t' > ${i%_multialign_order_reads*}_order_OTU.txt
 	  ) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -4122,19 +4122,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_order
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $6, $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_order/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/order/' > order_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/order/' > order_taxa_mean_temp1.txt
 echo -e 'order' | cat - order_taxa_mean_temp1.txt > order_taxa_mean_temp.txt && rm order_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/order/'  > order_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/order/'  > order_taxa_unique_sequences_temp1.txt
 echo -e 'order' | cat - order_taxa_unique_sequences_temp1.txt > order_taxa_unique_sequences_temp.txt && rm order_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/order/'  > order_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/order/'  > order_taxa_quantification_accuracy_temp1.txt
 echo -e 'order' | cat - order_taxa_quantification_accuracy_temp1.txt > order_taxa_quantification_accuracy_temp.txt && rm order_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/order/'  > order_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/order/'  > order_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'order' | cat - order_taxa_rel_quantification_accuracy_temp1.txt > order_taxa_rel_quantification_accuracy_temp.txt && rm order_taxa_rel_quantification_accuracy_temp1.txt
 
 order_level=order
@@ -4452,7 +4452,7 @@ else
   wait
 
   for i in *_class_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_class_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_class_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4460,7 +4460,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_class_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_class_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4468,7 +4468,7 @@ else
 	wait
 
   for i in *_multialign_class_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_class_reads*}_class_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14}' OFS='\t' > ${i%_multialign_class_reads*}_class_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_class_reads*}_class_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14}' OFS='\t' > ${i%_multialign_class_reads*}_class_OTU.txt
 		 ) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -4569,19 +4569,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_class
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $7, $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_class/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/class/' > class_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/class/' > class_taxa_mean_temp1.txt
 echo -e 'class' | cat - class_taxa_mean_temp1.txt > class_taxa_mean_temp.txt && rm class_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/class/'  > class_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/class/'  > class_taxa_unique_sequences_temp1.txt
 echo -e 'class' | cat - class_taxa_unique_sequences_temp1.txt > class_taxa_unique_sequences_temp.txt && rm class_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/class/'  > class_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/class/'  > class_taxa_quantification_accuracy_temp1.txt
 echo -e 'class' | cat - class_taxa_quantification_accuracy_temp1.txt > class_taxa_quantification_accuracy_temp.txt && rm class_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/class/'  > class_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/class/'  > class_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'class' | cat - class_taxa_rel_quantification_accuracy_temp1.txt > class_taxa_rel_quantification_accuracy_temp.txt && rm class_taxa_rel_quantification_accuracy_temp1.txt
 
 class_level=class
@@ -4899,7 +4899,7 @@ else
   wait
 
   for i in *_phylum_inter2.txt;do (
-    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -k1,1  > ${i%_phylum_inter2*}_duplicate_count.txt) &
+    awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' $i | sort -T "${projdir}"/tmp -k1,1  > ${i%_phylum_inter2*}_duplicate_count.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4907,7 +4907,7 @@ else
 	wait
 
   for i in *_duplicate_count.txt;do (
-    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -k1,1 > ${i%_duplicate_count*}_multialign_phylum_reads.txt) &
+    awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' $i | sort -T "${projdir}"/tmp -k1,1 > ${i%_duplicate_count*}_multialign_phylum_reads.txt) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
     fi
@@ -4915,7 +4915,7 @@ else
 	wait
 
   for i in *_multialign_phylum_reads.txt;do (
-    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_phylum_reads*}_phylum_inter2.txt | sort -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13}' OFS='\t' > ${i%_multialign_phylum_reads*}_phylum_OTU.txt
+    awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' $i ${i%_multialign_phylum_reads*}_phylum_inter2.txt | sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13}' OFS='\t' > ${i%_multialign_phylum_reads*}_phylum_OTU.txt
 	  ) &
     if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
       wait
@@ -5016,19 +5016,19 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_phylum
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
-awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
+awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt > rankedlineage_subhits_temp.txt
 awk '{gsub(/ /,"_");}1' rankedlineage_subhits_temp.txt | awk '{print $8, $9, $10}' | awk 'NR == 1; NR > 1 {print $0}' | awk '{gsub(/ /,"\t");}1' > rankedlineage_subhits.txt
 rm taxids_sighits.txt rankedlineage_subhits_temp.txt
 
 cd "${projdir}"/metagenome/sighits/sighits_phylum/
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/phylum/' > phylum_taxa_mean_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/phylum/' > phylum_taxa_mean_temp1.txt
 echo -e 'phylum' | cat - phylum_taxa_mean_temp1.txt > phylum_taxa_mean_temp.txt && rm phylum_taxa_mean_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/phylum/'  > phylum_taxa_unique_sequences_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/phylum/'  > phylum_taxa_unique_sequences_temp1.txt
 echo -e 'phylum' | cat - phylum_taxa_unique_sequences_temp1.txt > phylum_taxa_unique_sequences_temp.txt && rm phylum_taxa_unique_sequences_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -u | awk '!/phylum/'  > phylum_taxa_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt |  sort -T "${projdir}"/tmp -u | awk '!/phylum/'  > phylum_taxa_quantification_accuracy_temp1.txt
 echo -e 'phylum' | cat - phylum_taxa_quantification_accuracy_temp1.txt > phylum_taxa_quantification_accuracy_temp.txt && rm phylum_taxa_quantification_accuracy_temp1.txt
-awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -u | awk '!/phylum/'  > phylum_taxa_rel_quantification_accuracy_temp1.txt
+awk -F '\t' '{print $1}' rankedlineage_subhits.txt | sort -T "${projdir}"/tmp -u | awk '!/phylum/'  > phylum_taxa_rel_quantification_accuracy_temp1.txt
 echo -e 'phylum' | cat - phylum_taxa_rel_quantification_accuracy_temp1.txt > phylum_taxa_rel_quantification_accuracy_temp.txt && rm phylum_taxa_rel_quantification_accuracy_temp1.txt
 
 phylum_level=phylum
@@ -5867,22 +5867,22 @@ annotate() {
 		else
 			zcat ./alignment/cultured/combined_compressed.megablast.gz | awk -F'\t' '{print $9"\t"$7"\t"$2"\t"$10}' | gzip > All_compressed.megablast.gz
 		fi
-		awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - <(zcat All_compressed.megablast.gz) | \
+		awk 'NR>1{print $1}' $taxid_genes | sort -T "${projdir}"/tmp | uniq | grep -Fwf - <(zcat All_compressed.megablast.gz) | \
 		awk -F'\t' '!seen[$1$3]++' | awk -F'\t' '!seen[$1$2]++' | \
 		cat <(printf "tax_id\tsequence\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz
 		taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-		zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+		zcat ./gene_annotation_count/combined_taxids_sequences_genes_geneID.txt.gz | awk 'NR>1{print $1}' | sort -T "${projdir}"/tmp | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
 		awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
 		awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ./gene_annotation_count/combined_genes_per_taxid.txt
 		rm All_compressed.megablast.gz
 
 		for i in ./alignment/cultured/*haplotig.megablast.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+			awk 'NR>1{print $1}' $taxid_genes | sort -T "${projdir}"/tmp | uniq | grep -Fwf - \
 			<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
 			cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
 			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-			zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+			zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort -T "${projdir}"/tmp | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
 			awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
 			awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*haplotig.megablast.gz}_genes_per_taxid.txt
 			) &
@@ -5893,11 +5893,11 @@ annotate() {
 		wait
 		for i in ./sighits/sighits_strain/*_sighits.txt.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
-			awk 'NR>1{print $1}' $taxid_genes | sort | uniq | grep -Fwf - \
+			awk 'NR>1{print $1}' $taxid_genes | sort -T "${projdir}"/tmp | uniq | grep -Fwf - \
 			<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
 			cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
 			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
-			zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
+			zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort -T "${projdir}"/tmp | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
 			awk -F'\t' 'NR==FNR {h[$2] = $1; next} {print $1,$2,h[$2]}' - <(awk -v taxname=$taxnamecol '{print $taxname"\t"$1}' $taxid_genes) | \
 			awk '{gsub(/ /,"\t");}1' | awk 'NR>1{print $2"\t"$3"\t"$1}' | cat <(printf "tax_id\tgene_count\ttaxname\n") - > ${i%*_sighits.txt.gz}_genes_per_taxid_Diagnostic.txt
 			) &
