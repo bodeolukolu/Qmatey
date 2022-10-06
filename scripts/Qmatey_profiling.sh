@@ -53,7 +53,9 @@ fi
 
 
 cd "${projdir}"
-max_read_length=150
+if [[ "$simulation_lib" =~ "shotgun" ]]; then
+	simulation_motif=random
+fi
 if [[ -z "$fragment_size_range" ]]; then
 	export fragment_size_range=50,600
 fi
@@ -310,15 +312,15 @@ simulate_reads () {
 		RE1=$(grep 'RE1' REnase.txt | awk '{print $2}')
 		RE2=$(grep 'RE2' REnase.txt | awk '{print $2}')
 		RE3=$(grep 'RE3' REnase.txt | awk '{print $2}')
-		if [[ -z "$RE3" ]]; then RE3=$RE1; fi
-		if [[ -z "$RE2" ]]; then RE2=$RE1; fi
+		if [[ -z "$RE3" ]]; then RE3=999; fi
+		if [[ -z "$RE2" ]]; then RE2=999; fi
 	fi
 
 	for unsim in *.fasta.gz; do
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | \
-			awk -v RE1="$RE1" '{gsub(RE1,RE1"\n"RE1);}1' | awk -v RE2="$RE2" '{gsub(RE2,RE2"\n"RE2);}1' | awk -v RE3="$RE3" '{gsub(RE3,RE3"\n"RE3);}1' | \
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
+			awk -v RE1="$RE1" -v RE2="$RE2" -v RE3="$RE3" '{gsub(RE1,RE1"\n"RE1); gsub(RE2,RE2"\n"RE2); gsub(RE3,RE3"\n"RE3);}1' | \
 			grep "^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim}.tmp
@@ -378,7 +380,6 @@ simulate_reads () {
 	for simdir in */ ; do
 		mkdir -p refgenome
 		cd "$simdir"
-		echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 		while IFS="" read -r p || [ -n "$p" ]; do
 			mockfile=$(echo $p | awk '{print $2}') &&
 			mockfile=${mockfile}.fasta
@@ -395,6 +396,7 @@ simulate_reads () {
 			awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
 			wait
 			if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+				echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 				Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
 				Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -c) &&
 				Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
@@ -1575,9 +1577,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
-			rmdir * && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rmdir * 2> /dev/null && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 			cd ../
-			rmdir splitccf
+			rmdir splitccf 2> /dev/null
 		else
 			echo -e "${YELLOW}- Primary BLAST ouput already exist"
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
@@ -1842,9 +1844,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
-			rmdir * && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rmdir * 2> /dev/null && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 			cd ../
-			rmdir splitccf
+			rmdir splitccf 2> /dev/null
 		else
 			echo -e "${YELLOW}- Primary BLAST ouput already exist"
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
