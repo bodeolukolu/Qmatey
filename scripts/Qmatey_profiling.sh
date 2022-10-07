@@ -290,7 +290,7 @@ simulate_reads () {
 			while IFS="" read -r p || [ -n "$p" ]; do (
 				endt=$(echo $p | awk '{print $1}')
 				for t in $(seq 1 "$endt"); do
-					cat "$(echo $p | awk '{print $2}')".fasta >> ../"${simdir%/*}"_taxa_"$(echo $p | awk '{print $2}')".fasta
+					cat "$(echo $p | awk '{print $2}')".fasta | gzip >> ../"${simdir%/*}"_taxa_"$(echo $p | awk '{print $2}')".fasta.gz
 				done
 				wait ) &
 				if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -298,11 +298,10 @@ simulate_reads () {
 				fi
 			done < abundance.txt
 			wait
-			cat ../"${simdir%/*}"_taxa_*.fasta >> ../"${simdir%/*}".fasta &&
-			rm ../"${simdir%/*}"_taxa_*.fasta &&
+			cat ../"${simdir%/*}"_taxa_*.fasta.gz >> ../"${simdir%/*}".fasta.gz &&
+			rm ../"${simdir%/*}"_taxa_*.fasta.gz &&
 			wait
 		done
-		$gzip ../"${simdir%/*}".fasta &&
 		cd ../
 	done
 
