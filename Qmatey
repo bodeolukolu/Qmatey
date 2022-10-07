@@ -615,7 +615,7 @@ fi
 
 
 if [ -d "${projdir}/simulate_genomes/" ]; then
-	echo -e "${magenta}- Do you want to perform simulation based on WGS data in directory < ${projdir}/simulate_genomes >? ${white}\n"
+	echo -e "${magenta}- Do you want to perform simulation based on WGS data in directory < ${projdir}simulate_genomes >? ${white}\n"
 	read -p "- y(YES) or n(NO) " -t 36000 -n 1 -r
 	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 		printf '\n'

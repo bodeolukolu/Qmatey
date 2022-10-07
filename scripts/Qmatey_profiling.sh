@@ -282,9 +282,10 @@ echo -e "\e[97m########################################################\n \e[38;
 simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
-		cd "$simdir" && gunzip ./*.gz 2> /dev/null &&
-		awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,"");}1' abundance.txt > abundance.tmp && mv abundance.tmp abundance.txt &&
-		:> ../"${simdir%/*}".fasta &&
+		cd "$simdir" && gunzip ./*.gz 2> /dev/null
+		awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' abundance.txt > abundance.tmp && mv abundance.tmp abundance.txt &&
+		:> ../"${simdir%/*}".fasta
+		wait
 		for (( gline=1; gline<=gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
 				endt=$(echo $p | awk '{print $1}')
@@ -404,7 +405,8 @@ simulate_reads () {
 				wait
 			fi
 
-			rm * 2> /dev/null && rm ../${mockfile%.fasta}.sam 2> /dev/null
+			rm * 2> /dev/null
+			rm ../${mockfile%.fasta}.sam 2> /dev/null
 			cd ../$simdir
 		done < abundance.txt
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
@@ -413,6 +415,7 @@ simulate_reads () {
 		cd ../
 		wait
 	done
+	rm -rf "${projdir}"/simulate_genomes/refgenome 2> /dev/null
 }
 cd "${projdir}"
 if [ "$simulate_reads" == 1 ]; then
@@ -1577,7 +1580,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
-			rmdir * 2> /dev/null && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rmdir * 2> /dev/null
+			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
@@ -1844,7 +1848,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
-			rmdir * 2> /dev/null && rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rmdir * 2> /dev/null
+			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
@@ -5852,7 +5857,7 @@ fi
 echo -e "${blue}\n############################################################################## ${white}\n"
 annotate() {
 	cd "${projdir}"
-	find . -depth -type d -exec rmdir {} + 2> /dev/null &&
+	find . -depth -type d -exec rmdir {} + 2> /dev/null
 	mkdir -p norm_ref
 
 	rm ${projdir}/rankedlineage_edited.dmp
