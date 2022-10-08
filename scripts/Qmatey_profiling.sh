@@ -285,7 +285,7 @@ simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
-		awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' abundance.txt | awk '{ sub("\r$", ""); print }' > abundance.tmp && mv abundance.tmp abundance.txt &&
+		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' > abundance.tmp && mv abundance.tmp abundance.txt &&
 		:> ../"${simdir%/*}".fasta
 		wait
 		for (( gline=1; gline<=gcov; gline++ )); do
