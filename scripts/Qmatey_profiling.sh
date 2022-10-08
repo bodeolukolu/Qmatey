@@ -136,7 +136,9 @@ fi
 if [[ -z "$annotate_seq" ]]; then
 	export annotate_seq=false
 fi
+
 mkdir -p "${projdir}"/tmp
+export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
