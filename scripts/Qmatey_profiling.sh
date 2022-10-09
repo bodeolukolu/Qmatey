@@ -102,7 +102,7 @@ if [[ -z "$zero_inflated" ]]; then
 	export zero_inflated=0.01
 fi
 if [[ -z "$exclude_rRNA" ]]; then
-	export exclude_rRNA=false
+	export exclude_rRNA=true
 fi
 if [[ -z "$node" ]]; then
 	export node=1
@@ -176,10 +176,6 @@ fi
 if [[ -z $qcov ]]; then
 	export qcov=50
 fi
-if [[ -z $exclude_rRNA ]]; then
-	export exclude_rRNA=true
-fi
-
 if [[ -z $min_percent_sample ]]; then
 	export min_percent_sample=5,10,20
 fi
@@ -381,6 +377,7 @@ simulate_reads () {
 	for simdir in */ ; do
 		mkdir -p refgenome
 		cd "$simdir"
+		echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 		while IFS="" read -r p || [ -n "$p" ]; do
 			mockfile=$(echo $p | awk '{print $2}') &&
 			mockfile=${mockfile}.fasta
@@ -397,7 +394,6 @@ simulate_reads () {
 			awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
 			wait
 			if [[ "$simulation_lib" =~ "complete_digest" ]]; then
-				echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 				Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
 				Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -c) &&
 				Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
@@ -405,7 +401,7 @@ simulate_reads () {
 				wait
 			fi
 
-			rm * 2> /dev/null
+			rm -rf ./refgenome 2> /dev/null
 			rm ../${mockfile%.fasta}.sam 2> /dev/null
 			cd ../$simdir
 		done < abundance.txt

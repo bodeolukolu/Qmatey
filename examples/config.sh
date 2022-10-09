@@ -53,5 +53,5 @@ reads_per_megablast=1000
 genome_scaling=true
 zero_inflated=0.01
 qcov=50
-exclude_rRNA=false
+exclude_rRNA=true
 annotate_seq=false
