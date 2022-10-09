@@ -102,7 +102,7 @@ if [[ -z "$zero_inflated" ]]; then
 	export zero_inflated=0.01
 fi
 if [[ -z "$exclude_rRNA" ]]; then
-	export exclude_rRNA=true
+	export exclude_rRNA=false
 fi
 if [[ -z "$node" ]]; then
 	export node=1

@@ -228,7 +228,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |genome_scaling|true|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |qcov|50|minimum query coverage|integer|Optional|
-|exclude_rRNA|true|exclude rRNA for qRRS/WGS data: rRNA copy number variation can negatively impact abundance estimates|true or false|Optional|
+|exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
 
 **Note: na indicates that variable is user-defined or hard-coded/computed intuitively, as well as a function of ploidy.*
