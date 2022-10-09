@@ -285,14 +285,13 @@ simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
-		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' > abundance.tmp && mv abundance.tmp abundance.txt &&
-		:> ../"${simdir%/*}".fasta
+		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' | sed '$ s/$//' > abundance.tmp && mv abundance.tmp abundance.txt &&
 		wait
 		for (( gline=1; gline<=gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
 				endt=$(echo $p | awk '{print $1}')
 				for t in $(seq 1 "$endt"); do
-					cat "$(echo $p | awk '{print $2}')".fasta | gzip >> ../"${simdir%/*}"_taxa_"$(echo $p | awk '{print $2}')".fasta.gz
+					cat "$(echo $p | awk '{print $2}')".fasta | gzip >> ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
 				done
 				wait ) &
 				if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -300,8 +299,8 @@ simulate_reads () {
 				fi
 			done < abundance.txt
 			wait
-			cat ../"${simdir%/*}"_taxa_*.fasta.gz >> ../"${simdir%/*}".fasta.gz &&
-			rm ../"${simdir%/*}"_taxa_*.fasta.gz &&
+			cat ../taxa_*.fa.gz >> ../"${simdir%/*}".fasta.gz &&
+			rm ../taxa_*.fa.gz &&
 			wait
 		done
 		cd ../
