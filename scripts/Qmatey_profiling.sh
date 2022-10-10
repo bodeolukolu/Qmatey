@@ -281,12 +281,12 @@ simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
-		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' | sed '$ s/$//' > abundance.tmp && mv abundance.tmp abundance.txt &&
+		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' | sed '$ s/$//' > abundance.tmp && mv abundance.tmp abundance.txt
 		wait
 		for (( gline=1; gline<=gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
-				endt=$(echo $p | awk '{print $1}')
-				for t in $(seq 1 "$endt"); do
+				endt=$(echo "$p" | awk '{print $1}')
+				for (( rd=1; rd<=endt; rd++ )); do
 					cat "$(echo $p | awk '{print $2}')".fasta | gzip >> ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
 				done
 				wait ) &
@@ -377,7 +377,9 @@ simulate_reads () {
 	for simdir in */ ; do
 		mkdir -p refgenome
 		cd "$simdir"
-		echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+			echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		fi
 		while IFS="" read -r p || [ -n "$p" ]; do
 			mockfile=$(echo $p | awk '{print $2}') &&
 			mockfile=${mockfile}.fasta
