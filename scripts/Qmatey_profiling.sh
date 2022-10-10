@@ -403,7 +403,7 @@ simulate_reads () {
 				wait
 			fi
 
-			rm -rf ./refgenome 2> /dev/null
+			rm -rf ./refgenome/* 2> /dev/null
 			rm ../${mockfile%.fasta}.sam 2> /dev/null
 			cd ../$simdir
 		done < abundance.txt
