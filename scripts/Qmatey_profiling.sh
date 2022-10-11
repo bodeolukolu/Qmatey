@@ -328,7 +328,7 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
 			end="$(wc -l <(zcat ./hold1_${unsim}) | awk '{print $1}')"
-			for (( gline=1; gline<=end; gline+=100 )); do
+			for (( gline=1; gline<=end; gline+=10 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) | gzip > hold2_${unsim} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L <(zcat hold2_${unsim}) | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
@@ -350,7 +350,7 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
 			end="$(wc -l <(zcat ./hold1_${unsim}) | awk '{print $1}')"
-			for (( gline=1; gline<=end; gline+=100 )); do
+			for (( gline=1; gline<=end; gline+=10 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) | gzip > hold2_${unsim} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(wc -L <(zcat hold2_${unsim}) | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
