@@ -327,19 +327,19 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
-			end="$(wc -l <(zcat ./hold1_${unsim}) | awk '{print $1}')"
-			for (( gline=1; gline<=end; gline+=10 )); do
-				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) | gzip > hold2_${unsim} &&
+			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
+			for (( gline=1; gline<=$end; gline+=100000 )); do
+				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(wc -L <(zcat hold2_${unsim}) | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
-					cat <(zcat hold2_${unsim}) | fold -w "$cutpos" | gzip > hold2_${unsim}.tmp &&
-					mv hold2_${unsim}.tmp hold2_${unsim} &&
+				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
+					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
 				done
-				cat hold2_${unsim} >> ${unsim}.tmp && rm hold2_${unsim}
+				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_${unsim%.gz}
 			done
-			sed 's/[^'"$RE1"']*\('"$RE1"'.*\)/\1/' ${unsim%.gz}.tmp | sed 's!'"$RE1"'[^'"$RE1"']*$!'"$RE1"'!' | \
+			zcat ${unsim}.tmp | grep -v '>' | sed 's/[^'"$RE1"']*\('"$RE1"'.*\)/\1/' | sed 's!'"$RE1"'[^'"$RE1"']*$!'"$RE1"'!' | \
 			sed 's/[^'"$RE2"']*\('"$RE2"'.*\)/\1/' | sed 's!'"$RE2"'[^'"$RE2"']*$!'"$RE2"'!' | \
 			sed 's/[^'"$RE3"']*\('"$RE3"'.*\)/\1/' | sed 's!'"$RE3"'[^'"$RE3"']*$!'"$RE3"'!' | \
 			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
@@ -349,19 +349,19 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "shotgun" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
-			end="$(wc -l <(zcat ./hold1_${unsim}) | awk '{print $1}')"
-			for (( gline=1; gline<=end; gline+=10 )); do
-				awk -v pat1=$gline -v pat2=$((gline+99)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) | gzip > hold2_${unsim} &&
+			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
+			for (( gline=1; gline<=$end; gline+=100000 )); do
+				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(wc -L <(zcat hold2_${unsim}) | awk '{print $1}')" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
-					cat <(zcat hold2_${unsim}) | fold -w "$cutpos" | gzip > hold2_${unsim}.tmp &&
-					mv hold2_${unsim}.tmp hold2_${unsim} &&
+				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
+					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
 				done
-				cat hold2_${unsim} >> ${unsim}.tmp && rm hold2_${unsim}
+				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_${unsim%.gz}
 			done
-			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' ${unsim}.tmp | awk '{print length"\t"$1}' | \
+			zcat ${unsim}.tmp | grep -v '>' | awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
 			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
 		fi
@@ -376,43 +376,38 @@ simulate_reads () {
 
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
-		mkdir -p refgenome
-		cd "$simdir"
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+			mkdir -p refgenome
+			cd "$simdir"
 			echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
-		fi
-		while IFS="" read -r p || [ -n "$p" ]; do
-			mockfile=$(echo $p | awk '{print $2}') &&
-			mockfile=${mockfile}.fasta
-			cp "$mockfile" ../refgenome &&
-			cd ../refgenome &&
-			$bwa index -a bwtsw "$mockfile" &&
-			$samtools faidx "$mockfile" &&
-			$java -jar $picard CreateSequenceDictionary REFERENCE="$mockfile"    OUTPUT=${mockfile%.fasta}.dict &&
-			$bwa mem -t "$threads" "$mockfile" "../../samples/${simdir%/*}_R1.fasta.gz" "../../samples/${simdir%/*}_R2.fasta.gz" > ../${mockfile%.fasta}.sam &&
-			# keep only reads that are perfectly aligned and without hard/soft clipping
-			grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
-			mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
-			grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
-			awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
-			wait
-			if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+			while IFS="" read -r p || [ -n "$p" ]; do
+				mockfile=$(echo $p | awk '{print $2}') &&
+				mockfile=${mockfile}.fasta
+				cp "$mockfile" ../refgenome &&
+				cd ../refgenome &&
+				$bwa index -a bwtsw "$mockfile" &&
+				$samtools faidx "$mockfile" &&
+				$java -jar $picard CreateSequenceDictionary REFERENCE=$mockfile    OUTPUT=${mockfile%.fasta}.dict &&
+				$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz > ../${mockfile%.fasta}.sam &&
+				# keep only reads that are perfectly aligned and without hard/soft clipping
+				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
+				mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
+				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
+				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
+				wait
 				Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
 				Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -c) &&
 				Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
 				printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
 				wait
-			fi
-
-			rm -rf ./refgenome/* 2> /dev/null
-			rm ../${mockfile%.fasta}.sam 2> /dev/null
-			cd ../$simdir
-		done < abundance.txt
-		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
+				rm -rf ./refgenome/* 2> /dev/null
+				rm ../${mockfile%.fasta}.sam 2> /dev/null
+				cd ../$simdir
+			done < abundance.txt
 			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+			cd ../
+			wait
 		fi
-		cd ../
-		wait
 	done
 	rm -rf "${projdir}"/simulate_genomes/refgenome 2> /dev/null
 }
@@ -618,29 +613,65 @@ else
 			    fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
 			  fi
 
-			  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			    if [[ "${fa_fq}" == "@" ]]; then
-			      awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
-						rm $i
-			    fi
-			    if [[ "${fa_fq}" == ">" ]]; then
-			      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
-			      awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-			    fi
-			  else
-			    if [[ "${fa_fq}" == "@" ]]; then
-			      awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
-						rm $i
-			    fi
-			    if [[ "${fa_fq}" == ">" ]]; then
-			      awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
-			      awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			      awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-			    fi
-			  fi
+				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+					if [[ "${fa_fq}" == "@" ]]; then
+						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{print substr($0,1,64)}' | awk '{print ">fragB"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | \
+						awk '{print ">fragE"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+						cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
+						rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+						wait
+					fi
+					if [[ "${fa_fq}" == ">" ]]; then
+						grep -v '^>' <(zcat $i) | awk '{print substr($0,1,64)}' | awk '{print ">fragB"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+						grep -v '^>' <(zcat $i) | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | \
+						awk '{print ">fragE"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+						cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
+						rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+						wait
+					fi
+				else
+					if [[ "${fa_fq}" == "@" ]]; then
+						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{print substr($0,1,64)}' | awk '{print ">fragB"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz
+						awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | \
+						awk '{print ">fragE"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+						cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
+						rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+						wait
+					fi
+					if [[ "${fa_fq}" == ">" ]]; then
+						grep -v '^>' $i | awk '{print substr($0,1,64)}' | awk '{print "@B"NR"\t"$1"\t"$1}' | awk '{print ">fragB"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+						grep -v '^>' $i | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | \
+						awk '{print ">fragE"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+						cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > "${i%.f}fastq.gz" &&sss
+						rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+						wait
+					fi
+				fi
+
+			  # if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+			  #   if [[ "${fa_fq}" == "@" ]]; then
+			  #     awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
+				# 		rm $i
+			  #   fi
+			  #   if [[ "${fa_fq}" == ">" ]]; then
+			  #     awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
+			  #     awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+			  #   fi
+			  # else
+			  #   if [[ "${fa_fq}" == "@" ]]; then
+			  #     awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
+				# 		rm $i
+			  #   fi
+			  #   if [[ "${fa_fq}" == ">" ]]; then
+			  #     awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
+			  #     awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
+			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+			  #   fi
+			  # fi
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -2506,7 +2537,7 @@ rm -rf strain_level_hold strain_level
 
 }
 if [[ "$strain_level" == "true" ]]; then
-	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level*/strain_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment
 		mv ./uncultured/uncultured*megablast.gz ./ &&
 		mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
@@ -2524,7 +2555,7 @@ if [[ "$strain_level" == "true" ]]; then
 		mv ../sighits/sighits_strain ../sighits/uncultured_sighits_strain
 		wait
 	fi
-	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level/strain_taxainfo* 2> /dev/null)" ]]; then
+	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level*/strain_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
 		mv *megablast* ../ &&
 		mv ../combined_compressed.megablast.gz ./ &&

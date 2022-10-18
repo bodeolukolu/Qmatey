@@ -24,11 +24,11 @@ stderr <- read.delim(file=paste(args[2],"_taxainfo_quantification_accuracy.txt",
 rel_stderr <- read.delim(file=paste(args[2],"_taxainfo_rel_quantification_accuracy.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
 
 if (length(test_uniq) > 0){
-  uniq_seq <- uniq_seq[!grepl(paste(test_uniq, collapse="|"), uniq_seq[,colnames(uniq_seq)==ref_taxlevel]),]
-  mean <- mean[!grepl(paste(test_uniq, collapse="|"), mean[,colnames(mean)==ref_taxlevel]),]
-  norm_mean <- norm_mean[!grepl(paste(test_uniq, collapse="|"), norm_mean[,colnames(norm_mean)==ref_taxlevel]),]
-  stderr <- stderr[!grepl(paste(test_uniq, collapse="|"), stderr[,colnames(stderr)==ref_taxlevel]),]
-  rel_stderr <- rel_stderr[!grepl(paste(test_uniq, collapse="|"), rel_stderr[,colnames(rel_stderr)==ref_taxlevel]),]
+  uniq_seq <- uniq_seq[!(uniq_seq[,colnames(uniq_seq)==ref_taxlevel]) %in% test_uniq,]
+  mean <- mean[!(mean[,colnames(mean)==ref_taxlevel]) %in% test_uniq,]
+  norm_mean <- norm_mean[!(norm_mean[,colnames(norm_mean)==ref_taxlevel]) %in% test_uniq,]
+  stderr <- stderr[!(stderr[,colnames(stderr)==ref_taxlevel]) %in% test_uniq,]
+  rel_stderr <- rel_stderr[!(rel_stderr[,colnames(rel_stderr)==ref_taxlevel]) %in% test_uniq,]
 }
 
 write.table(uniq_seq,paste(args[5],"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)

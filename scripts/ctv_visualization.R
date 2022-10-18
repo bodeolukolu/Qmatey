@@ -26,7 +26,7 @@ species <- subset(species, domain != "Viruses")
 strain <- subset(strain, domain != "Viruses")
 ctv <- as.data.frame(matrix(nrow=0,ncol=10))
 
-n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxaname))
+n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxname))
 phylum <- phylum$phylum; length(phylum) <- n
 class1 <- class$class; length(class1) <- n; class2 <- class$phylum; length(class2) <- n; class <- cbind(class1,class2)
 order1 <- order$order; length(order1) <- n; order2 <- order$class; length(order2) <- n; order <- cbind(order1,order2)
@@ -90,7 +90,7 @@ species <- subset(species, domain != "Viruses")
 strain <- subset(strain, domain != "Viruses")
 ctv <- as.data.frame(matrix(nrow=0,ncol=10))
 
-n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxaname))
+n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxname))
 phylum <- phylum$phylum; length(phylum) <- n
 class1 <- class$class; length(class1) <- n; class2 <- class$phylum; length(class2) <- n; class <- cbind(class1,class2)
 order1 <- order$order; length(order1) <- n; order2 <- order$class; length(order2) <- n; order <- cbind(order1,order2)
