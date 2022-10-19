@@ -322,6 +322,7 @@ simulate_reads () {
 			grep "^$RE1.*$RE2$\|^$RE1.*$RE3$\|^$RE2.*$RE1$\|^$RE3.*$RE1$\|^$RE2.*$RE3$\|^$RE3.*$RE2$" | \
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > "${unsim}".tmp
+			:> ${unsim}
 			mv ${unsim}.tmp ${unsim}
 		fi
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
@@ -333,6 +334,7 @@ simulate_reads () {
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
+					:> hold2_${unsim%.gz}
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
@@ -355,6 +357,7 @@ simulate_reads () {
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
+					:> hold2_${unsim%.gz}
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
@@ -391,6 +394,7 @@ simulate_reads () {
 				$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz > ../${mockfile%.fasta}.sam &&
 				# keep only reads that are perfectly aligned and without hard/soft clipping
 				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
+				:> ../${mockfile%.fasta}.sam
 				mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
 				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
 				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
@@ -404,7 +408,9 @@ simulate_reads () {
 				rm ../${mockfile%.fasta}.sam 2> /dev/null
 				cd ../$simdir
 			done < abundance.txt
-			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp && mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
+			:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+			mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 			cd ../
 			wait
 		fi
@@ -701,8 +707,8 @@ else
 						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 50 && length <= 600' | \
 		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz
-						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_R1RE2.fasta.gz > ${i%.f*}.fasta.gz
-						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_R1RE2.fasta.gz
+						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz
+						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz
 		      fi
 		      if [[ "${fa_fq}" == ">" ]]; then
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");}1' | \
@@ -712,6 +718,7 @@ else
 		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz
 		        cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz
+						:> ${i%.f*}.fasta.gz
 						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 						rm ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz ${i%.f*}.tmp.gz
 		      fi
@@ -723,8 +730,8 @@ else
 						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz
 						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 50 && length <= 600' | \
 						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz
-						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_R1RE2.fasta.gz > ${i%.f*}.fasta.gz
-						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_R1RE2.fasta.gz
+						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz
+						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz
 		      fi
 		      if [[ "${fa_fq}" == ">" ]]; then
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");}1' | \
@@ -734,10 +741,19 @@ else
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
 		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz
 						cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz
+						:> ${i%.f*}.fasta.gz
 						mv ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
 						rm ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz ${i%.f*}.tmp.gz
 		      fi
 		    fi
+
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk '{print substr($0,1,64)}' | awk '{print ">fragB"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | \
+				awk '{print ">fragE"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+				:> ${i%.f*}.fasta.gz
+				cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
+				rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+				wait
 			fi
  			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -2442,6 +2458,7 @@ rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt stra
 
 for i in *.txt; do
 	awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
+	:> $i &&
 	mv ${i%.txt}.temp $i
 done
 wait
@@ -2675,6 +2692,7 @@ else
 	for i in *_species_duplicates.txt.gz;do (
 		zcat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
 		$gzip ${i%*_species_duplicates.txt.gz}temp.txt
+		:> $i &&
 		mv ${i%*_species_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3116,7 +3134,7 @@ else
 	for i in *_genus_duplicates.txt.gz;do (
      awk -F'\t' '$11 != "NA"' OFS='\t' <( zcat $i) > ${i%*_genus_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_genus_duplicates.txt.gz}temp.txt
- 		mv ${i%*_genus_duplicates.txt.gz}temp.txt.gz $i
+ 		 mv ${i%*_genus_duplicates.txt.gz}temp.txt.gz $i
  		) &
  		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
  			wait
@@ -3203,7 +3221,8 @@ else
 	done
 	wait
 	for i in *_genus_unique_uncultured.txt;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt &&
+		:> $i &&
 		mv ${i%*_genus_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3650,7 +3669,8 @@ else
   done
 	wait
 	for i in *_family_unique_uncultured.txt;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt
+		:> $i &&
 		mv ${i%*_family_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4096,7 +4116,8 @@ else
   done
 	wait
 	for i in *_order_unique_uncultured.txt;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt
+ 		:> $i &&
 		mv ${i%*_order_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4544,7 +4565,8 @@ else
   done
 	wait
 	for i in *_class_unique_uncultured.txt;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt
+ 		:> $i &&
 		mv ${i%*_class_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4991,7 +5013,8 @@ else
   done
 	wait
 	for i in *_phylum_unique_uncultured.txt;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt
+		:> $i &&
 		mv ${i%*_phylum_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
