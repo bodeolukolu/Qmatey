@@ -252,12 +252,12 @@ fi
 cd "${projdir}"
 if [[ -d metagenome_ref_normalize ]]; then
 	if [[ ! -d metagenome_no_normalize ]]; then
-		rsync -aAx ${projdir}/metagenome_ref_normalize ${projdir}/metagenome
+		mv ${projdir}/metagenome_ref_normalize ${projdir}/metagenome
 	fi
 fi
 if [[ -d metagenome_no_normalize ]]; then
 	if [[ ! -d metagenome_ref_normalize ]]; then
-		rsync -aAx ${projdir}/metagenome_no_normalize ${projdir}/metagenome
+		 ${projdir}/metagenome_no_normalize ${projdir}/metagenome
 	fi
 fi
 if [[ -d metagenome_ref_normalize ]]; then
@@ -282,7 +282,7 @@ simulate_reads () {
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
-		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' | sed '$ s/$//' > abundance.tmp && rsync -aAx abundance.tmp abundance.txt
+		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz&/,""); gsub(/.fasta$/,""); gsub(/.fna$/,"");}1' | sed '$ s/$//' > abundance.tmp &&  abundance.tmp abundance.txt
 		wait
 		for (( gline=1; gline<=gcov; gline++ )); do
 			while IFS="" read -r p || [ -n "$p" ]; do (
@@ -323,7 +323,9 @@ simulate_reads () {
 			awk '{ print length"\t"$1}' | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > "${unsim}".tmp
 			rm ${unsim}
-			rsync -aAx ${unsim}.tmp ${unsim}
+			rsync -aAx ${unsim}.tmp ${unsim} &&
+			rm ${unsim}.tmp
+			wait
 		fi
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
@@ -336,6 +338,7 @@ simulate_reads () {
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
 					rm hold2_${unsim%.gz}
 					rsync -aAx hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					rm hold2_${unsim%.gz}.tmp
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
 				done
@@ -359,6 +362,7 @@ simulate_reads () {
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
 					rm hold2_${unsim%.gz}
 					rsync -aAx hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					rm hold2_${unsim%.gz}.tmp
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
 				done
@@ -396,6 +400,7 @@ simulate_reads () {
 				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
 				:> ../${mockfile%.fasta}.sam
 				rsync -aAx ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
+				rm ../${mockfile%.fasta}.sam.tmp
 				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
 				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
 				wait
@@ -410,7 +415,7 @@ simulate_reads () {
 			done < abundance.txt
 			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
 			:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-			rsync -aAx ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+			mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
 			cd ../
 			wait
 		fi
@@ -465,94 +470,86 @@ else
 					:
 				else
 					if [[ "$i" == *.R1* ]]; then
-						rsync -aAx $i ${i/.R1/}
+						mv $i ${i/.R1/}
 					elif [[ "$i" == *_R1* ]]; then
-						rsync -aAx $i ${i/_R1/}
+						mv $i ${i/_R1/}
 					fi
 				fi
 			done
 		fi
 	fi
-	cd "${projdir}"/samples/se
-	if [[ -z "$(ls -A ../pe)" ]]; then
-		if [[ "$(ls -A ../se)" ]]; then
-			echo -e "${magenta}- only single-end reads available in se-folder ${white}\n"
-			for i in *.f*; do
-				if [[ "$i" == *.R1* ]]; then
-					rsync -aAx $i ../${i/.R1/}
-				elif [[ "$i" == *_R1* ]]; then
-					rsync -aAx $i ../${i/_R1/}
-				else
-					rsync -aAx $i ../$i
-				fi
-			done
-		fi
-	fi
 
-	cd "${projdir}"/samples/pe
-	if [[ -z "$(ls -A ../se)" ]]; then
-		if [[ "$(ls -A ../pe)" ]]; then
+	cd "${projdir}"/samples/se
+	if [ -z "$(ls -A ../se)" ]; then
+		if [ "$(ls -A ../pe)" ]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
 			for i in *R1.f*; do
-				rsync -aAx ${i%R1.f*}R2.f* ../
+				rsync -aAx ${i%R1.f*}R2.f* ../ 2> /dev/null && rm ${i%R1.f*}R2.f* 2> /dev/null
 				if [[ "$i" == *.R1* ]]; then
-					rsync -aAx $i ../${i/.R1/}
+					rsync -aAx $i ../${i/.R1/} 2> /dev/null && rm $i 2> /dev/null
 				elif [[ "$i" == *_R1* ]]; then
-					rsync -aAx $i ../${i/_R1/}
+					rsync -aAx $i ../${i/_R1/} 2> /dev/null && rm $i 2> /dev/null
 				else
-					echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2)  ${white}\n"
-					echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
+					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2  ${white}\n"
+					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
 					read -p "- y(YES) or n(NO) " -n 1 -r
 					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 						printf '\n'
-						exit 0
+						exit 1
 					fi
 				fi
 			done
-			wait
 		fi
 	fi
 
 	cd "${projdir}"/samples/pe
-	if [[ "$(ls -A ../se)" ]]; then
-		if [[ "$(ls -A ../pe)" ]]; then
+	if [ -z "$(ls -A ../se)" ]; then
+		if [ "$(ls -A ../pe)" ]; then
+			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
 			for i in *R1.f*; do
-				rsync -aAx ${i%R1.f*}R2.f* ../
+				rsync -aAx ${i%R1.f*}R2.f* ../ 2> /dev/null && rm ${i%R1.f*}R2.f* 2> /dev/null
 				if [[ "$i" == *.R1* ]]; then
-					cat $i ../se/${i%.R1.f*}* > ../${i}
-					rsync -aAx ../${i} ../${i/.R1/}
-					rm ../pe/$i ../se/${i%.R1.f*}*
+					rsync -aAx $i ../${i/.R1/} 2> /dev/null && rm $i 2> /dev/null
 				elif [[ "$i" == *_R1* ]]; then
-					cat $i ../se/${i%_R1.f*}* > ../${i}
-					rsync -aAx ../${i} ../${i/_R1/}
-					rm ../pe/$i ../se/${i%_R1.f*}*
+					rsync -aAx $i ../${i/_R1/} 2> /dev/null && rm $i 2> /dev/null
 				else
-					echo -e "${magenta}- check paired-end filenames for proper filename format (.R1 or _R1 and .R2 or _R2) ${white}\n"
-					echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
+					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2  ${white}\n"
+					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
 					read -p "- y(YES) or n(NO) " -n 1 -r
 					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 						printf '\n'
-						exit 0
+						exit 1
 					fi
 				fi
 			done
-			wait
 		fi
 	fi
-	cd ../
-	mkdir hold
-	for i in *.f*; do
-		if [[ "$i" == *"R2.f"* ]]; then
-			:
-		else
-			checkfiles=$( ls ${i%.f*}.* | wc -l )
-			if [[ "$checkfiles" -gt 1 ]]; then
-				cat ${i%.f*}.* > ./hold/$i
-				rm -r ${i%.f*}.*
-				rsync -aAx ./hold/$i ./
-			fi
+
+	cd "${projdir}"/samples/pe
+	if [ "$(ls -A ../se)" ]; then
+		if [ "$(ls -A ../pe)" ]; then
+			for i in *R1.f*; do
+				rsync -aAx ${i%R1.f*}R2.f* ../ && rm ${i%R1.f*}R2.f* 2> /dev/null
+				if [[ "$i" == *.R1* ]]; then
+					cat $i ../se/${i%.R1.f*}.R2.f* ../se/${i%.R1.f*}.R1.f* > ../${i} 2> /dev/null && rm $i ../se/${i%.R1.f*}.R1.f* ../se/${i%.R1.f*}.R2.f* 2> /dev/null
+					rsync -aAx ../${i} ../${i/.R1/} 2> /dev/null && rm ../${i} 2> /dev/null
+				elif [[ "$i" == *_R1* ]]; then
+					cat $i ../se/${i%_R1.f*}_R1.f* ../se/${i%_R1.f*}_R2.f* > ../${i} 2> /dev/null && rm $i ../se/${i%.R1.f*}_R1.f* ../se/${i%.R1.f*}_R2.f* 2> /dev/null
+					rsync -aAx ../${i} ../${i/_R1/} 2> /dev/null && rm ../${i} 2> /dev/null
+				else
+					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2 ${white}\n"
+					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
+					read -p "- y(YES) or n(NO) " -n 1 -r
+					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+						printf '\n'
+						exit 1
+					fi
+				fi
+			done
 		fi
-	done
+	fi
+
+	cd ../
 	wait
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
@@ -639,7 +636,7 @@ else
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > "${i%.f}fastq.gz" &&
+						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f}fastq.gz &&
 						wait
 					fi
 				fi
@@ -859,7 +856,7 @@ ref_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -897,7 +894,7 @@ ref_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -969,7 +966,7 @@ ref_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1007,7 +1004,7 @@ ref_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1215,7 +1212,7 @@ no_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 
@@ -1253,7 +1250,7 @@ no_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 
@@ -1313,7 +1310,7 @@ no_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1351,7 +1348,7 @@ no_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if test ! -f ${i%.f*}_R2.f* || test ! -f ${i%.f*}.R2.f*; then
+					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -5960,10 +5957,10 @@ if [[ "$annotate_seq" == true ]]; then
 fi
 
 if [[ "$normalization" == true ]]; then
-	rsync -aAx ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
+	mv ${projdir}/metagenome ${projdir}/metagenome_ref_normalize
 fi
 if [[ "$normalization" == false ]]; then
-	rsync -aAx ${projdir}/metagenome ${projdir}/metagenome_no_normalize
+	mv ${projdir}/metagenome ${projdir}/metagenome_no_normalize
 fi
 
 if [[ -z $samples_alt_dir ||  $samples_alt_dir == false ]]; then
