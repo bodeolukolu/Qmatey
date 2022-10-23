@@ -738,7 +738,9 @@ else
 		    fi
 
 				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-				awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+				awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.tmp.gz &&
+				rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz &&
+				rm ${i%.f*}.tmp.gz
 				wait
 			fi
  			) &
