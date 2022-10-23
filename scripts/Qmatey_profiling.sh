@@ -479,70 +479,54 @@ else
 		fi
 	fi
 
-	cd "${projdir}"/samples/se
+	cd "${projdir}"/samples/pe
 	if [ -z "$(ls -A ../se)" ]; then
 		if [ "$(ls -A ../pe)" ]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
-			for i in *R1.f*; do
-				rsync -aAx ${i%R1.f*}R2.f* ../ 2> /dev/null && rm ${i%R1.f*}R2.f* 2> /dev/null
-				if [[ "$i" == *.R1* ]]; then
-					rsync -aAx $i ../${i/.R1/} 2> /dev/null && rm $i 2> /dev/null
-				elif [[ "$i" == *_R1* ]]; then
-					rsync -aAx $i ../${i/_R1/} 2> /dev/null && rm $i 2> /dev/null
-				else
-					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2  ${white}\n"
-					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
-					read -p "- y(YES) or n(NO) " -n 1 -r
-					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-						printf '\n'
-						exit 1
+			for i in *.f*; do
+				if [[ ! "$i" =~ R2.f ]]; then
+					if [[ "$i" == *".R1"* ]]; then
+						cat ${i%.R1*}* > ../${i/.R1/} && rm ${i%.R1*}* 2> /dev/null
+					elif [[ "$i" == *_R1* ]]; then
+						cat ${i%_R1*}* > ../${i/_R1/} && rm ${i%_R1*}* 2> /dev/null
+					else
+						cat ${i%.f*}* > ../$i && rm ${i%.f*}* 2> /dev/null
 					fi
 				fi
 			done
 		fi
 	fi
 
-	cd "${projdir}"/samples/pe
-	if [ -z "$(ls -A ../se)" ]; then
-		if [ "$(ls -A ../pe)" ]; then
-			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
-			for i in *R1.f*; do
-				rsync -aAx ${i%R1.f*}R2.f* ../ 2> /dev/null && rm ${i%R1.f*}R2.f* 2> /dev/null
-				if [[ "$i" == *.R1* ]]; then
-					rsync -aAx $i ../${i/.R1/} 2> /dev/null && rm $i 2> /dev/null
-				elif [[ "$i" == *_R1* ]]; then
-					rsync -aAx $i ../${i/_R1/} 2> /dev/null && rm $i 2> /dev/null
-				else
-					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2  ${white}\n"
-					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
-					read -p "- y(YES) or n(NO) " -n 1 -r
-					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-						printf '\n'
-						exit 1
+	cd "${projdir}"/samples/se
+	if [ "$(ls -A ../se)" ]; then
+		if [ -z "$(ls -A ../pe)" ]; then
+			echo -e "${magenta}- only single-end or unpaired reads available in se-folder ${white}\n"
+			for i in *.f*; do
+				if [[ ! "$i" =~ R2.f ]]; then
+					if [[ "$i" == *".R1"* ]]; then
+						cat ${i%.R1*}* > ../${i/.R1/} && rm ${i%.R1*}* 2> /dev/null
+					elif [[ "$i" == *_R1* ]]; then
+						cat ${i%_R1*}* > ../${i/_R1/} && rm ${i%_R1*}* 2> /dev/null
+					else
+						cat ${i%.f*}* > ../$i && rm ${i%.f*}* 2> /dev/null
 					fi
 				fi
 			done
 		fi
 	fi
+
 
 	cd "${projdir}"/samples/pe
 	if [ "$(ls -A ../se)" ]; then
 		if [ "$(ls -A ../pe)" ]; then
 			for i in *R1.f*; do
-				rsync -aAx ${i%R1.f*}R2.f* ../ && rm ${i%R1.f*}R2.f* 2> /dev/null
-				if [[ "$i" == *.R1* ]]; then
-					cat $i ../se/${i%.R1.f*}.R2.f* ../se/${i%.R1.f*}.R1.f* > ../${i} 2> /dev/null && rm $i ../se/${i%.R1.f*}.R1.f* ../se/${i%.R1.f*}.R2.f* 2> /dev/null
-					rsync -aAx ../${i} ../${i/.R1/} 2> /dev/null && rm ../${i} 2> /dev/null
-				elif [[ "$i" == *_R1* ]]; then
-					cat $i ../se/${i%_R1.f*}_R1.f* ../se/${i%_R1.f*}_R2.f* > ../${i} 2> /dev/null && rm $i ../se/${i%.R1.f*}_R1.f* ../se/${i%.R1.f*}_R2.f* 2> /dev/null
-					rsync -aAx ../${i} ../${i/_R1/} 2> /dev/null && rm ../${i} 2> /dev/null
-				else
-					echo -e "${magenta}- check paired-end filenames for proper filename format, i.e. .R1 or _R1 and .R2 or _R2 ${white}\n"
-					echo -e "${magenta}- Do you want to continue running GBSapp? ${white}\n"
-					read -p "- y(YES) or n(NO) " -n 1 -r
-					if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-						printf '\n'
-						exit 1
+				if [[ ! "$i" =~ R2.f ]]; then
+					if [[ "$i" == *.R1* ]]; then
+						cat ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null
+					elif [[ "$i" == *_R1* ]]; then
+						cat ${i%_R1*}* ../se/${i%_R1*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null
+					else
+						cat ${i%.f*}* ../se/${i%.f*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.f*}* ../se/${i%.f*}* 2> /dev/null
 					fi
 				fi
 			done
@@ -620,50 +604,26 @@ else
 				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 					if [[ "${fa_fq}" == "@" ]]; then
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
 						wait
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' <(zcat $i) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
 						wait
 					fi
 				else
 					if [[ "${fa_fq}" == "@" ]]; then
 						awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
 						wait
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f}fasta.gz &&
+						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f}fasta.gz &&
 						wait
 					fi
 				fi
-
-			  # if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			  #   if [[ "${fa_fq}" == "@" ]]; then
-			  #     awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
-				# 		rm $i
-			  #   fi
-			  #   if [[ "${fa_fq}" == ">" ]]; then
-			  #     awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | \
-			  #     awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-			  #   fi
-			  # else
-			  #   if [[ "${fa_fq}" == "@" ]]; then
-			  #     awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
-				# 		rm $i
-			  #   fi
-			  #   if [[ "${fa_fq}" == ">" ]]; then
-			  #     awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | \
-			  #     awk -v max=$max_seqread_len '{print substr($0,0,max)}' | \
-			  #     awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.gz && rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
-			  #   fi
-			  # fi
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -734,7 +694,7 @@ else
 		      fi
 		    fi
 
-				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_len '{print substr($0,1,max)}' | \
 				awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f*}.tmp.gz &&
 				rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz &&
 				rm ${i%.f*}.tmp.gz
@@ -1351,11 +1311,9 @@ no_norm () {
 					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
-
 							wait
 						else
 							awk 'NR%2==0' $i | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
-
 							wait
 						fi
 						wait
