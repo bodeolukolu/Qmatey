@@ -856,7 +856,7 @@ ref_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -894,7 +894,7 @@ ref_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -966,7 +966,7 @@ ref_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1004,7 +1004,7 @@ ref_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1212,7 +1212,7 @@ no_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 
@@ -1250,7 +1250,7 @@ no_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 
@@ -1310,7 +1310,7 @@ no_norm () {
 				wait
 
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == "@" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk 'NR%2==1' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
@@ -1348,7 +1348,7 @@ no_norm () {
 					fi
 				fi
 				if test ! -f ${i%.f*}_compressed.fasta.gz && [[ "${fa_fq}" == ">" ]]; then
-					if [[ -z ${i%.f*}_R2.f* ]] [[ -z ${i%.f*}.R2.f* ]]; then
+					if [[ -z ${i%.f*}_R2.f* ]] && [[ -z ${i%.f*}.R2.f* ]]; then
 						if gzip -t $i; then
 							zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 
