@@ -636,7 +636,7 @@ else
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f}fastq.gz &&
+						awk -v frag=$frag '{print ">frag"NR"\n"$0}' | gzip > ${i%.f}fasta.gz &&
 						wait
 					fi
 				fi
@@ -1056,7 +1056,7 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 					cd "${projdir}"/samples
 					$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
@@ -1095,7 +1095,7 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 					cd "${projdir}"/samples
 					$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
@@ -1400,7 +1400,7 @@ no_norm () {
 		for i in *_compressed.fasta.gz; do
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 				cd "${projdir}"/norm_ref/
-				$bwa mem -t "$threads" master_ref.fasta <(zcat ${projdir}/samples/$i 2> /dev/null) > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+				$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 				cd "${projdir}"/samples
 				$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
