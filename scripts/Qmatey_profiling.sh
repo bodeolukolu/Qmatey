@@ -462,10 +462,10 @@ else
 	fi
 
 	cd "${projdir}"/samples/se
-	if [[ -z "$(ls -A ../pe)" ]]; then
-		if [[ -z "$(ls -A ../se)" ]]; then
+	if [[ -z "$(ls -A ../pe 2> /dev/null)" ]]; then
+		if [[ -z "$(ls -A ../se 2> /dev/null)" ]]; then
 			cd ../
-			for i in *.f*; do
+			for i in *.f*; do (
 				if [[ "$i" == *"R2.f"* ]]; then
 					:
 				else
@@ -474,16 +474,21 @@ else
 					elif [[ "$i" == *_R1* ]]; then
 						mv $i ${i/_R1/}
 					fi
+				fi ) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
 				fi
 			done
+			cd ../
+			find . -type d -empty -delete
 		fi
 	fi
 
 	cd "${projdir}"/samples/pe
-	if [ -z "$(ls -A ../se)" ]; then
-		if [ "$(ls -A ../pe)" ]; then
+	if [ -z "$(ls -A ../se 2> /dev/null)" ]; then
+		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
-			for i in *.f*; do
+			for i in *.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *".R1"* ]]; then
 						cat ${i%.R1*}* > ../${i/.R1/} && rm ${i%.R1*}* 2> /dev/null
@@ -492,16 +497,21 @@ else
 					else
 						cat ${i%.f*}* > ../$i && rm ${i%.f*}* 2> /dev/null
 					fi
+				fi ) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
 				fi
 			done
+			cd ../
+			find . -type d -empty -delete
 		fi
 	fi
 
 	cd "${projdir}"/samples/se
-	if [ "$(ls -A ../se)" ]; then
-		if [ -z "$(ls -A ../pe)" ]; then
+	if [ "$(ls -A ../se 2> /dev/null)" ]; then
+		if [ -z "$(ls -A ../pe 2> /dev/null)" ]; then
 			echo -e "${magenta}- only single-end or unpaired reads available in se-folder ${white}\n"
-			for i in *.f*; do
+			for i in *.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *".R1"* ]]; then
 						cat ${i%.R1*}* > ../${i/.R1/} && rm ${i%.R1*}* 2> /dev/null
@@ -510,16 +520,21 @@ else
 					else
 						cat ${i%.f*}* > ../$i && rm ${i%.f*}* 2> /dev/null
 					fi
+				fi ) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
 				fi
 			done
+			cd ../
+			find . -type d -empty -delete
 		fi
 	fi
 
 
 	cd "${projdir}"/samples/pe
-	if [ "$(ls -A ../se)" ]; then
-		if [ "$(ls -A ../pe)" ]; then
-			for i in *R1.f*; do
+	if [ "$(ls -A ../se 2> /dev/null)" ]; then
+		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
+			for i in *R1.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *.R1* ]]; then
 						cat ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null
@@ -528,19 +543,23 @@ else
 					else
 						cat ${i%.f*}* ../se/${i%.f*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.f*}* ../se/${i%.f*}* 2> /dev/null
 					fi
+				fi ) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
 				fi
 			done
+			cd ../
+			find . -type d -empty -delete
 		fi
 	fi
 
-	cd ../
+	cd "${projdir}"/samples/
 	wait
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
 		echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
 		exit 0
 	fi
-	find . -type d -empty -delete &&
 	echo filename_formatted > filename_formatted.txt
 fi
 
@@ -649,54 +668,54 @@ else
 		    if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 		      if [[ "${fa_fq}" == "@" ]]; then
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");}1' | awk 'length >= 50 && length <= 600' | \
-		        grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1.fasta.gz
+		        grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1.fasta.gz &&
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 50 && length <= 600' | \
-						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz
+						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz &&
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 50 && length <= 600' | \
-		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz
-						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz
+		        grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz &&
+						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz &&
 						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz
 		      fi
 		      if [[ "${fa_fq}" == ">" ]]; then
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");}1' | \
-		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp1.gz
+		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp1.gz &&
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 50 && length <= 600' | grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp2.gz
+						awk 'length >= 50 && length <= 600' | grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp2.gz &&
 		        awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat $i) | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz
-		        cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz
-						rm ${i%.f*}.fasta.gz
-						rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+		        awk 'length >= 50 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz &&
+		        cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz &&
+						rm ${i%.f*}.fasta.gz &&
+						rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz &&
 						rm ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz ${i%.f*}.tmp.gz
 		      fi
 		    else
 		      if [[ "${fa_fq}" == "@" ]]; then
 		        awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT")}1' | awk 'length >= 64 && length <= 600' | \
-		        grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1.fasta.gz
+		        grep '^ATGCAT.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1.fasta.gz &&
 						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
-						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz
+						grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE2.fasta.gz &&
 						awk 'NR%2==0' $i | awk 'NR%2==1' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | awk 'length >= 64 && length <= 600' | \
-						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz
-						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz
+						grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}_RE1RE2.fasta.gz &&
+						cat ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz > ${i%.f*}.fasta.gz &&
 						rm ${i%.f*}_RE1.fasta.gz ${i%.f*}_RE2.fasta.gz ${i%.f*}_RE1RE2.fasta.gz
 		      fi
 		      if [[ "${fa_fq}" == ">" ]]; then
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");}1' | \
-		        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp1.gz
+		        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*ATGCAT$\|^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp1.gz &&
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/CATG/,"CATG\nCATG");}1' | \
-						awk 'length >= 64 && length <= 600' | grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp2.gz
+						awk 'length >= 64 && length <= 600' | grep '^CATG.*CATG$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp2.gz &&
 						awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' $i | awk 'NR%2==0' | awk '{gsub(/ATGCAT/,"ATGCAT\nATGCAT");gsub(/CATG/,"CATG\nCATG");}1' | \
-		        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz
-						cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz
-						rm ${i%.f*}.fasta.gz
-						rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz
+		        awk 'length >= 64 && length <= 600' | grep '^ATGCAT.*CATG$\|^CATG.*ATGCAT$' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp3.gz &&
+						cat ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz > ${i%.f*}.tmp.gz &&
+						rm ${i%.f*}.fasta.gz &&
+						rsync -aAx ${i%.f*}.tmp.gz ${i%.f*}.fasta.gz &&
 						rm ${i%.f*}.tmp1.gz ${i%.f*}.tmp2.gz ${i%.f*}.tmp3.gz ${i%.f*}.tmp.gz
 		      fi
 		    fi
 
-				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_len '{print substr($0,1,max)}' | awk '{print substr($0,1,64)}' | awk 'length($0)>=64' | awk 'NF' | \
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_length '{print substr($0,1,max)}' | awk '{print substr($0,1,64)}' | awk 'length($0)>=64' | awk 'NF' | \
 				awk -v frag=$frag '{print ">frag_B"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
-				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_seqread_len '{print substr($0,65,max)}' | awk 'NF' | \
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_length 'length == max' | awk -v max=$max_read_length '{print substr($0,65,max)}' | awk 'NF' | \
 				awk -v frag=$frag '{print ">frag_E"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
 				cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
 				rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
