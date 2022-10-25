@@ -480,25 +480,13 @@ else
 					wait
 				fi
 			done
-			cd ../
-			rm -rf se pe
 		fi
 	fi
 
 
-	if [[ -d "se" ]]; then
-		:
-	else
-		mkdir -p se
-	fi
-	if [[ -d "pe" ]]; then
-		:
-	else
-		mkdir -p pe
-	fi
 	cd "${projdir}"/samples/pe
-	if [ -z "$(ls -A ../se 2> /dev/null)" ]; then
-		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
+	if [ "$(ls -A ../pe 2> /dev/null)" ]; then
+		if [ -z "$(ls -A ../se 2> /dev/null)" ]; then
 			echo -e "${magenta}- only paired-end reads available in pe-folder ${white}\n"
 			for i in *.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
@@ -514,22 +502,10 @@ else
 					wait
 				fi
 			done
-			cd ../
-			rm -rf se pe
 		fi
 	fi
 
 
-	if [[ -d "se" ]]; then
-		:
-	else
-		mkdir -p se
-	fi
-	if [[ -d "pe" ]]; then
-		:
-	else
-		mkdir -p pe
-	fi
 	cd "${projdir}"/samples/se
 	if [ "$(ls -A ../se 2> /dev/null)" ]; then
 		if [ -z "$(ls -A ../pe 2> /dev/null)" ]; then
@@ -548,22 +524,10 @@ else
 					wait
 				fi
 			done
-			cd ../
-			rm -rf se pe
 		fi
 	fi
 
 
-	if [[ -d "se" ]]; then
-		:
-	else
-		mkdir -p se
-	fi
-	if [[ -d "pe" ]]; then
-		:
-	else
-		mkdir -p pe
-	fi
 	cd "${projdir}"/samples/pe
 	if [ "$(ls -A ../se 2> /dev/null)" ]; then
 		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
@@ -581,13 +545,11 @@ else
 					wait
 				fi
 			done
-			cd ../
-			rm -rf se pe
 		fi
 	fi
 
 	cd "${projdir}"/samples/
-	wait
+	find . -type d -empty -delete
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
 		echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
