@@ -763,6 +763,7 @@ else
 		done
 		wait
 	fi
+	rm *fastq.gz
 	find . -type d -empty -delete
 	echo flushed_reads > flushed_reads.txt
 fi
