@@ -450,17 +450,18 @@ fi
 if test -f filename_reformatted.txt; then
 	echo -e "${magenta}- \n- file names reformatting was previously performed  ${white}\n"
 else
+
+
 	if [[ -d "se" ]]; then
 		:
 	else
-		mkdir se
+		mkdir -p se
 	fi
 	if [[ -d "pe" ]]; then
 		:
 	else
-		mkdir pe
+		mkdir -p pe
 	fi
-
 	cd "${projdir}"/samples/se
 	if [[ -z "$(ls -A ../pe 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ../se 2> /dev/null)" ]]; then
@@ -480,10 +481,21 @@ else
 				fi
 			done
 			cd ../
-			find . -type d -empty -delete
+			rm -rf se pe
 		fi
 	fi
 
+
+	if [[ -d "se" ]]; then
+		:
+	else
+		mkdir -p se
+	fi
+	if [[ -d "pe" ]]; then
+		:
+	else
+		mkdir -p pe
+	fi
 	cd "${projdir}"/samples/pe
 	if [ -z "$(ls -A ../se 2> /dev/null)" ]; then
 		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
@@ -503,10 +515,21 @@ else
 				fi
 			done
 			cd ../
-			find . -type d -empty -delete
+			rm -rf se pe
 		fi
 	fi
 
+
+	if [[ -d "se" ]]; then
+		:
+	else
+		mkdir -p se
+	fi
+	if [[ -d "pe" ]]; then
+		:
+	else
+		mkdir -p pe
+	fi
 	cd "${projdir}"/samples/se
 	if [ "$(ls -A ../se 2> /dev/null)" ]; then
 		if [ -z "$(ls -A ../pe 2> /dev/null)" ]; then
@@ -526,11 +549,21 @@ else
 				fi
 			done
 			cd ../
-			find . -type d -empty -delete
+			rm -rf se pe
 		fi
 	fi
 
 
+	if [[ -d "se" ]]; then
+		:
+	else
+		mkdir -p se
+	fi
+	if [[ -d "pe" ]]; then
+		:
+	else
+		mkdir -p pe
+	fi
 	cd "${projdir}"/samples/pe
 	if [ "$(ls -A ../se 2> /dev/null)" ]; then
 		if [ "$(ls -A ../pe 2> /dev/null)" ]; then
@@ -549,7 +582,7 @@ else
 				fi
 			done
 			cd ../
-			find . -type d -empty -delete
+			rm -rf se pe
 		fi
 	fi
 
@@ -604,7 +637,9 @@ else
 
 		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
 		wait
-		awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt; rsync -aAx tmp.txt length_distribution.txt
+		awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
+		rsync -aAx tmp.txt length_distribution.txt
+		rm tmp.txt
 		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 		rm length_distribution.txt
 
@@ -1490,7 +1525,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
 				rm ../../alignment/subfile*
-				rsync -aAx ../../alignment/F* ./
+				mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
 				splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
@@ -1499,19 +1534,19 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					mkdir -p splitccf_node${nn}
 					end_split=$(($start_split + $splitnum))
 					start_split=$(($start_split + 1))
-					for snode in $(seq $start_split $end_split); do rsync -aAx F${snode} ./splitccf_node${nn}/; done
+					for snode in $(seq $start_split $end_split); do mv F${snode} ./splitccf_node${nn}/; done
 					wait
 					start_split=$end_split
 				done
 				wait
-				for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && rsync -aAx F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
+				for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && mv F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
 				wait
 				touch ${projdir}/multi_node_run_ready.txt
 
 				echo -e "${YELLOW}- performing a local BLAST in multi-node mode"
 				cd "${projdir}"/metagenome/haplotig/splitccf/splitccf_node1
 				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-					rsync -aAx $ccf ${projdir}/metagenome/alignment/$ccf
+					mv $ccf ${projdir}/metagenome/alignment/$ccf
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
@@ -1546,7 +1581,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 			else
 				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-					rsync -aAx $ccf ../../alignment/$ccf
+					mv $ccf ../../alignment/$ccf
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
@@ -1602,13 +1637,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] ; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 
 		wait
@@ -1675,7 +1710,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1687,7 +1722,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1697,7 +1732,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1756,7 +1791,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
 			  rm ../../alignment/subfile*
-			  rsync -aAx ../../alignment/F* ./
+			  mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
 				splitnumt=$(ls F* | wc -l) && splitnum=$(($splitnumt / $nodes))
@@ -1765,18 +1800,18 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					mkdir -p splitccf_node${nn}
 					end_split=$(($start_split + $splitnum))
 					start_split=$(($start_split + 1))
-					for snode in $(seq $start_split $end_split); do rsync -aAx F${snode} ./splitccf_node${nn}/; done
+					for snode in $(seq $start_split $end_split); do mv F${snode} ./splitccf_node${nn}/; done
 					start_split=$end_split
 				done
 				wait
-				for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && rsync -aAx F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
+				for nn in $(seq 1 "$nodes"); do start_split=$(($start_split + 1)) && mv F${start_split} ./splitccf_node${nn}/ 2> /dev/null; done
 				wait
 				touch ${projdir}/multi_node_run_ready.txt
 
 				echo -e "${YELLOW}- performing custom BLAST in multi-node mode"
 				cd "${projdir}"/metagenome/haplotig/splitccf/splitccf_node1
 				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-					rsync -aAx $ccf ${projdir}/metagenome/alignment/$ccf
+					mv $ccf ${projdir}/metagenome/alignment/$ccf
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
@@ -1811,7 +1846,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 			else
 				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-					rsync -aAx $ccf ../../alignment/$ccf
+					mv $ccf ../../alignment/$ccf
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
@@ -1868,13 +1903,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -1953,13 +1988,13 @@ else
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 
 		wait
@@ -2025,7 +2060,7 @@ else
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -2037,7 +2072,7 @@ else
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -2047,7 +2082,7 @@ else
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -2115,17 +2150,17 @@ else
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 				mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && rsync -aAx ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -2158,7 +2193,7 @@ fi
 
 cd "${projdir}"/metagenome/alignment
 mkdir -p uncultured
-rsync -aAx uncultured* ./uncultured/ 2> /dev/null
+mv uncultured* ./uncultured/ 2> /dev/null
 mkdir -p cultured
 ls *megablast.gz 2> /dev/null | grep -v 'uncultured' | xargs mv -t ./cultured/ 2> /dev/null
 
@@ -2182,7 +2217,7 @@ if [[ "$taxids" == true ]]; then
 	for i in ${projdir}/taxids/*.txids; do
 		cat $i >> ${projdir}/metagenome/All.txids
 	done
-  sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && rsync -aAx ${projdir}/metagenome/All.tmp ${projdir}/metagenome/All.txids
+  sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv ${projdir}/metagenome/All.tmp ${projdir}/metagenome/All.txids
 	wait
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
 	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
@@ -2205,13 +2240,13 @@ if [[ "$taxids" == true ]]; then
 	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
-	rsync -aAx ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
+	mv ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
 	rm ${projdir}/rankedlineage_edited_other*
 	wait
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
 	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
-	rsync -aAx ${projdir}/temp ${projdir}/rankedlineage_edited.dmp
+	mv ${projdir}/temp ${projdir}/rankedlineage_edited.dmp
 	rm ${projdir}/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
 else
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
@@ -2234,13 +2269,13 @@ else
 	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
-	rsync -aAx ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
+	mv ${projdir}/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
 	rm ${projdir}/rankedlineage_edited_other*
 	wait
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
 	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
-	rsync -aAx ${projdir}/temp ${projdir}/rankedlineage_edited.dmp
+	mv ${projdir}/temp ${projdir}/rankedlineage_edited.dmp
 	rm ${projdir}/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
 fi
 
@@ -2288,12 +2323,12 @@ fi
 cd "${projdir}"/metagenome/alignment
 if [[ "$(ls ./uncultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 	for i in *haplotig.megablast.gz; do
-		rsync -aAx $i ./uncultured/uncultured_${i}
+		mv $i ./uncultured/uncultured_${i}
 	done
 fi
 if [[ "$(ls ./cultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 	for i in *haplotig.megablast.gz; do
-		rsync -aAx $i ./cultured/${i}
+		mv $i ./cultured/${i}
 	done
 fi
 
@@ -2325,7 +2360,7 @@ else
 					wait
 				done
 				zcat ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
-				rsync -aAx ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -2413,7 +2448,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
 	fi
 	awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" strain_taxainfo_mean.txt | \
 	paste - strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_buildnorm0.txt &&
-	rsync -aAx strain_taxainfo_mean_buildnorm0.txt strain_taxainfo_mean_buildnorm.txt
+	mv strain_taxainfo_mean_buildnorm0.txt strain_taxainfo_mean_buildnorm.txt
 done
 wait
 paste strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt > strain_taxainfo_mean_norm0.txt
@@ -2423,7 +2458,7 @@ rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt stra
 for i in *.txt; do
 	awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
 	:> $i &&
-	rsync -aAx ${i%.txt}.temp $i
+	mv ${i%.txt}.temp $i
 done
 wait
 
@@ -2450,7 +2485,7 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	# 	while IFS="" read -r line || [ -n "$line" ]; do
 	# 		while IFS="" read -r i || [ -n "$i" ]; do
 	# 			awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt &&
-	# 			rsync -aAx ${i%.txt}_temp.txt $i &&
+	# 			mv ${i%.txt}_temp.txt $i &&
 	# 			wait
 	# 		done <(ls *filtered.txt)
 	# 	done < $file
@@ -2480,8 +2515,8 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 		done
 		wait
 		mkdir -p boxplots
-		rsync -aAx *_files ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
-		rsync -aAx *.html ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
+		mv *_files ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
+		mv *.html ${projdir}/metagenome/results/strain_level/boxplots/ 2> /dev/null
 
 	else
 		echo -e "${YELLOW}- creating strain-level visualizations"
@@ -2505,12 +2540,12 @@ for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 		done
 		wait
 		mkdir -p boxplots
-		rsync -aAx *_files ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
-		rsync -aAx *.html ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
+		mv *_files ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
+		mv *.html ${projdir}/metagenome/results/strain_level/boxplots 2> /dev/null
 
 	fi
 	cd ../
-	rsync -aAx strain_level strain_level_minUniq_${min_strain_uniq_ematch}
+	mv strain_level strain_level_minUniq_${min_strain_uniq_ematch}
 	cp -r strain_level_hold strain_level
 done
 wait
@@ -2520,30 +2555,30 @@ rm -rf strain_level_hold strain_level
 if [[ "$strain_level" == "true" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_strain_level*/strain_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment
-		rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-		rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-		for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+		mv ./uncultured/uncultured*megablast.gz ./ &&
+		mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+		for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 		wait
 		cd "${projdir}"
 		time strain_level 2>> ${projdir}/log.out
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+		for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 		wait
 		cd "${projdir}"/metagenome/results/ &&
-		for dirc in strain_level*; do rsync -aAx $dirc uncultured_${dirc}; done
+		for dirc in strain_level*; do mv $dirc uncultured_${dirc}; done
 		wait
-		rsync -aAx ../sighits/sighits_strain ../sighits/uncultured_sighits_strain
+		mv ../sighits/sighits_strain ../sighits/uncultured_sighits_strain
 		wait
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/strain_level*/strain_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../ &&
-		rsync -aAx ../combined_compressed.megablast.gz ./ &&
+		mv *megablast* ../ &&
+		mv ../combined_compressed.megablast.gz ./ &&
 		cd "${projdir}"
 		time strain_level 2>> ${projdir}/log.out
 		wait
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for strain-level profiling ${white}\n"
@@ -2572,7 +2607,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
-				rsync -aAx ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -2657,7 +2692,7 @@ else
 		zcat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
 		$gzip ${i%*_species_duplicates.txt.gz}temp.txt
 		rm $i &&
-		rsync -aAx ${i%*_species_duplicates.txt.gz}temp.txt.gz $i
+		mv ${i%*_species_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -2743,7 +2778,7 @@ else
 	wait
 	for i in *_species_unique_uncultured.txt;do (
 		cat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_unique_uncultured.txt}temp.txt
-		rsync -aAx ${i%*_species_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_species_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -2753,7 +2788,7 @@ else
 	rm *_uniq_inter.txt && rm *_species_taxa.txt
 
 	for i in *_species_unique_uncultured.txt;do (
-	   rsync -aAx $i${i%*_species_unique_uncultured*}_unique_sequences.txt ) &
+	   mv $i${i%*_species_unique_uncultured*}_unique_sequences.txt ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -2867,7 +2902,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
 awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" species_taxainfo_mean.txt | \
 paste - species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_buildnorm0.txt &&
-rsync -aAx species_taxainfo_mean_buildnorm0.txt species_taxainfo_mean_buildnorm.txt
+mv species_taxainfo_mean_buildnorm0.txt species_taxainfo_mean_buildnorm.txt
 done
 wait
 paste species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_norm0.txt
@@ -2876,7 +2911,7 @@ rm species_taxainfo_mean_buildnorm.txt species_taxainfo_mean_holdingtaxinfo.txt 
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -2897,7 +2932,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat species_taxainfo_rel_quantification_accuracy.txt > species_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -2926,8 +2961,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating species-level visualizations"
 	cd "${projdir}"/metagenome/results/species_level
@@ -2950,34 +2985,34 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/species_level/boxplots/ 2> /dev/null
 fi
 
 }
 if [[ "$species_level" == "true" ]]; then
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_species_level/species_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/
-		rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-		rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-		for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+		mv ./uncultured/uncultured*megablast.gz ./ &&
+		mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+		for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 		wait
 		cd "${projdir}"
 		time species_level 2>> ${projdir}/log.out
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+		for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 		wait
-		rsync -aAx ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
-		rsync -aAx ${projdir}/metagenome/sighits/sighits_species ${projdir}/metagenome/sighits/uncultured_sighits_species
+		mv ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
+		mv ${projdir}/metagenome/sighits/sighits_species ${projdir}/metagenome/sighits/uncultured_sighits_species
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/species_level/species_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time species_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for species-level profiling ${white}\n"
@@ -3006,7 +3041,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
-				rsync -aAx ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -3098,7 +3133,7 @@ else
 	for i in *_genus_duplicates.txt.gz;do (
      awk -F'\t' '$11 != "NA"' OFS='\t' <( zcat $i) > ${i%*_genus_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_genus_duplicates.txt.gz}temp.txt
- 		 rsync -aAx ${i%*_genus_duplicates.txt.gz}temp.txt.gz $i
+ 		 mv ${i%*_genus_duplicates.txt.gz}temp.txt.gz $i
  		) &
  		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
  			wait
@@ -3187,7 +3222,7 @@ else
 	for i in *_genus_unique_uncultured.txt;do (
 		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt &&
 		:> $i &&
-		rsync -aAx ${i%*_genus_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_genus_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3196,7 +3231,7 @@ else
 	wait
 	rm *_uniq_inter.txt && rm *_genus_taxa.txt
 	for i in *_genus_unique_uncultured.txt;do (
-	   rsync -aAx $i${i%*_genus_unique_uncultured*}_unique_sequences.txt
+	   mv $i${i%*_genus_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3312,7 +3347,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
   awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" genus_taxainfo_mean.txt | \
   paste - genus_taxainfo_mean_buildnorm.txt > genus_taxainfo_mean_buildnorm0.txt &&
-  rsync -aAx genus_taxainfo_mean_buildnorm0.txt genus_taxainfo_mean_buildnorm.txt
+  mv genus_taxainfo_mean_buildnorm0.txt genus_taxainfo_mean_buildnorm.txt
 done
 wait
 paste genus_taxainfo_mean_buildnorm.txt > genus_taxainfo_mean_norm0.txt
@@ -3321,7 +3356,7 @@ rm genus_taxainfo_mean_buildnorm.txt genus_taxainfo_mean_holdingtaxinfo.txt genu
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -3342,7 +3377,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat genus_taxainfo_rel_quantification_accuracy.txt > genus_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -3371,8 +3406,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating genus-level visualizations"
 	cd "${projdir}"/metagenome/results/genus_level
@@ -3395,8 +3430,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/genus_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -3404,27 +3439,27 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 			cd "${projdir}"/metagenome/alignment/
-			rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-			rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-			for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+			mv ./uncultured/uncultured*megablast.gz ./ &&
+			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time genus_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			wait
-			rsync -aAx ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
-			rsync -aAx ${projdir}/metagenome/sighits/sighits_genus ${projdir}/metagenome/sighits/uncultured_sighits_genus
+			mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
+			mv ${projdir}/metagenome/sighits/sighits_genus ${projdir}/metagenome/sighits/uncultured_sighits_genus
 		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/genus_level/genus_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time genus_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for genus-level profiling ${white}\n"
@@ -3453,7 +3488,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
-				rsync -aAx ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -3541,7 +3576,7 @@ else
 	for i in *_family_duplicates.txt.gz;do (
 		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_family_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_family_duplicates.txt.gz}temp.txt
- 		rsync -aAx ${i%*_family_duplicates.txt.gz}temp.txt.gz $i
+ 		mv ${i%*_family_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3635,7 +3670,7 @@ else
 	for i in *_family_unique_uncultured.txt;do (
 		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt
 		:> $i &&
-		rsync -aAx ${i%*_family_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_family_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3644,7 +3679,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_family_taxa.txt
   for i in *_family_unique_uncultured.txt;do (
-     rsync -aAx $i${i%*_family_unique_uncultured*}_unique_sequences.txt
+     mv $i${i%*_family_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3761,7 +3796,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
   awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" family_taxainfo_mean.txt | \
   paste - family_taxainfo_mean_buildnorm.txt > family_taxainfo_mean_buildnorm0.txt &&
-  rsync -aAx family_taxainfo_mean_buildnorm0.txt family_taxainfo_mean_buildnorm.txt
+  mv family_taxainfo_mean_buildnorm0.txt family_taxainfo_mean_buildnorm.txt
 done
 wait
 paste family_taxainfo_mean_buildnorm.txt > family_taxainfo_mean_norm0.txt
@@ -3770,7 +3805,7 @@ rm family_taxainfo_mean_buildnorm.txt family_taxainfo_mean_holdingtaxinfo.txt fa
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -3791,7 +3826,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat family_taxainfo_rel_quantification_accuracy.txt > family_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -3820,8 +3855,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating family-level visualizations"
 	cd "${projdir}"/metagenome/results/family_level
@@ -3844,8 +3879,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/family_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -3853,27 +3888,27 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_family_level/family_taxainfo* 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_family_level/family_taxainfo* 2> /dev/null)" ]]; then
 			cd "${projdir}"/metagenome/alignment/
-			rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-			rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-			for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+			mv ./uncultured/uncultured*megablast.gz ./ &&
+			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time family_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			wait
-			rsync -aAx ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
-			rsync -aAx ${projdir}/metagenome/sighits/sighits_family ${projdir}/metagenome/sighits/uncultured_sighits_family
+			mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
+			mv ${projdir}/metagenome/sighits/sighits_family ${projdir}/metagenome/sighits/uncultured_sighits_family
 		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/family_level/family_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time family_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for family-level profiling ${white}\n"
@@ -3902,7 +3937,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
-				rsync -aAx ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -3990,7 +4025,7 @@ else
 	for i in *_order_duplicates.txt.gz;do (
 		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_order_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_order_duplicates.txt.gz}temp.txt
- 		rsync -aAx ${i%*_order_duplicates.txt.gz}temp.txt.gz $i
+ 		mv ${i%*_order_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4082,7 +4117,7 @@ else
 	for i in *_order_unique_uncultured.txt;do (
 		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt
  		:> $i &&
-		rsync -aAx ${i%*_order_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_order_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4091,7 +4126,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_order_taxa.txt
   for i in *_order_unique_uncultured.txt;do (
-     rsync -aAx $i${i%*_order_unique_uncultured*}_unique_sequences.txt
+     mv $i${i%*_order_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4208,7 +4243,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
   awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" order_taxainfo_mean.txt | \
   paste - order_taxainfo_mean_buildnorm.txt > order_taxainfo_mean_buildnorm0.txt &&
-  rsync -aAx order_taxainfo_mean_buildnorm0.txt order_taxainfo_mean_buildnorm.txt
+  mv order_taxainfo_mean_buildnorm0.txt order_taxainfo_mean_buildnorm.txt
 done
 wait
 paste order_taxainfo_mean_buildnorm.txt > order_taxainfo_mean_norm0.txt
@@ -4217,7 +4252,7 @@ rm order_taxainfo_mean_buildnorm.txt order_taxainfo_mean_holdingtaxinfo.txt orde
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -4238,7 +4273,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat order_taxainfo_rel_quantification_accuracy.txt > order_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -4267,8 +4302,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating order-level visualizations"
 	cd "${projdir}"/metagenome/results/order_level
@@ -4291,8 +4326,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/order_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -4300,28 +4335,28 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_order_level/order_taxainfo* 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_order_level/order_taxainfo* 2> /dev/null)" ]]; then
 			cd "${projdir}"/metagenome/alignment/
-			rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-			rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+			mv ./uncultured/uncultured*megablast.gz ./ &&
+			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time order_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			wait
-			rsync -aAx ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
-			rsync -aAx ${projdir}/metagenome/sighits/sighits_order ${projdir}/metagenome/sighits/uncultured_sighits_order
+			mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
+			mv ${projdir}/metagenome/sighits/sighits_order ${projdir}/metagenome/sighits/uncultured_sighits_order
 		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/order_level/order_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time order_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for order-level profiling ${white}\n"
@@ -4351,7 +4386,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.tmp.gz
-				rsync -aAx ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -4439,7 +4474,7 @@ else
 	for i in *_class_duplicates.txt.gz;do (
 		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_class_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_class_duplicates.txt.gz}temp.txt
- 		rsync -aAx ${i%*_class_duplicates.txt.gz}temp.txt.gz $i
+ 		mv ${i%*_class_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4531,7 +4566,7 @@ else
 	for i in *_class_unique_uncultured.txt;do (
 		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt
  		:> $i &&
-		rsync -aAx ${i%*_class_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_class_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4539,7 +4574,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_class_taxa.txt
   for i in *_class_unique_uncultured.txt;do (
-     rsync -aAx $i${i%*_class_unique_uncultured*}_unique_sequences.txt
+     mv $i${i%*_class_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4656,7 +4691,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
   awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" class_taxainfo_mean.txt | \
   paste - class_taxainfo_mean_buildnorm.txt > class_taxainfo_mean_buildnorm0.txt &&
-  rsync -aAx class_taxainfo_mean_buildnorm0.txt class_taxainfo_mean_buildnorm.txt
+  mv class_taxainfo_mean_buildnorm0.txt class_taxainfo_mean_buildnorm.txt
 done
 wait
 paste class_taxainfo_mean_buildnorm.txt > class_taxainfo_mean_norm0.txt
@@ -4665,7 +4700,7 @@ rm class_taxainfo_mean_buildnorm.txt class_taxainfo_mean_holdingtaxinfo.txt clas
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -4686,7 +4721,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat class_taxainfo_rel_quantification_accuracy.txt > class_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -4715,8 +4750,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
 else
 	echo -e "${YELLOW}- creating class-level visualizations"
 	cd "${projdir}"/metagenome/results/class_level
@@ -4739,8 +4774,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/class_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -4748,28 +4783,28 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_class_level/class_taxainfo* 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_class_level/class_taxainfo* 2> /dev/null)" ]]; then
 			cd "${projdir}"/metagenome/alignment/
-			rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-			rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+			mv ./uncultured/uncultured*megablast.gz ./ &&
+			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time class_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			wait
-			rsync -aAx ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
-			rsync -aAx ${projdir}/metagenome/sighits/sighits_class ${projdir}/metagenome/sighits/uncultured_sighits_class
+			mv ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
+			mv ${projdir}/metagenome/sighits/sighits_class ${projdir}/metagenome/sighits/uncultured_sighits_class
 		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/class_level/class_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time class_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for class-level profiling ${white}\n"
@@ -4797,7 +4832,7 @@ else
 					wait
 			  done
 				zcat ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.tmp.gz
-				rsync -aAx ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+				mv ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
@@ -4885,7 +4920,7 @@ else
 	for i in *_phylum_duplicates.txt.gz;do (
 		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_phylum_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_phylum_duplicates.txt.gz}temp.txt
- 		rsync -aAx ${i%*_phylum_duplicates.txt.gz}temp.txt.gz $i
+ 		mv ${i%*_phylum_duplicates.txt.gz}temp.txt.gz $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4979,7 +5014,7 @@ else
 	for i in *_phylum_unique_uncultured.txt;do (
 		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt
 		:> $i &&
-		rsync -aAx ${i%*_phylum_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_phylum_unique_uncultured.txt}temp.txt $i
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4987,7 +5022,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_phylum_taxa.txt
   for i in *_phylum_unique_uncultured.txt;do (
-     rsync -aAx $i${i%*_phylum_unique_uncultured*}_unique_sequences.txt
+     mv $i${i%*_phylum_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -5104,7 +5139,7 @@ for i in ../../../metagenome/haplotig/*_metagenome.fasta.gz; do
   fi
   awk -v sample=${sample}_mean -v norm=$normfactor 'BEGIN{OFS="\t"} NR==1 {for (i=1; i<=NF; i++) if ($i==sample) break} {print $i}' "$2" phylum_taxainfo_mean.txt | \
   paste - phylum_taxainfo_mean_buildnorm.txt > phylum_taxainfo_mean_buildnorm0.txt &&
-  rsync -aAx phylum_taxainfo_mean_buildnorm0.txt phylum_taxainfo_mean_buildnorm.txt
+  mv phylum_taxainfo_mean_buildnorm0.txt phylum_taxainfo_mean_buildnorm.txt
 done
 wait
 paste phylum_taxainfo_mean_buildnorm.txt > phylum_taxainfo_mean_norm0.txt
@@ -5113,7 +5148,7 @@ rm phylum_taxainfo_mean_buildnorm.txt phylum_taxainfo_mean_holdingtaxinfo.txt ph
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
-  rsync -aAx ${i%.txt}.temp $i
+  mv ${i%.txt}.temp $i
 done
 wait
 
@@ -5134,7 +5169,7 @@ file=${projdir}/exclude_taxa.txt
 #   cat phylum_taxainfo_rel_quantification_accuracy.txt > phylum_taxainfo_rel_quantification_accuracy_filtered.txt &&
 #   while read -r line; do
 #     for i in $( ls *filtered.txt ); do
-#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && rsync -aAx ${i%.txt}_temp.txt $i
+#       awk -v line=$line '!/\tline\t/' $i > ${i%.txt}_temp.txt && mv ${i%.txt}_temp.txt $i
 #     done
 # 		wait
 #   done < $file
@@ -5163,8 +5198,8 @@ if test -f $file; then
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 
 else
 	echo -e "${YELLOW}- creating phylum-level visualizations"
@@ -5192,8 +5227,8 @@ else
 	done
 	wait
 	mkdir -p boxplots
-	rsync -aAx *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
-	rsync -aAx *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *_files ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
+	mv *.html ${projdir}/metagenome/results/phylum_level/boxplots/ 2> /dev/null
 fi
 
 }
@@ -5201,28 +5236,28 @@ if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 		if [[ -z "$(ls -A ${projdir}/metagenome/results/uncultured_phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 			cd "${projdir}"/metagenome/alignment/
-			rsync -aAx ./uncultured/uncultured*megablast.gz ./ &&
-			rsync -aAx ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
+			mv ./uncultured/uncultured*megablast.gz ./ &&
+			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do rsync -aAx $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time phylum_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do rsync -aAx $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
 			wait
-			rsync -aAx ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
-			rsync -aAx ${projdir}/metagenome/sighits/sighits_phylum ${projdir}/metagenome/sighits/uncultured_sighits_phylum
+			mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
+			mv ${projdir}/metagenome/sighits/sighits_phylum ${projdir}/metagenome/sighits/uncultured_sighits_phylum
 		fi
 	fi
 	if [[ -z "$(ls -A ${projdir}/metagenome/results/phylum_level/phylum_taxainfo* 2> /dev/null)" ]]; then
 		cd "${projdir}"/metagenome/alignment/cultured/
-		rsync -aAx *megablast* ../
-		rsync -aAx ../combined_compressed.megablast.gz ./
+		mv *megablast* ../
+		mv ../combined_compressed.megablast.gz ./
 		cd "${projdir}"
 		time phylum_level 2>> ${projdir}/log.out
-		rsync -aAx ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
+		mv ${projdir}/metagenome/alignment/*megablast* ${projdir}/metagenome/alignment/cultured/
 	fi
 else
 	echo -e "${magenta}- skipping exact matching for phylum-level profiling ${white}\n"
@@ -5237,49 +5272,49 @@ cross_taxon_validate() {
 	cd "${projdir}"/metagenome/results/class_level
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../phylum_level/phylum" "class" "phylum" "${Qmatey_dir}/tools/R" "./validated/class" &&
-	rsync -aAx ./validated ../class_level_validated
+	mv ./validated ../class_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at order level"
 	cd "${projdir}"/metagenome/results/order_level
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../class_level_validated/class" "order" "class" "${Qmatey_dir}/tools/R" "./validated/order" &&
-	rsync -aAx ./validated ../order_level_validated
+	mv ./validated ../order_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at family level"
 	cd "${projdir}"/metagenome/results/family_level
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../order_level_validated/order" "family" "order" "${Qmatey_dir}/tools/R" "./validated/family" &&
-	rsync -aAx ./validated ../family_level_validated
+	mv ./validated ../family_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at genus level"
 	cd "${projdir}"/metagenome/results/genus_level
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../family_level_validated/family" "genus" "family" "${Qmatey_dir}/tools/R" "./validated/genus" &&
-	rsync -aAx ./validated ../genus_level_validated
+	mv ./validated ../genus_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at species level"
 	cd "${projdir}"/metagenome/results/species_level
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../genus_level_validated/genus" "species" "genus" "${Qmatey_dir}/tools/R" "./validated/species" &&
-	rsync -aAx ./validated ../species_level_validated
+	mv ./validated ../species_level_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 1)"
 	cd "${projdir}"/metagenome/results/strain_level_minUniq_1
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
-	rsync -aAx ./validated ../strain_level_minUniq_1_validated
+	mv ./validated ../strain_level_minUniq_1_validated
 	wait
 	#############################
 	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 2)"
 	cd "${projdir}"/metagenome/results/strain_level_minUniq_2
 	mkdir -p validated
 	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
-	rsync -aAx ./validated ../strain_level_minUniq_2_validated
+	mv ./validated ../strain_level_minUniq_2_validated
 	wait
 	#############################
 
@@ -5455,7 +5490,7 @@ correlogram() {
 		fi
 		wait
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results/
 	done
 	wait
@@ -5520,7 +5555,7 @@ correlogram() {
 		fi
 		wait
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5585,7 +5620,7 @@ correlogram() {
 		fi
 		wait
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5651,7 +5686,7 @@ correlogram() {
 		fi
 		wait
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5717,7 +5752,7 @@ correlogram() {
 		fi
 		wait
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5784,7 +5819,7 @@ correlogram() {
 		wait
 		cd "${projdir}"/metagenome/results/class_level
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5851,7 +5886,7 @@ correlogram() {
 		wait
 		cd "${projdir}"/metagenome/results/phylum_level
 		mkdir -p compositional_correlation
-		rsync -aAx *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -5871,8 +5906,8 @@ annotate() {
 
 	cd "${projdir}"
 	mkdir -p ${projdir}/metagenome/results/results_uncultured
-	rsync -aAx ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
-	rsync -aAx ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
+	mv ${projdir}/metagenome/results/uncultured_* ${projdir}/metagenome/results/results_uncultured/
+	mv ${projdir}/metagenome/results/results_uncultured/ ${projdir}/metagenome/
 	cd "${projdir}"/metagenome/
 
 	if [[ "$(ls ./results/strain_level_minUniq_*_validated/strain_taxainfo_mean_normalized.txt 2> /dev/null | wc -l)" -gt 0 ]]; then
@@ -5923,9 +5958,9 @@ annotate() {
 			fi
 		done
 		wait
-		rsync -aAx ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
-		rsync -aAx ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
-		rsync -aAx ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
+		mv ./alignment/cultured/*taxids_sequences_genes_geneID*.txt.gz ./gene_annotation_count/
+		mv ./alignment/cultured/*genes_per_taxid*.txt ./gene_annotation_count/
+		mv ./sighits/sighits_strain/*Diagnostic* ./gene_annotation_count/
 		zcat ./gene_annotation_count/*taxids_sequences_genes_geneID_Diagnostic.txt.gz | grep -v '^tax_id' | cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ./gene_annotation_count/combined_taxids_sequences_genes_geneID_Diagnostic.txt.gz
 
 	fi
