@@ -1,4 +1,4 @@
-
+min
 if R --version; then
 	:
 else
@@ -827,7 +827,7 @@ ref_norm () {
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				wait
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -857,7 +857,7 @@ ref_norm () {
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				wait
 			fi ) &
       if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1022,7 +1022,7 @@ no_norm () {
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				wait
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1038,7 +1038,7 @@ no_norm () {
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$mindRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				wait
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -2428,7 +2428,7 @@ else
 	rm *_uniq_inter.txt && rm *_species_taxa.txt
 
 	for i in *_species_unique_uncultured.txt;do (
-	   mv $i${i%*_species_unique_uncultured*}_unique_sequences.txt ) &
+	   mv $i ${i%*_species_unique_uncultured*}_unique_sequences.txt ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -2871,7 +2871,7 @@ else
 	wait
 	rm *_uniq_inter.txt && rm *_genus_taxa.txt
 	for i in *_genus_unique_uncultured.txt;do (
-	   mv $i${i%*_genus_unique_uncultured*}_unique_sequences.txt
+	   mv $i ${i%*_genus_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3319,7 +3319,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_family_taxa.txt
   for i in *_family_unique_uncultured.txt;do (
-     mv $i${i%*_family_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_family_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3766,7 +3766,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_order_taxa.txt
   for i in *_order_unique_uncultured.txt;do (
-     mv $i${i%*_order_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_order_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4214,7 +4214,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_class_taxa.txt
   for i in *_class_unique_uncultured.txt;do (
-     mv $i${i%*_class_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_class_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4662,7 +4662,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_phylum_taxa.txt
   for i in *_phylum_unique_uncultured.txt;do (
-     mv $i${i%*_phylum_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_phylum_unique_uncultured*}_unique_sequences.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
