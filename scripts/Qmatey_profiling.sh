@@ -618,26 +618,33 @@ else
 				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 					if [[ "${fa_fq}" == "@" ]]; then
 						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
 						wait
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' <(zcat $i) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz ${i%.f*}.fasta.gz
 						wait
 					fi
 				else
 					if [[ "${fa_fq}" == "@" ]]; then
 						awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
+						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
 						wait
 					fi
 					if [[ "${fa_fq}" == ">" ]]; then
 						grep -v '^>' $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">frag_"NR"\n"$0}' | gzip > ${i%.f}fasta.gz &&
+						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz ${i%.f*}.fasta.gz
 						wait
 					fi
 				fi
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk '{print substr($0,1,64)}' | awk 'length($0)>=64' | awk 'NF' | \
+				awk -v frag=$frag '{print ">"frag"_B"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_read_length '{print substr($0,65,max)}' | awk 'NF' | \
+				awk -v frag=$frag '{print ">"frag"_E"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+				cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
+				rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+				wait
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -709,9 +716,9 @@ else
 		    fi
 
 				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_length '{print substr($0,1,max)}' | awk '{print substr($0,1,64)}' | awk 'length($0)>=64' | awk 'NF' | \
-				awk -v frag=$frag '{print ">frag_B"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
+				awk -v frag=$frag '{print ">"frag"_B"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
 				grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_read_length 'length == max' | awk -v max=$max_read_length '{print substr($0,65,max)}' | awk 'NF' | \
-				awk -v frag=$frag '{print ">frag_E"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
+				awk -v frag=$frag '{print ">"frag"_E"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
 				cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
 				rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
 				wait
@@ -723,7 +730,7 @@ else
 		done
 		wait
 	fi
-	rm *fastq.gz
+	rm *fastq.gz 2> /dev/null
 	find . -type d -empty -delete
 	echo flushed_reads > flushed_reads.txt
 fi
