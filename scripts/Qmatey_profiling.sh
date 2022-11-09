@@ -735,6 +735,19 @@ else
 	echo flushed_reads > flushed_reads.txt
 fi
 
+for i in *_R2.fasta.gz; do
+	cat ${i%_R2.fasta.gz}.fasta.gz $i > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+	rm $i && :> ${i%_R2.fasta.gz}.fasta.gz &&
+	mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
+	wait
+done
+for i in *.R2.fasta.gz; do
+	cat ${i%.R2.fasta.gz}.fasta.gz $i > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+	rm $i && :> ${i%.R2.fasta.gz}.fasta.gz &&
+	mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
+	wait
+done
+
 }
 cd "${projdir}"
 cd samples
