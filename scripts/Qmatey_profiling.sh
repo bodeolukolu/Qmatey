@@ -736,16 +736,20 @@ else
 fi
 
 for i in *_R2.fasta.gz; do
-	cat ${i%_R2.fasta.gz}.fasta.gz $i > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
-	rm $i && :> ${i%_R2.fasta.gz}.fasta.gz &&
-	mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
-	wait
+	if test -f $i; then
+		cat ${i%_R2.fasta.gz}.fasta.gz $i > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+		rm $i && :> ${i%_R2.fasta.gz}.fasta.gz &&
+		mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
+		wait
+	fi
 done
 for i in *.R2.fasta.gz; do
-	cat ${i%.R2.fasta.gz}.fasta.gz $i > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
-	rm $i && :> ${i%.R2.fasta.gz}.fasta.gz &&
-	mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
-	wait
+	if test -f $i; then
+		cat ${i%.R2.fasta.gz}.fasta.gz $i > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+		rm $i && :> ${i%.R2.fasta.gz}.fasta.gz &&
+		mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
+		wait
+	fi
 done
 
 }
