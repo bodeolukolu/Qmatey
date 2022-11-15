@@ -256,7 +256,7 @@ if [[ -d metagenome_ref_normalize ]]; then
 fi
 if [[ -d metagenome_no_normalize ]]; then
 	if [[ ! -d metagenome_ref_normalize ]]; then
-		 ${projdir}/metagenome_no_normalize ${projdir}/metagenome
+		mv ${projdir}/metagenome_no_normalize ${projdir}/metagenome
 	fi
 fi
 if [[ -d metagenome_ref_normalize ]]; then

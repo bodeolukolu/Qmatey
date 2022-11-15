@@ -18,12 +18,20 @@ genus <- read.delim(file="./genus_level/genus_taxainfo_unique_sequences.txt", he
 species <- read.delim(file="./species_level/species_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 strain <- read.delim(file="./strain_level_minUniq_1/strain_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 phylum <- subset(phylum, domain != "Viruses")
+phylum <- phylum[!grepl("Candidatus",phylum$phylum),]
+phylum <- phylum[!grepl("candidate_division",phylum$phylum),]
 class <- subset(class, domain != "Viruses")
+class <- class[!grepl("Candidatus",class$phylum),]
 order <- subset(order, domain != "Viruses")
+order <- order[!grepl("Candidatus",order$phylum),]
 family <- subset(family, domain != "Viruses")
+family <- family[!grepl("Candidatus",family$phylum),]
 genus <- subset(genus, domain != "Viruses")
+genus <- genus[!grepl("Candidatus",genus$phylum),]
 species <- subset(species, domain != "Viruses")
+species <- species[!grepl("Candidatus",species$phylum),]
 strain <- subset(strain, domain != "Viruses")
+strain <- strain[!grepl("Candidatus",strain$phylum),]
 ctv <- as.data.frame(matrix(nrow=0,ncol=10))
 
 n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxname))
@@ -82,12 +90,20 @@ genus <- read.delim(file="./genus_level_validated/genus_taxainfo_unique_sequence
 species <- read.delim(file="./species_level_validated/species_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 strain <- read.delim(file="./strain_level_minUniq_1_validated/strain_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 phylum <- subset(phylum, domain != "Viruses")
+phylum <- phylum[!grepl("Candidatus",phylum$phylum),]
+phylum <- phylum[!grepl("candidate_division",phylum$phylum),]
 class <- subset(class, domain != "Viruses")
+class <- class[!grepl("Candidatus",class$phylum),]
 order <- subset(order, domain != "Viruses")
+order <- order[!grepl("Candidatus",order$phylum),]
 family <- subset(family, domain != "Viruses")
+family <- family[!grepl("Candidatus",family$phylum),]
 genus <- subset(genus, domain != "Viruses")
+genus <- genus[!grepl("Candidatus",genus$phylum),]
 species <- subset(species, domain != "Viruses")
+species <- species[!grepl("Candidatus",species$phylum),]
 strain <- subset(strain, domain != "Viruses")
+strain <- strain[!grepl("Candidatus",strain$phylum),]
 ctv <- as.data.frame(matrix(nrow=0,ncol=10))
 
 n <- max(length(phylum$phylum), length(class$class), length(order$order), length(family$family), length(genus$genus), length(species$species), length(strain$taxname))
