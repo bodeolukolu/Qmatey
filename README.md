@@ -4,7 +4,7 @@
 
 
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome data (fully or partial assemblies).
+Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome assemblies.
 
 
 ## Features
@@ -12,8 +12,8 @@ Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NC
 * User-friendly and fully automated
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
 * simulates metagenome sequencing (options: completely-digested, partially-digested, and randomly-sheared/shotgun libraries) and profiling.
-* Input data: whole genome shotgun sequencing (WGS; ; includes rRNA), reduced representation sequencing (RRS/qRRS; includes rRNA), and amplicon sequencing (e.g. 16S/ITS).
-* Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and random shearing of genomes).
+* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
+* Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and shotgun).
 * Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
 * speed optimization of parallelized MegaBLAST jobs.
 * Allows for various types of normalization (relative abundance).
