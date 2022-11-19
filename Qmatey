@@ -428,7 +428,6 @@ if [[ -d "./samples/pe" ]] || [[ -d "./samples/se" ]]; then
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       printf "\n"
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
-      mkdir samples_backup
       cp -r samples samples_backup
     else
         echo -e "${white}\n#########################################################################################"
@@ -444,7 +443,6 @@ else
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       printf "\n"
       echo -e "${magenta}- A copy of your sample fastq files is in ${projdir}/samples_backup/ ${white}"
-      mkdir samples_backup
       cp -r samples samples_backup
     else
         echo -e "${white}\n#########################################################################################"

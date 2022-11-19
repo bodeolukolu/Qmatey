@@ -99,7 +99,7 @@ A project directory should contain the following sub-directories:
 - **Optional**: Normalzation Reference Genomes **if you are normalizing data**
   * This is where reference genomes for normalization will go. Reference genomes must be in **Fasta format**.
 
-  <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="804" height="427">
+  <img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/project_dir_setup.PNG" width="739" height="426">
 
 
 ### Prepare database for Local MegaBLAST
@@ -156,7 +156,7 @@ Provide fasta and map_taxids files. Qmatey will use NCBI BLAST tool, makeblastdb
 
 
 ### Overview of workflow
-- In progress
+<img src="https://github.com/bodeolukolu/Qmatey/blob/master/misc/Qmatey_workflow.PNG" width="876" height="301">
 
 ### configuration
 Using a text editor, save a file containing any of the following variables as 'config.sh' file and include it in your project directory.
