@@ -5,11 +5,15 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+subsample_shotgun_R1=ATGCAT
+subsample_shotgun_R2=CATG
+shotgun_min_read_length=50
 
 # simulation_parameters
 ####################################################
 simulation_lib=complete_digest
-simulation_motif=ATGCAT,CATG
+simulation_motif_R1=ATGCAT
+simulation_motif_R2=CATG
 fragment_size_range=50,600
 max_read_length=150
 gcov=30

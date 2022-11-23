@@ -169,15 +169,19 @@ Using a text editor, save a file containing any of the following variables as 'c
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
+|subsample_shotgun_R1|ATGCAT|subsample reads based on: (i) REnase site motif(s) or (ii) no subsampling|string|Optional|
+|subsample_shotgun_R2|CATG|subsample reads based on: (i) REnase site motif(s) or (ii) no subsampling|string|Optional|
+|shotgun_min_read_length|50|minimum read length after subsampling|string|Optional|
 
 **Simulation parameters**
 
 |Variable      |Default       |Usage         |Input         |required/Optional|
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |simulation_lib|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
-|simulation_motif|ATGCAT,CATG|genome fragmentation based: (i) "REnas site motif(s)", or (ii) "random" |string|Optional|
-|fragment_size_range|50,600|minimum and maximum genomic fragment size (comma-separated) |string|Optional|
-|max_read_length|150|maximum read length for each of R1 and R2 reads |string|Optional|
+|simulation_motif_R1|ATGCAT|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
+|simulation_motif_R2|CATG|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
+|fragment_size_range|50,600|minimum and maximum genomic fragment size (comma-separated)|string|Optional|
+|max_read_length|150|maximum read length for each of R1 and/or R2 reads |string|Optional|
 |gcov|30|whole genome sequencing coverage |string|Optional|
 
 
@@ -243,12 +247,16 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+subsample_shotgun_R1=ATGCAT
+subsample_shotgun_R2=CATG
+shotgun_min_read_length=50
 
-### simulation_parameters
+# simulation_parameters
 ####################################################
-simulation=complete_digest
-simulation_motif=ATGCAT,CATG
-fragment_size_range=100,550
+simulation_lib=complete_digest
+simulation_motif_R1=ATGCAT
+simulation_motif_R2=CATG
+fragment_size_range=50,600
 max_read_length=150
 gcov=30
 
