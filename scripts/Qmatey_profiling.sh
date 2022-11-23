@@ -306,30 +306,31 @@ simulate_reads () {
 	maxfrag=${fragment_size_range#*,}
 	if [[ "$simulation_lib"  =~ "complete_digest" ]] || [[ "$simulation_lib"  =~ "partial_digest" ]]; then
 		if [[ "$subsample_shotgun_R1" ]]; then
-		echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
-		RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
-		RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
-		RE1c=$(grep 'RE3' REnase_R1.txt | awk '{print $2}')
-		RE1d=$(grep 'RE4' REnase_R1.txt | awk '{print $2}')
-		if [[ -z "$RE1b" ]]; then RE1b=999; fi
-		if [[ -z "$RE1c" ]]; then RE1c=999; fi
-		if [[ -z "$RE1d" ]]; then RE1d=999; fi
-		rm REnase_R1.txt
-		if [[ "$subsample_shotgun_R2" ]]; then
-		  echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
-		  RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
-		  RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
-		  RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
-		  RE2d=$(grep 'RE4' REnase_R2.txt | awk '{print $2}')
-		  if [[ -z "$RE2b" ]]; then RE2b=999; fi
-		  if [[ -z "$RE2c" ]]; then RE2c=999; fi
-		  if [[ -z "$RE2d" ]]; then RE2d=999; fi
-		  rm REnase_R2.txt
-		else
-		  RE2a=999
-		  RE2b=999
-		  RE2c=999
-		  RE2d=999
+			echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
+			RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
+			RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
+			RE1c=$(grep 'RE3' REnase_R1.txt | awk '{print $2}')
+			RE1d=$(grep 'RE4' REnase_R1.txt | awk '{print $2}')
+			if [[ -z "$RE1b" ]]; then RE1b=999; fi
+			if [[ -z "$RE1c" ]]; then RE1c=999; fi
+			if [[ -z "$RE1d" ]]; then RE1d=999; fi
+			rm REnase_R1.txt
+			if [[ "$subsample_shotgun_R2" ]]; then
+			  echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
+			  RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
+			  RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
+			  RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
+			  RE2d=$(grep 'RE4' REnase_R2.txt | awk '{print $2}')
+			  if [[ -z "$RE2b" ]]; then RE2b=999; fi
+			  if [[ -z "$RE2c" ]]; then RE2c=999; fi
+			  if [[ -z "$RE2d" ]]; then RE2d=999; fi
+			  rm REnase_R2.txt
+			else
+			  RE2a=999
+			  RE2b=999
+			  RE2c=999
+			  RE2d=999
+			fi
 		fi
 	fi
 
