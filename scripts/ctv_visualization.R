@@ -54,19 +54,19 @@ for (i in c(1,3,5,7,9,11)){
   ref_uniq <- taxalevels[,i+1][!c(taxalevels[,i+1]) %in% c(overlap)]; ref_uniq <- length(ref_uniq[!is.na(ref_uniq)])
   subject_uniq <- taxalevels[,i][!c(taxalevels[,i]) %in% c(overlap)]; subject_uniq <- length(subject_uniq[!is.na(subject_uniq)])
   overlap <- length(overlap)
-  false_positive <- subject_uniq / subject_len
+  FDR <- subject_uniq / subject_len
   false_negative <- ref_uniq / ref_len
   sensitivity <- overlap / (overlap + ref_uniq)
-  ctv_hold <- c(ref,ref_len,subject,subject_len,overlap,ref_uniq,subject_uniq,false_positive,false_negative,sensitivity)
+  ctv_hold <- c(ref,ref_len,subject,subject_len,overlap,ref_uniq,subject_uniq,FDR,false_negative,sensitivity)
   ctv <- rbind(ctv,ctv_hold)
 }
-colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","false_positive","false_negative","sensitivity")
+colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","FDR","false_negative","sensitivity")
 
 
 ctv$Cross_taxon_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
 ctv$Cross_taxon_comparison <- factor(as.character(ctv$Cross_taxon_comparison), levels=unique(ctv$Cross_taxon_comparison))
 write.table(ctv,"cross_taxon_comparison_unvalidated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
-ctv <- subset(ctv, select=c(Cross_taxon_comparison,false_positive,false_negative,sensitivity))
+ctv <- subset(ctv, select=c(Cross_taxon_comparison,FDR,sensitivity))
 ctv <- melt(ctv, id="Cross_taxon_comparison")
 ctv$value <- as.numeric(ctv$value)
 
@@ -126,19 +126,19 @@ for (i in c(1,3,5,7,9,11)){
   ref_uniq <- taxalevels[,i+1][!c(taxalevels[,i+1]) %in% c(overlap)]; ref_uniq <- length(ref_uniq[!is.na(ref_uniq)])
   subject_uniq <- taxalevels[,i][!c(taxalevels[,i]) %in% c(overlap)]; subject_uniq <- length(subject_uniq[!is.na(subject_uniq)])
   overlap <- length(overlap)
-  false_positive <- subject_uniq / subject_len
+  FDR <- subject_uniq / subject_len
   false_negative <- ref_uniq / ref_len
   sensitivity <- overlap / (overlap + ref_uniq)
-  ctv_hold <- c(ref,ref_len,subject,subject_len,overlap,ref_uniq,subject_uniq,false_positive,false_negative,sensitivity)
+  ctv_hold <- c(ref,ref_len,subject,subject_len,overlap,ref_uniq,subject_uniq,FDR,false_negative,sensitivity)
   ctv <- rbind(ctv,ctv_hold)
 }
-colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","false_positive","false_negative","sensitivity")
+colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","FDR","false_negative","sensitivity")
 
 
 ctv$Cross_taxon_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
 ctv$Cross_taxon_comparison <- factor(as.character(ctv$Cross_taxon_comparison), levels=unique(ctv$Cross_taxon_comparison))
 write.table(ctv,"cross_taxon_comparison_validated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
-ctv <- subset(ctv, select=c(Cross_taxon_comparison,false_positive,false_negative,sensitivity))
+ctv <- subset(ctv, select=c(Cross_taxon_comparison,FDR,sensitivity))
 ctv <- melt(ctv, id="Cross_taxon_comparison")
 ctv$value <- as.numeric(ctv$value)
 

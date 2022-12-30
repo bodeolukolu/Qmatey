@@ -52,8 +52,15 @@ fi
 
 
 cd "${projdir}"
-if [[ "$simulation_lib" =~ "shotgun" ]]; then
-	simulation_motif=random
+if [[ -z "$subsample_shotgun_R1" ]]; then
+	subsample_shotgun_R1=ATGCAT
+fi
+if [[ -z "$subsample_shotgun_R2" ]]; then
+	subsample_shotgun_R2=CATG
+fi
+
+if [[ -z "$simulation_lib" ]]; then
+	simulation_lib=complete_digest
 fi
 if [[ -z "$fragment_size_range" ]]; then
 	export fragment_size_range=64,600
@@ -305,7 +312,7 @@ simulate_reads () {
 	minfrag=${fragment_size_range%,*}
 	maxfrag=${fragment_size_range#*,}
 	if [[ "$simulation_lib"  =~ "complete_digest" ]] || [[ "$simulation_lib"  =~ "partial_digest" ]]; then
-		if [[ "$subsample_shotgun_R1" ]]; then
+		if [[ "$simulation_motif_R1" ]]; then
 			echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
 			RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
 			RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
@@ -315,8 +322,8 @@ simulate_reads () {
 			if [[ -z "$RE1c" ]]; then RE1c=999; fi
 			if [[ -z "$RE1d" ]]; then RE1d=999; fi
 			rm REnase_R1.txt
-			if [[ "$subsample_shotgun_R2" ]]; then
-			  echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
+			if [[ "$simulation_motif_R2" ]]; then
+			  echo $simulation_motif_R2 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
 			  RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
 			  RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
 			  RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
@@ -753,8 +760,8 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				if [[ "$subsample_shotgun_R1" ]]; then
-					echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
+				if [[ "$subsample_shotgun_R1" != false ]]; then
+					echo $subsample_shotgun_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
 					RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
 					RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
 					RE1c=$(grep 'RE3' REnase_R1.txt | awk '{print $2}')
@@ -763,8 +770,8 @@ else
 					if [[ -z "$RE1c" ]]; then RE1c=999; fi
 					if [[ -z "$RE1d" ]]; then RE1d=999; fi
 					rm REnase_R1.txt
-					if [[ "$subsample_shotgun_R2" ]]; then
-						echo $simulation_motif_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
+					if [[ "$subsample_shotgun_R2"  != false ]]; then
+						echo $subsample_shotgun_R2 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
 						RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
 						RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
 						RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
