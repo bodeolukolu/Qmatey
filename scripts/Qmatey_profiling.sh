@@ -765,7 +765,7 @@ else
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(/RE1a/,"RE1a\nRE1a"); gsub(/RE1b/,"RE1b\nRE1b"); gsub(/RE1c/,"RE1c\nRE1c"); gsub(/RE1d/,"RE1d\nRE1d"); \
 					gsub(/RE2a/,"RE2a\nRE2a"); gsub(/RE2b/,"RE2b\nRE2b"); gsub(/RE2c/,"RE2c\nRE2c"); gsub(/RE2d/,"RE2d\nRE2d"); }1' ${i%.f*}.tmp1A.txt | \
-					awk min="$shotgun_min_fragment_length" 'length >= min' | grep "^$RE1a\|^$RE1b\|^$RE1c\|^$RE1d\|^$RE2a\|^$RE2b\|^$RE2c\|^$RE2d" > ${i%.f*}.tmp1.txt &&
+					awk -v min="$shotgun_min_fragment_length" 'length >= min' | grep "^$RE1a\|^$RE1b\|^$RE1c\|^$RE1d\|^$RE2a\|^$RE2b\|^$RE2c\|^$RE2d" > ${i%.f*}.tmp1.txt &&
 					rm ${i%.f*}.tmp1A.txt &&
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
@@ -777,7 +777,7 @@ else
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(/RE1a/,"RE1a\nRE1a"); gsub(/RE1b/,"RE1b\nRE1b"); gsub(/RE1c/,"RE1c\nRE1c"); gsub(/RE1d/,"RE1d\nRE1d"); \
 					gsub(/RE2a/,"RE2a\nRE2a"); gsub(/RE2b/,"RE2b\nRE2b"); gsub(/RE2c/,"RE2c\nRE2c"); gsub(/RE2d/,"RE2d\nRE2d"); }1' ${i%.f*}.tmp2A.txt | \
-					awk min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}.tmp2B.txt &&
+					awk -v min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}.tmp2B.txt &&
 					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}.tmp2B.txt > ${i%.f*}.tmp2.txt &&
 					grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${i%.f*}.tmp2B.txt >> ${i%.f*}.tmp2.txt &&
 					grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${i%.f*}.tmp2B.txt >> ${i%.f*}.tmp2.txt &&
@@ -789,7 +789,7 @@ else
 					wait
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat $i | awk min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					zcat $i | awk -v min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
 					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
