@@ -645,27 +645,7 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-					fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-				else
-					fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
-				fi
-
-				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						awk 'NR%2==0' <(zcat $i) | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-					fi
-				else
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' $i | awk 'NR%2==1' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						awk 'NR%2==0' $i | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-					fi
-				fi
+				zcat $i | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -688,41 +668,8 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-			  if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			    fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-			  else
-			    fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
-			  fi
-
-				if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
-						wait
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						grep -v '^>' <(zcat $i) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz ${i%.f*}.fasta.gz
-						wait
-					fi
-				else
-					if [[ "${fa_fq}" == "@" ]]; then
-						awk 'NR%2==0' $i | awk 'NR%2==1' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}.fasta.gz &&
-						wait
-					fi
-					if [[ "${fa_fq}" == ">" ]]; then
-						grep -v '^>' $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | \
-						awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz ${i%.f*}.fasta.gz
-						wait
-					fi
-				fi
-				# grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk '{print substr($0,1,64)}' | awk 'length($0)>=64' | awk 'NF' | \
-				# awk -v frag=$frag '{print ">"frag"_B"NR"\n"$0}' | gzip > "${i%.f*}"_tmp1.fa.gz &&
-				# grep -v '^>' <(zcat ${i%.f*}.fasta.gz) | awk -v max=$max_seqread_len 'length == max' | awk -v max=$max_read_length '{print substr($0,65,max)}' | awk 'NF' | \
-				# awk -v frag=$frag '{print ">"frag"_E"NR"\n"$0}' | gzip > "${i%.f*}"_tmp2.fa.gz &&
-				# cat "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz > ${i%.f*}.fasta.gz &&
-				# rm "${i%.f*}"_tmp1.fa.gz "${i%.f*}"_tmp2.fa.gz
+				zcat $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
+				gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 				wait
 			fi
 			) &
@@ -782,6 +729,9 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
+				if [[ -z "$shotgun_min_fragment_length" ]]; then
+					shotgun_min_fragment_length=50
+				fi
 				if [[ "$subsample_shotgun_R1" != false ]]; then
 					echo $subsample_shotgun_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
 					RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
@@ -807,9 +757,6 @@ else
 						RE2b=999
 						RE2c=999
 						RE2d=999
-					fi
-					if [[ -z "$shotgun_min_fragment_length" ]]; then
-						shotgun_min_fragment_length=50
 					fi
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
@@ -840,6 +787,10 @@ else
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt
 					wait
+				fi
+				if [[ "$subsample_shotgun_R1" == false ]]; then
+					zcat $i | awk min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
