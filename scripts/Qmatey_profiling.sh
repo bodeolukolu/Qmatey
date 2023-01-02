@@ -599,19 +599,44 @@ if test -f flushed_reads.txt; then
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 
+		for i in *.f*; do (
+			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+			else
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
+			fi
+			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+				if [[ "${fa_fq}" == "@" ]]; then
+					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
+				fi
+				if [[ "${fa_fq}" == ">" ]]; then
+					awk 'NR%2==0' <(zcat $i) | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
+				fi
+			else
+				if [[ "${fa_fq}" == "@" ]]; then
+					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
+				fi
+				if [[ "${fa_fq}" == ">" ]]; then
+					awk 'NR%2==0' $i | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}.gz
+				fi
+			fi ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				wait
+			fi
+		done
+		wait
+
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				cat ${i%_R2.fasta.gz}.fasta.gz $i > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
-				rm $i && :> ${i%_R2.fasta.gz}.fasta.gz &&
-				mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
+				cat $i ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+				rm $i && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				cat ${i%.R2.fasta.gz}.fasta.gz $i > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
-				rm $i && :> ${i%.R2.fasta.gz}.fasta.gz &&
-				mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
+				cat $i ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				rm $i && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
@@ -709,23 +734,23 @@ else
 	fi
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-		if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
-			fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
-		else
-			fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
-		fi
-		wait
+
 		for i in *.f*; do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
+				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
+			else
+				fa_fq=$(cat ${projdir}/samples/$i | head -n1 | cut -c1-1)
+			fi
+			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | gzip > ${i}.tmp && mv ${i}.tmp ${i}
+					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
-					awk 'NR%2==0' <(zcat $i) | gzip > ${i}.tmp && mv ${i}.tmp ${i}
+					awk 'NR%2==0' <(zcat $i) | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}.gz
+					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk 'NR%2==0' $i | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}.gz
@@ -737,20 +762,17 @@ else
 		done
 		wait
 
-
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				paste <(zcat ${i%_R2.fasta.gz}.fasta.gz) <(zcat $i) | gzip > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
-				rm $i && :> ${i%_R2.fasta.gz}.fasta.gz &&
-				mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
+				cat $i ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+				rm $i && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				paste <(zcat ${i%.R2.fasta.gz}.fasta.gz) <(zcat $i) | gzip > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
-				rm $i && :> ${i%.R2.fasta.gz}.fasta.gz &&
-				mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
+				cat $i ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				rm $i && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
