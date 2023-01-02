@@ -1343,7 +1343,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 			fi
 			rmdir * 2> /dev/null
-			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
@@ -1608,7 +1608,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 			fi
 			rmdir * 2> /dev/null
-			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh
+			rm ${projdir}/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
