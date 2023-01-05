@@ -906,7 +906,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in *.f*; do
+		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
@@ -914,6 +914,9 @@ ref_norm () {
 					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 					wait
 				done
+				wait
+			fi ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
@@ -936,7 +939,7 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in *.f*; do
+		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
@@ -944,6 +947,8 @@ ref_norm () {
 					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 					wait
 				done
+			fi ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
@@ -1111,7 +1116,7 @@ no_norm () {
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		cd "${projdir}"/samples
 
-		for i in *.f*; do
+		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
@@ -1119,6 +1124,8 @@ no_norm () {
 					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					wait
 				done
+			fi ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
@@ -1127,7 +1134,7 @@ no_norm () {
 		cd "${projdir}"/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		for i in *.f*; do
+		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
@@ -1135,6 +1142,8 @@ no_norm () {
 					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 					wait
 				done
+			fi ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
 			fi
 		done
