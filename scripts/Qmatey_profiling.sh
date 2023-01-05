@@ -889,6 +889,15 @@ fi
 echo -e "\e[97m########################################################\n \e[38;5;210m Read Compression, Normalization, and exclusion of reads from reference genomes \n\e[97m########################################################\n"
 ref_norm () {
 	cd "${projdir}"
+	export startmotif=TTTT,ATTT,CTTT,GTTT,TATT,AATT,CATT,GATT,TCTT,ACTT,CCTT,GCTT,TGTT,AGTT,CGTT,GGTT,TTAT,ATAT,CTAT,GTAT,TAAT,AAAT,CAAT,GAAT,TCAT,ACAT,CCAT,GCAT,TGAT,AGAT,\
+	CGAT,GGAT,TTCT,ATCT,CTCT,GTCT,TACT,AACT,CACT,GACT,TCCT,ACCT,CCCT,GCCT,TGCT,AGCT,CGCT,GGCT,TTGT,ATGT,CTGT,GTGT,TAGT,AAGT,CAGT,GAGT,TCGT,ACGT,CCGT,GCGT,TGGT,AGGT,CGGT,GGGT,\
+	TTTA,ATTA,CTTA,GTTA,TATA,AATA,CATA,GATA,TCTA,ACTA,CCTA,GCTA,TGTA,AGTA,CGTA,GGTA,TTAA,ATAA,CTAA,GTAA,TAAA,AAAA,CAAA,GAAA,TCAA,ACAA,CCAA,GCAA,TGAA,AGAA,CGAA,GGAA,TTCA,ATCA,\
+	CTCA,GTCA,TACA,AACA,CACA,GACA,TCCA,ACCA,CCCA,GCCA,TGCA,AGCA,CGCA,GGCA,TTGA,ATGA,CTGA,GTGA,TAGA,AAGA,CAGA,GAGA,TCGA,ACGA,CCGA,GCGA,TGGA,AGGA,CGGA,GGGA,TTTC,ATTC,CTTC,GTTC,\
+	TATC,AATC,CATC,GATC,TCTC,ACTC,CCTC,GCTC,TGTC,AGTC,CGTC,GGTC,TTAC,ATAC,CTAC,GTAC,TAAC,AAAC,CAAC,GAAC,TCAC,ACAC,CCAC,GCAC,TGAC,AGAC,CGAC,GGAC,TTCC,ATCC,CTCC,GTCC,TACC,AACC,\
+	CACC,GACC,TCCC,ACCC,CCCC,GCCC,TGCC,AGCC,CGCC,GGCC,TTGC,ATGC,CTGC,GTGC,TAGC,AAGC,CAGC,GAGC,TCGC,ACGC,CCGC,GCGC,TGGC,AGGC,CGGC,GGGC,TTTG,ATTG,CTTG,GTTG,TATG,AATG,CATG,GATG,\
+	TCTG,ACTG,CCTG,GCTG,TGTG,AGTG,CGTG,GGTG,TTAG,ATAG,CTAG,GTAG,TAAG,AAAG,CAAG,GAAG,TCAG,ACAG,CCAG,GCAG,TGAG,AGAG,CGAG,GGAG,TTCG,ATCG,CTCG,GTCG,TACG,AACG,CACG,GACG,TCCG,ACCG,\
+	CCCG,GCCG,TGCG,AGCG,CGCG,GGCG,TTGG,ATGG,CTGG,GTGG,TAGG,AAGG,CAGG,GAGG,TCGG,ACGG,CCGG,GCGG,TGGG,AGGG,CGGG,GGGG
+
 	if [[ -z "$(ls -A ./norm_ref/*.dict 2> /dev/null)" ]]; then
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		echo -e "$1 \e[31m Qmatey will use read coverage of samples for normalization"
@@ -897,14 +906,14 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in *.f*; do (
+		for i in *.f*; do
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
-				wait
-			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				for sm in ${startmotif//,/ }; do
+					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+					wait
+				done
 				wait
 			fi
 		done
@@ -927,16 +936,16 @@ ref_norm () {
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
 
-		for i in *.f*; do (
+		for i in *.f*; do
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+				for sm in ${startmotif//,/ }; do
+					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+					wait
+				done
 				wait
-			fi ) &
-      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-      	wait
-      fi
+			fi
 		done
 		wait
 
@@ -1090,19 +1099,27 @@ fi
 echo -e "\e[97m########################################################\n \e[38;5;210m Read compression and exclusion of reads from reference genomes \n\e[97m########################################################\n"
 no_norm () {
 	cd "${projdir}"
+	export startmotif=TTTT,ATTT,CTTT,GTTT,TATT,AATT,CATT,GATT,TCTT,ACTT,CCTT,GCTT,TGTT,AGTT,CGTT,GGTT,TTAT,ATAT,CTAT,GTAT,TAAT,AAAT,CAAT,GAAT,TCAT,ACAT,CCAT,GCAT,TGAT,AGAT,\
+	CGAT,GGAT,TTCT,ATCT,CTCT,GTCT,TACT,AACT,CACT,GACT,TCCT,ACCT,CCCT,GCCT,TGCT,AGCT,CGCT,GGCT,TTGT,ATGT,CTGT,GTGT,TAGT,AAGT,CAGT,GAGT,TCGT,ACGT,CCGT,GCGT,TGGT,AGGT,CGGT,GGGT,\
+	TTTA,ATTA,CTTA,GTTA,TATA,AATA,CATA,GATA,TCTA,ACTA,CCTA,GCTA,TGTA,AGTA,CGTA,GGTA,TTAA,ATAA,CTAA,GTAA,TAAA,AAAA,CAAA,GAAA,TCAA,ACAA,CCAA,GCAA,TGAA,AGAA,CGAA,GGAA,TTCA,ATCA,\
+	CTCA,GTCA,TACA,AACA,CACA,GACA,TCCA,ACCA,CCCA,GCCA,TGCA,AGCA,CGCA,GGCA,TTGA,ATGA,CTGA,GTGA,TAGA,AAGA,CAGA,GAGA,TCGA,ACGA,CCGA,GCGA,TGGA,AGGA,CGGA,GGGA,TTTC,ATTC,CTTC,GTTC,\
+	TATC,AATC,CATC,GATC,TCTC,ACTC,CCTC,GCTC,TGTC,AGTC,CGTC,GGTC,TTAC,ATAC,CTAC,GTAC,TAAC,AAAC,CAAC,GAAC,TCAC,ACAC,CCAC,GCAC,TGAC,AGAC,CGAC,GGAC,TTCC,ATCC,CTCC,GTCC,TACC,AACC,\
+	CACC,GACC,TCCC,ACCC,CCCC,GCCC,TGCC,AGCC,CGCC,GGCC,TTGC,ATGC,CTGC,GTGC,TAGC,AAGC,CAGC,GAGC,TCGC,ACGC,CCGC,GCGC,TGGC,AGGC,CGGC,GGGC,TTTG,ATTG,CTTG,GTTG,TATG,AATG,CATG,GATG,\
+	TCTG,ACTG,CCTG,GCTG,TGTG,AGTG,CGTG,GGTG,TTAG,ATAG,CTAG,GTAG,TAAG,AAAG,CAAG,GAAG,TCAG,ACAG,CCAG,GCAG,TGAG,AGAG,CGAG,GGAG,TTCG,ATCG,CTCG,GTCG,TACG,AACG,CACG,GACG,TCCG,ACCG,\
+	CCCG,GCCG,TGCG,AGCG,CGCG,GGCG,TTGG,ATGG,CTGG,GTGG,TAGG,AAGG,CAGG,GAGG,TCGG,ACGG,CCGG,GCGG,TGGG,AGGG,CGGG,GGGG
 	if [[ -z "$(ls -A ./norm_ref/*.dict 2> /dev/null)" ]]; then
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		cd "${projdir}"/samples
 
-		for i in *.f*; do (
+		for i in *.f*; do
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+				for sm in ${startmotif//,/ }; do
+					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					wait
+				done
 				wait
-			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-			wait
 			fi
 		done
 		wait
@@ -1110,15 +1127,15 @@ no_norm () {
 		cd "${projdir}"/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increased the spead of reference genome alignment -- especially if read depth is high
-		for i in *.f*; do (
+		for i in *.f*; do
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+				for sm in ${startmotif//,/ }; do
+					zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+					wait
+				done
 				wait
-			fi ) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-			wait
 			fi
 		done
 		wait
