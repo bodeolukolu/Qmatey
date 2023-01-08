@@ -2376,7 +2376,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2419,7 +2419,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 	  mv ${i%_sighits*}_edits.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
@@ -2863,7 +2863,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2906,7 +2906,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 		mv ${i%_sighits*}_edits.txt.gz $i ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3362,7 +3362,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3405,7 +3405,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 		mv ${i%_sighits*}_edits.txt.gz $i ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3863,7 +3863,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3906,7 +3906,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 		mv ${i%_sighits*}_edits.txt.gz $i ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4364,7 +4364,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4407,7 +4407,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 		mv ${i%_sighits*}_edits.txt.gz $i ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4862,7 +4862,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1\n$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4905,7 +4905,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
 		mv ${i%_sighits*}_edits.txt.gz $i ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
