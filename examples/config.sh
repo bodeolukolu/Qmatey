@@ -33,7 +33,7 @@ local_db=/media/sdd/ncbi_db/nt/nt
 taxids=true
 input_dbfasta=NA
 map_taxids=NA
-
+edit_distance=3
 
 # Taxonomic_Profiling_and_Filtering
 ####################################################
