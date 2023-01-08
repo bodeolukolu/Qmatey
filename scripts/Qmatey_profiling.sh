@@ -2376,7 +2376,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2419,7 +2427,7 @@ else
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-	  awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	  mv ${i%_sighits*}_edits.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
@@ -2863,7 +2871,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2877,40 +2893,40 @@ else
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-		mv $ccf ../edit_alignment/$ccf
-		cd ../edit_alignment
-		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
-			wait
-			gzip ${sub}_out.blast &&
-			rm $sub )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-				wait
-			fi
-		done
-		wait
-		for subfile in *_out.blast.gz; do
-			cat $subfile >> ${ccf}.blast.gz
-			rm $subfile
-		done
-		wait
-		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
-		rm ${ccf}.blast.gz; rm $ccf &&
-		cd ../splitccf/
+	  mv $ccf ../edit_alignment/$ccf
+	  cd ../edit_alignment
+	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  wait $PIDsplit2
+	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+	    -qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
+	    wait
+	    gzip ${sub}_out.blast &&
+	    rm $sub )&
+	    if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+	      wait
+	    fi
+	  done
+	  wait
+	  for subfile in *_out.blast.gz; do
+	    cat $subfile >> ${ccf}.blast.gz
+	    rm $subfile
+	  done
+	  wait
+	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+	  rm ${ccf}.blast.gz; rm $ccf &&
+	  cd ../splitccf/
 	done
 	cd ../
 	rm -rf edit_db edit_alignment splitccf
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
-		mv ${i%_sighits*}_edits.txt.gz $i ) &
-		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-			wait
-		fi
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	  mv ${i%_sighits*}_edits.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
 	done
 	wait
 	rm combined_sighits_mismatch.txt
@@ -3362,7 +3378,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3376,40 +3400,40 @@ else
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-		mv $ccf ../edit_alignment/$ccf
-		cd ../edit_alignment
-		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
-			wait
-			gzip ${sub}_out.blast &&
-			rm $sub )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-				wait
-			fi
-		done
-		wait
-		for subfile in *_out.blast.gz; do
-			cat $subfile >> ${ccf}.blast.gz
-			rm $subfile
-		done
-		wait
-		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
-		rm ${ccf}.blast.gz; rm $ccf &&
-		cd ../splitccf/
+	  mv $ccf ../edit_alignment/$ccf
+	  cd ../edit_alignment
+	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  wait $PIDsplit2
+	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+	    -qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
+	    wait
+	    gzip ${sub}_out.blast &&
+	    rm $sub )&
+	    if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+	      wait
+	    fi
+	  done
+	  wait
+	  for subfile in *_out.blast.gz; do
+	    cat $subfile >> ${ccf}.blast.gz
+	    rm $subfile
+	  done
+	  wait
+	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+	  rm ${ccf}.blast.gz; rm $ccf &&
+	  cd ../splitccf/
 	done
 	cd ../
 	rm -rf edit_db edit_alignment splitccf
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
-		mv ${i%_sighits*}_edits.txt.gz $i ) &
-		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-			wait
-		fi
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	  mv ${i%_sighits*}_edits.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
 	done
 	wait
 	rm combined_sighits_mismatch.txt
@@ -3863,7 +3887,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3877,40 +3909,40 @@ else
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-		mv $ccf ../edit_alignment/$ccf
-		cd ../edit_alignment
-		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
-			wait
-			gzip ${sub}_out.blast &&
-			rm $sub )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-				wait
-			fi
-		done
-		wait
-		for subfile in *_out.blast.gz; do
-			cat $subfile >> ${ccf}.blast.gz
-			rm $subfile
-		done
-		wait
-		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
-		rm ${ccf}.blast.gz; rm $ccf &&
-		cd ../splitccf/
+	  mv $ccf ../edit_alignment/$ccf
+	  cd ../edit_alignment
+	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  wait $PIDsplit2
+	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+	    -qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
+	    wait
+	    gzip ${sub}_out.blast &&
+	    rm $sub )&
+	    if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+	      wait
+	    fi
+	  done
+	  wait
+	  for subfile in *_out.blast.gz; do
+	    cat $subfile >> ${ccf}.blast.gz
+	    rm $subfile
+	  done
+	  wait
+	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+	  rm ${ccf}.blast.gz; rm $ccf &&
+	  cd ../splitccf/
 	done
 	cd ../
 	rm -rf edit_db edit_alignment splitccf
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
-		mv ${i%_sighits*}_edits.txt.gz $i ) &
-		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-			wait
-		fi
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	  mv ${i%_sighits*}_edits.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
 	done
 	wait
 	rm combined_sighits_mismatch.txt
@@ -4364,7 +4396,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4378,40 +4418,40 @@ else
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-		mv $ccf ../edit_alignment/$ccf
-		cd ../edit_alignment
-		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
-			wait
-			gzip ${sub}_out.blast &&
-			rm $sub )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-				wait
-			fi
-		done
-		wait
-		for subfile in *_out.blast.gz; do
-			cat $subfile >> ${ccf}.blast.gz
-			rm $subfile
-		done
-		wait
-		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
-		rm ${ccf}.blast.gz; rm $ccf &&
-		cd ../splitccf/
+	  mv $ccf ../edit_alignment/$ccf
+	  cd ../edit_alignment
+	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  wait $PIDsplit2
+	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+	    -qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
+	    wait
+	    gzip ${sub}_out.blast &&
+	    rm $sub )&
+	    if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+	      wait
+	    fi
+	  done
+	  wait
+	  for subfile in *_out.blast.gz; do
+	    cat $subfile >> ${ccf}.blast.gz
+	    rm $subfile
+	  done
+	  wait
+	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+	  rm ${ccf}.blast.gz; rm $ccf &&
+	  cd ../splitccf/
 	done
 	cd ../
 	rm -rf edit_db edit_alignment splitccf
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
-		mv ${i%_sighits*}_edits.txt.gz $i ) &
-		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-			wait
-		fi
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	  mv ${i%_sighits*}_edits.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
 	done
 	wait
 	rm combined_sighits_mismatch.txt
@@ -4862,7 +4902,15 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	for i in *_sighits.txt.gz;do (
+	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  mv ${i%_sighits*}_line.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
+	done
+	wait
+	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4876,40 +4924,40 @@ else
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-		mv $ccf ../edit_alignment/$ccf
-		cd ../edit_alignment
-		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
-			wait
-			gzip ${sub}_out.blast &&
-			rm $sub )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-				wait
-			fi
-		done
-		wait
-		for subfile in *_out.blast.gz; do
-			cat $subfile >> ${ccf}.blast.gz
-			rm $subfile
-		done
-		wait
-		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
-		rm ${ccf}.blast.gz; rm $ccf &&
-		cd ../splitccf/
+	  mv $ccf ../edit_alignment/$ccf
+	  cd ../edit_alignment
+	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  wait $PIDsplit2
+	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+	    -qcov_hsp_perc $qcov -outfmt "6 qseqid mismatch" -out ${sub}_out.blast &&
+	    wait
+	    gzip ${sub}_out.blast &&
+	    rm $sub )&
+	    if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+	      wait
+	    fi
+	  done
+	  wait
+	  for subfile in *_out.blast.gz; do
+	    cat $subfile >> ${ccf}.blast.gz
+	    rm $subfile
+	  done
+	  wait
+	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+	  rm ${ccf}.blast.gz; rm $ccf &&
+	  cd ../splitccf/
 	done
 	cd ../
 	rm -rf edit_db edit_alignment splitccf
 	zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 	for i in *_sighits.txt.gz;do (
-		awk 'NR==FNR {a[$0]} FNR!=NR && !($6 in a)' combined_sighits_mismatch.txt <(zcat $i) | gzip > ${i%_sighits*}_edits.txt.gz
-		mv ${i%_sighits*}_edits.txt.gz $i ) &
-		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-			wait
-		fi
+	  awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	  mv ${i%_sighits*}_edits.txt.gz $i ) &
+	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+	    wait
+	  fi
 	done
 	wait
 	rm combined_sighits_mismatch.txt
