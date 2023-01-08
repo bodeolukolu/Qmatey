@@ -2377,14 +2377,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2872,14 +2872,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3379,14 +3379,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3888,14 +3888,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4397,14 +4397,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4903,14 +4903,14 @@ else
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	# remove diagnostic sequences within edit distance range
 	for i in *_sighits.txt.gz;do (
-	  awk '{$10=$10"_line"NR}1' <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	  awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
 	  mv ${i%_sighits*}_line.txt.gz $i ) &
 	  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 	    wait
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
