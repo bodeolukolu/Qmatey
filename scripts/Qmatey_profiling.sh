@@ -2376,7 +2376,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2863,7 +2863,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3362,7 +3362,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3863,7 +3863,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4364,7 +4364,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4862,7 +4862,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	# remove diagnostic sequences within edit distance range
-	cat *_sighits.txt.gz | zcat | awk '{$6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | awk '{print $6}' | awk '!seen[$0] {print} {++seen[$0]}' | awk '{print ">"$1"\n"$1}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
