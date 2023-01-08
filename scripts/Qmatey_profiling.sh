@@ -2384,7 +2384,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2879,7 +2879,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3386,7 +3386,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3895,7 +3895,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4404,7 +4404,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4910,7 +4910,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
