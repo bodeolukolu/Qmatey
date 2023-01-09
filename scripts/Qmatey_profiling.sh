@@ -2385,7 +2385,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -2400,7 +2399,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
@@ -2880,7 +2879,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -2895,7 +2893,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
@@ -3387,7 +3385,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -3402,7 +3399,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
@@ -3896,7 +3893,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -3911,7 +3907,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
@@ -4405,7 +4401,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -4420,7 +4415,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
@@ -4911,7 +4906,6 @@ else
 	done
 	wait
 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
-	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
 	cd edit_db
@@ -4926,7 +4920,7 @@ else
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	  mv $ccf ../edit_alignment/$ccf
 	  cd ../edit_alignment
-	  awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+	  awk -v rpm=$rpm 'NR%20000==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	  wait $PIDsplit2
 	  for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 	    ${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
