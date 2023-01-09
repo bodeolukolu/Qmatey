@@ -1320,8 +1320,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					done
 					wait
 					for subfile in *_out.blast.gz; do
-						cat $subfile >> ${ccf}.blast.gz
-						rm $subfile
+						cat $subfile >> ${ccf}.blast.gz &&
+						rm $subfile && wait
 					done
 					wait
 					cat ${ccf}.blast.gz >> combined_compressed_node1.megablast.gz &&
@@ -1355,8 +1355,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					done
 					wait
 					for subfile in *_out.blast.gz; do
-						cat $subfile >> ${ccf}.blast.gz
-						rm $subfile
+						cat $subfile >> ${ccf}.blast.gz &&
+						rm $subfile && wait
 					done
 					wait
 					# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
@@ -1585,8 +1585,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					done
 					wait
 					for subfile in *_out.blast.gz; do
-						cat $subfile >> ${ccf}.blast.gz
-						rm $subfile
+						cat $subfile >> ${ccf}.blast.gz &&
+						rm $subfile && wait
 					done
 					wait
 					cat ${ccf}.blast.gz >> combined_compressed_node1.megablast.gz &&
@@ -1620,8 +1620,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					done
 					wait
 					for subfile in *_out.blast.gz; do
-						cat $subfile >> ${ccf}.blast.gz
-						rm $subfile
+						cat $subfile >> ${ccf}.blast.gz &&
+						rm $subfile && wait
 					done
 					wait
 					# zcat ${ccf}.blast.gz 2> /dev/null | awk -v percid=$percid '$3 >= $5*(percid/100) {print $0}' | $gzip >> combined_compressed.megablast.gz &&
@@ -2384,7 +2384,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2414,8 +2414,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
@@ -2879,7 +2879,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -2909,8 +2909,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
@@ -3386,7 +3386,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3416,8 +3416,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
@@ -3895,7 +3895,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -3925,8 +3925,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
@@ -4404,7 +4404,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4434,8 +4434,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
@@ -4910,7 +4910,7 @@ else
 	  fi
 	done
 	wait
-	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{gsub(/-/,"");}1' | awk '{print ">"$10"\n"$6}' | gzip > combined.sighits.fasta.gz
+	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 	rpm=$((reads_per_megablast * 2))
 	mkdir edit_db
 	mkdir edit_alignment
@@ -4940,8 +4940,8 @@ else
 	  done
 	  wait
 	  for subfile in *_out.blast.gz; do
-	    cat $subfile >> ${ccf}.blast.gz
-	    rm $subfile
+	    cat $subfile >> ${ccf}.blast.gz &&
+	    rm $subfile && wait
 	  done
 	  wait
 	  cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
