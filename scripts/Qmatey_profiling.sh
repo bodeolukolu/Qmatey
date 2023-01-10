@@ -2527,25 +2527,25 @@ else
 	done
 	wait
 	for i in *_species_unique_uncultured.txt;do (
-		cat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_unique_uncultured.txt}temp.txt
-		mv ${i%*_species_unique_uncultured.txt}temp.txt $i
+		cat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_unique_uncultured.txt}temp.txt 2> /dev/null
+		mv ${i%*_species_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
 	wait
-	rm *_uniq_inter.txt && rm *_species_taxa.txt
+	rm *_uniq_inter.txt && rm *_species_taxa.txt 2> /dev/null
 
 	for i in *_species_unique_uncultured.txt;do (
-	   mv $i ${i%*_species_unique_uncultured*}_unique_sequences.txt ) &
+	   mv $i ${i%*_species_unique_uncultured*}_unique_sequences.txt 2> /dev/null ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
 	done
 	wait
 
-	rm *_species_unique_uncultured.txt *_species_inter.txt *_species_inter2.txt *_duplicate_count.txt *_multialign_species_reads.txt *_species_duplicates.txt.gz
+	rm *_species_unique_uncultured.txt *_species_inter.txt *_species_inter2.txt *_duplicate_count.txt *_multialign_species_reads.txt *_species_duplicates.txt.gz 2> /dev/null
 
 	for i in *_species_OTU.txt;do (
 	   cat $i ${i%_species_OTU*}_unique_sequences.txt > ${i%_species_OTU*}_complete_species_reads.txt ) &
@@ -3031,18 +3031,18 @@ else
 	done
 	wait
 	for i in *_genus_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt &&
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt 2> /dev/null &&
 		:> $i &&
-		mv ${i%*_genus_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_genus_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
 	wait
-	rm *_uniq_inter.txt && rm *_genus_taxa.txt
+	rm *_uniq_inter.txt && rm *_genus_taxa.txt 2> /dev/null
 	for i in *_genus_unique_uncultured.txt;do (
-	   mv $i ${i%*_genus_unique_uncultured*}_unique_sequences.txt
+	   mv $i ${i%*_genus_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3050,7 +3050,7 @@ else
 	done
 	wait
 
-	rm *_genus_unique_uncultured.txt *_genus_inter.txt *_genus_inter2.txt *_duplicate_count.txt *_multialign_genus_reads.txt *_genus_duplicates.txt.gz
+	rm *_genus_unique_uncultured.txt *_genus_inter.txt *_genus_inter2.txt *_duplicate_count.txt *_multialign_genus_reads.txt *_genus_duplicates.txt.gz 2> /dev/null
 
 	for i in *_genus_OTU.txt;do (
 	   cat $i ${i%_genus_OTU*}_unique_sequences.txt > ${i%_genus_OTU*}_complete_genus_reads.txt ) &
@@ -3540,18 +3540,18 @@ else
   done
 	wait
 	for i in *_family_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt 2> /dev/null
 		:> $i &&
-		mv ${i%*_family_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_family_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
 	wait
-  rm *_uniq_inter.txt && rm *_family_taxa.txt
+  rm *_uniq_inter.txt && rm *_family_taxa.txt 2> /dev/null
   for i in *_family_unique_uncultured.txt;do (
-     mv $i ${i%*_family_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_family_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3559,7 +3559,7 @@ else
   done
 	wait
 
-  rm *_family_unique_uncultured.txt *_family_inter.txt *_family_inter2.txt *_duplicate_count.txt *_multialign_family_reads.txt *_family_duplicates.txt.gz
+  rm *_family_unique_uncultured.txt *_family_inter.txt *_family_inter2.txt *_duplicate_count.txt *_multialign_family_reads.txt *_family_duplicates.txt.gz 2> /dev/null
 
 	for i in *_family_OTU.txt;do (
 	   cat $i ${i%_family_OTU*}_unique_sequences.txt > ${i%_family_OTU*}_complete_family_reads.txt
@@ -4048,18 +4048,18 @@ else
   done
 	wait
 	for i in *_order_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt 2> /dev/null
  		:> $i &&
-		mv ${i%*_order_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_order_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
 	wait
-  rm *_uniq_inter.txt && rm *_order_taxa.txt
+  rm *_uniq_inter.txt && rm *_order_taxa.txt 2> /dev/null
   for i in *_order_unique_uncultured.txt;do (
-     mv $i ${i%*_order_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_order_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4067,7 +4067,7 @@ else
   done
 	wait
 
-	rm *_order_unique_uncultured.txt *_order_inter.txt *_order_inter2.txt *_duplicate_count.txt *_multialign_order_reads.txt *_order_duplicates.txt.gz
+	rm *_order_unique_uncultured.txt *_order_inter.txt *_order_inter2.txt *_duplicate_count.txt *_multialign_order_reads.txt *_order_duplicates.txt.gz 2> /dev/null
 
 	for i in *_order_OTU.txt;do (
 	   cat $i ${i%_order_OTU*}_unique_sequences.txt > ${i%_order_OTU*}_complete_order_reads.txt
@@ -4558,17 +4558,17 @@ else
   done
 	wait
 	for i in *_class_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt 2> /dev/null
  		:> $i &&
-		mv ${i%*_class_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_class_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
-  rm *_uniq_inter.txt && rm *_class_taxa.txt
+  rm *_uniq_inter.txt && rm *_class_taxa.txt 2> /dev/null
   for i in *_class_unique_uncultured.txt;do (
-     mv $i ${i%*_class_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_class_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4576,7 +4576,7 @@ else
   done
 	wait
 
-  rm *_class_unique_uncultured.txt *_class_inter.txt *_class_inter2.txt *_duplicate_count.txt *_multialign_class_reads.txt *_class_duplicates.txt.gz
+  rm *_class_unique_uncultured.txt *_class_inter.txt *_class_inter2.txt *_duplicate_count.txt *_multialign_class_reads.txt *_class_duplicates.txt.gz 2> /dev/null
 
 	for i in *_class_OTU.txt;do (
 	   cat $i ${i%_class_OTU*}_unique_sequences.txt > ${i%_class_OTU*}_complete_class_reads.txt
@@ -5067,17 +5067,17 @@ else
   done
 	wait
 	for i in *_phylum_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt
+		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt 2> /dev/null
 		:> $i &&
-		mv ${i%*_phylum_unique_uncultured.txt}temp.txt $i
+		mv ${i%*_phylum_unique_uncultured.txt}temp.txt $i 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
 	 done
-  rm *_uniq_inter.txt && rm *_phylum_taxa.txt
+  rm *_uniq_inter.txt && rm *_phylum_taxa.txt 2> /dev/null
   for i in *_phylum_unique_uncultured.txt;do (
-     mv $i ${i%*_phylum_unique_uncultured*}_unique_sequences.txt
+     mv $i ${i%*_phylum_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -5085,7 +5085,7 @@ else
   done
 	wait
 
-	rm *_phylum_unique_uncultured.txt *_phylum_inter.txt *_phylum_inter2.txt *_duplicate_count.txt *_multialign_phylum_reads.txt *_phylum_duplicates.txt.gz
+	rm *_phylum_unique_uncultured.txt *_phylum_inter.txt *_phylum_inter2.txt *_duplicate_count.txt *_multialign_phylum_reads.txt *_phylum_duplicates.txt.gz 2> /dev/null
 
 	for i in *_phylum_OTU.txt;do (
 	   cat $i ${i%_phylum_OTU*}_unique_sequences.txt > ${i%_phylum_OTU*}_complete_phylum_reads.txt
