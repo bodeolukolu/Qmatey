@@ -510,9 +510,9 @@ else
 					:
 				else
 					if [[ "$i" == *.R1* ]]; then
-						mv $i ${i/.R1/}
+						mv "$i" ${i/.R1/}
 					elif [[ "$i" == *_R1* ]]; then
-						mv $i ${i/_R1/}
+						mv "$i" ${i/_R1/}
 					fi
 				fi ) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -610,10 +610,10 @@ else
 			fi
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
+					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
-					awk 'NR%2==0' <(zcat $i) | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
+					awk 'NR%2==0' <(zcat "$i") | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
@@ -631,14 +631,14 @@ else
 
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				cat $i ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
 				rm $i && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				cat $i ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
 				rm $i && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
@@ -648,7 +648,7 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
+				zcat "$i" | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -671,7 +671,7 @@ else
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
 			else
-				zcat $i | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
+				zcat "$i" | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
 				gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 				wait
 			fi
@@ -693,10 +693,10 @@ else
 			fi
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat $i) | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
+					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > ${i}.tmp.gz && rm $i && mv ${i}.tmp.gz ${i%.fastq.gz}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
-					awk 'NR%2==0' <(zcat $i) | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
+					awk 'NR%2==0' <(zcat "$i") | gzip > ${i}.tmp.gz && mv ${i}.tmp.gz ${i}
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
@@ -714,14 +714,14 @@ else
 
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				cat $i ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
 				rm $i && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				cat $i ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
 				rm $i && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
@@ -763,7 +763,7 @@ else
 					fi
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($2~RE2a || $2~RE2b || $2~RE2c || $2~RE2d) {print $0}' <(zcat $i) | \
+					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($2~RE2a || $2~RE2b || $2~RE2c || $2~RE2d) {print $0}' <(zcat "$i") | \
 					awk '{gsub(/\t/,"\n");}1' > ${i%.f*}.tmp1A.txt &&
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(/RE1a/,"RE1a\nRE1a"); gsub(/RE1b/,"RE1b\nRE1b"); gsub(/RE1c/,"RE1c\nRE1c"); gsub(/RE1d/,"RE1d\nRE1d"); \
@@ -772,10 +772,10 @@ else
 					rm ${i%.f*}.tmp1A.txt &&
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($2!~RE2a || $2!~RE2b || $2!~RE2c || $2!~RE2d) {print $0}' <(zcat $i) | \
+					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($2!~RE2a || $2!~RE2b || $2!~RE2c || $2!~RE2d) {print $0}' <(zcat "$i") | \
 					awk '{gsub(/\t/,"\n");}1' > ${i%.f*}.tmp2A.txt &&
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'($1!~RE1a || $1!~RE1b || $1!~RE1c || $1!~RE1d) && ($2~RE2a || $2~RE2b || $2~RE2c || $2~RE2d) {print $0}' <(zcat $i) | \
+					'($1!~RE1a || $1!~RE1b || $1!~RE1c || $1!~RE1d) && ($2~RE2a || $2~RE2b || $2~RE2c || $2~RE2d) {print $0}' <(zcat "$i") | \
 					awk '{gsub(/\t/,"\n");}1' > ${i%.f*}.tmp2A.txt &&
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(/RE1a/,"RE1a\nRE1a"); gsub(/RE1b/,"RE1b\nRE1b"); gsub(/RE1c/,"RE1c\nRE1c"); gsub(/RE1d/,"RE1d\nRE1d"); \
@@ -792,7 +792,7 @@ else
 					wait
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat $i | awk -v min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					zcat "$i" | awk -v min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
 					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
@@ -907,11 +907,11 @@ ref_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
-					zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
 				fi
 				wait
@@ -924,7 +924,7 @@ ref_norm () {
 		#sample read depth is used to normalize quantification data
 		echo -e "${YELLOW}- calculating a normalization factor"
 		for i in *_compressed.fasta.gz; do
-			zcat $i 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
+			zcat "$i" 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
 			cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 			rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
 		done
@@ -945,11 +945,11 @@ ref_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
-					zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
 				fi
 			fi ) &
@@ -1035,7 +1035,7 @@ ref_norm () {
 			#sample read depth is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
 			for i in *_compressed.fasta.gz; do
-				zcat $i 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
+				zcat "$i" 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
 				cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
 			done
@@ -1052,7 +1052,7 @@ ref_norm () {
 		echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 		for i in *_compressed.fasta.gz; do
 			normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
-			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat $i 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
+			awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat "$i" 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 		done
 		wait
 		rm ${projdir}/samples/*_compressed.fasta.gz
@@ -1079,7 +1079,7 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 			for i in *_compressed.fasta.gz; do (
 				normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat $i 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat "$i" 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1120,11 +1120,11 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 						wait
 					done
 				else
-					zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					wait
 				fi
 			fi ) &
@@ -1143,11 +1143,11 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat $i 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
-					zcat $i 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
 				fi
 			fi ) &
@@ -1257,7 +1257,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$taxids" == true ]]; then
 		for i in ${projdir}/taxids/*.txids; do
-			cat $i >> ${projdir}/metagenome/All.txids
+			cat "$i" >> ${projdir}/metagenome/All.txids
 		done
 		wait
 	fi
@@ -1402,7 +1402,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		cd "${projdir}"/metagenome/haplotig
 		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1497,7 +1497,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		for i in *metagenome.fasta.gz; do (
 			if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1668,7 +1668,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		cd "${projdir}"/metagenome/haplotig
 		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1711,7 +1711,7 @@ else
 
 	if [[ "$taxids" == true ]]; then
 		for i in ${projdir}/taxids/*.txids; do
-			cat $i >> ${projdir}/metagenome/All.txids
+			cat "$i" >> ${projdir}/metagenome/All.txids
 		done
 		wait
 	fi
@@ -1753,7 +1753,7 @@ else
 		cd "${projdir}"/metagenome/haplotig
 		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1847,7 +1847,7 @@ else
 
 		for i in *metagenome.fasta.gz; do (
 			if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1918,7 +1918,7 @@ else
 		cd "${projdir}"/metagenome/haplotig
 		for i in *metagenome.fasta.gz; do (
 		  if test ! -f ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz && test ! -f ../alignment/cultured/${i%_metagenome.fasta.gz}_haplotig.megablast.gz; then
-				awk '!/^$/' <(zcat $i 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
+				awk '!/^$/' <(zcat "$i" 2> /dev/null) | awk -F'\t' 'ORS=NR%2?"\t":"\n"' | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | gzip > ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz &&
 				wait
 				awk -F'\t' 'ORS=NR%2?"\t":"\n"' <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) | awk '{gsub(/-0/,""); gsub(/>/,"");}1' | \
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$2]=$0;next} ($2) in a{print $0, a[$2]}' - <(zcat ../alignment/${i%_metagenome.fasta.gz}_step1.txt.gz 2> /dev/null) | \
@@ -1966,7 +1966,7 @@ fi
 if [[ "$taxids" == true ]]; then
 	:> ${projdir}/metagenome/All.txids
 	for i in ${projdir}/taxids/*.txids; do
-		cat $i >> ${projdir}/metagenome/All.txids
+		cat "$i" >> ${projdir}/metagenome/All.txids
 	done
   sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv ${projdir}/metagenome/All.tmp ${projdir}/metagenome/All.txids
 	wait
@@ -2074,12 +2074,12 @@ fi
 cd "${projdir}"/metagenome/alignment
 if [[ "$(ls ./uncultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 	for i in *haplotig.megablast.gz; do
-		mv $i ./uncultured/uncultured_${i}
+		mv "$i" ./uncultured/uncultured_${i}
 	done
 fi
 if [[ "$(ls ./cultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 	for i in *haplotig.megablast.gz; do
-		mv $i ./cultured/${i}
+		mv "$i" ./cultured/${i}
 	done
 fi
 
@@ -2115,7 +2115,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1] {print $0}' <(zcat $i | awk '$6==100') <(zcat $i | awk '$6==100') | awk '$3 >= 32 {print $0}' | $gzip > ${i%.gz}strain.gz &&
+				next} $3 >= max[$1] {print $0}' <(zcat "$i" | awk '$6==100') <(zcat "$i" | awk '$6==100') | awk '$3 >= 32 {print $0}' | $gzip > ${i%.gz}strain.gz &&
 				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 				awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
@@ -2308,13 +2308,13 @@ if [[ "$strain_level" == "true" ]]; then
 		cd "${projdir}"/metagenome/alignment
 		mv ./uncultured/uncultured*megablast.gz ./ &&
 		mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-		for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+		for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 		wait
 		cd "${projdir}"
 		time strain_level 2>> ${projdir}/log.out
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+		for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 		wait
 		cd "${projdir}"/metagenome/results/ &&
 		for dirc in strain_level*; do mv $dirc uncultured_${dirc}; done
@@ -2352,7 +2352,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -2362,7 +2362,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-2 {print $0}' <(zcat $i | awk '$6>=98') <(zcat $i | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -2376,7 +2376,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_species_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_species_unique_reads.txt
 		$gzip ${i%_sighits*}_species_unique_reads.txt ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -2432,14 +2432,14 @@ else
 
 
   for i in *_dup.txt.gz;do
-		paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) | \
+		paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_dup.txt.gz}_species_taxa.txt) | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > ${i%_dup*}_species_duplicates.txt
 		$gzip ${i%_dup*}_species_duplicates.txt
   done
 	wait
 
 	for i in *_species_duplicates.txt.gz;do (
-		zcat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
+		zcat "$i" | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
 		$gzip ${i%*_species_duplicates.txt.gz}temp.txt
 		rm $i &&
 		mv ${i%*_species_duplicates.txt.gz}temp.txt.gz $i
@@ -2452,7 +2452,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_species_taxa.txt
 
   for i in *_species_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' <(zcat $i) > ${i%_species_duplicates*}_species_inter.txt ) &
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' <(zcat "$i") > ${i%_species_duplicates*}_species_inter.txt ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
 		fi
@@ -2519,7 +2519,7 @@ else
 
 
 	for i in *_unique_reads.txt.gz;do (
-	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_species_unique_reads*}_species_taxa.txt) | \
+	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' ${i%*_species_unique_reads*}_species_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > ${i%_species_uniq*}_species_unique_uncultured.txt ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -2527,8 +2527,8 @@ else
 	done
 	wait
 	for i in *_species_unique_uncultured.txt;do (
-		cat $i | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_unique_uncultured.txt}temp.txt 2> /dev/null
-		mv ${i%*_species_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		cat "$i" | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > "${i%*_species_unique_uncultured.txt}"temp.txt 2> /dev/null
+		mv "${i%*_species_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -2538,7 +2538,7 @@ else
 	rm *_uniq_inter.txt && rm *_species_taxa.txt 2> /dev/null
 
 	for i in *_species_unique_uncultured.txt;do (
-	   mv $i ${i%*_species_unique_uncultured*}_unique_sequences.txt 2> /dev/null ) &
+	   mv "$i" "${i%*_species_unique_uncultured*}"_unique_sequences.txt 2> /dev/null ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -2548,7 +2548,7 @@ else
 	rm *_species_unique_uncultured.txt *_species_inter.txt *_species_inter2.txt *_duplicate_count.txt *_multialign_species_reads.txt *_species_duplicates.txt.gz 2> /dev/null
 
 	for i in *_species_OTU.txt;do (
-	   cat $i ${i%_species_OTU*}_unique_sequences.txt > ${i%_species_OTU*}_complete_species_reads.txt ) &
+	   cat "$i" ${i%_species_OTU*}_unique_sequences.txt > ${i%_species_OTU*}_complete_species_reads.txt ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -2583,7 +2583,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_species
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -2633,7 +2633,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -2807,13 +2807,13 @@ if [[ "$species_level" == "true" ]]; then
 		cd "${projdir}"/metagenome/alignment/
 		mv ./uncultured/uncultured*megablast.gz ./ &&
 		mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-		for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+		for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 		wait
 		cd "${projdir}"
 		time species_level 2>> ${projdir}/log.out
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+		for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 		wait
 		mv ${projdir}/metagenome/results/species_level ${projdir}/metagenome/results/uncultured_species_level
 		mv ${projdir}/metagenome/sighits/sighits_species ${projdir}/metagenome/sighits/uncultured_sighits_species
@@ -2857,7 +2857,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-4 {print $0}' <(zcat $i | awk '$6>=97') <(zcat $i | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -2872,7 +2872,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR==1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_genus_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR==1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_genus_unique_reads.txt
 		$gzip ${i%_sighits*}_genus_unique_reads.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2931,7 +2931,7 @@ else
 
 
   for i in *_dup.txt.gz;do (
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt)  | \
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_dup.txt.gz}_genus_taxa.txt)  | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' OFS='\t' > ${i%_dup*}_genus_duplicates.txt
 		$gzip ${i%_dup*}_genus_duplicates.txt
 		) &
@@ -2942,7 +2942,7 @@ else
 	wait
 
 	for i in *_genus_duplicates.txt.gz;do (
-     awk -F'\t' '$11 != "NA"' OFS='\t' <( zcat $i) > ${i%*_genus_duplicates.txt.gz}temp.txt
+     awk -F'\t' '$11 != "NA"' OFS='\t' <( zcat "$i") > ${i%*_genus_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_genus_duplicates.txt.gz}temp.txt
  		 mv ${i%*_genus_duplicates.txt.gz}temp.txt.gz $i
  		) &
@@ -2954,7 +2954,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_genus_taxa.txt
 
   for i in *_genus_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16, $17}' OFS='\t' <(zcat $i) > ${i%_genus_duplicates*}_genus_inter.txt
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16, $17}' OFS='\t' <(zcat "$i") > ${i%_genus_duplicates*}_genus_inter.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3022,7 +3022,7 @@ else
 
 
 	for i in *_unique_reads.txt.gz;do (
-	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_genus_unique_reads*}_genus_taxa.txt) | \
+	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' ${i%*_genus_unique_reads*}_genus_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' OFS='\t'> ${i%_genus_uniq*}_genus_unique_uncultured.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3031,9 +3031,9 @@ else
 	done
 	wait
 	for i in *_genus_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_genus_unique_uncultured.txt}temp.txt 2> /dev/null &&
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_genus_unique_uncultured.txt}"temp.txt &&
 		:> $i &&
-		mv ${i%*_genus_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		mv "${i%*_genus_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3042,7 +3042,7 @@ else
 	wait
 	rm *_uniq_inter.txt && rm *_genus_taxa.txt 2> /dev/null
 	for i in *_genus_unique_uncultured.txt;do (
-	   mv $i ${i%*_genus_unique_uncultured*}_unique_sequences.txt 2> /dev/null
+	   mv "$i" ${i%*_genus_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3053,7 +3053,7 @@ else
 	rm *_genus_unique_uncultured.txt *_genus_inter.txt *_genus_inter2.txt *_duplicate_count.txt *_multialign_genus_reads.txt *_genus_duplicates.txt.gz 2> /dev/null
 
 	for i in *_genus_OTU.txt;do (
-	   cat $i ${i%_genus_OTU*}_unique_sequences.txt > ${i%_genus_OTU*}_complete_genus_reads.txt ) &
+	   cat "$i" ${i%_genus_OTU*}_unique_sequences.txt > ${i%_genus_OTU*}_complete_genus_reads.txt ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -3088,7 +3088,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_genus
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -3138,7 +3138,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -3314,13 +3314,13 @@ if [[ "$genus_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			cd "${projdir}"/metagenome/alignment/
 			mv ./uncultured/uncultured*megablast.gz ./ &&
 			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time genus_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 			wait
 			mv ${projdir}/metagenome/results/genus_level ${projdir}/metagenome/results/uncultured_genus_level
 			mv ${projdir}/metagenome/sighits/sighits_genus ${projdir}/metagenome/sighits/uncultured_sighits_genus
@@ -3355,7 +3355,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3365,7 +3365,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-6 {print $0}' <(zcat $i | awk '$6>=96') <(zcat $i | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -3380,7 +3380,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_family_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_family_unique_reads.txt
 		$gzip ${i%_sighits*}_family_unique_reads.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3436,7 +3436,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in *_dup.txt.gz;do (
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_dup.txt.gz}_family_taxa.txt) | \
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_dup.txt.gz}_family_taxa.txt) | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16}' OFS='\t' > ${i%_dup*}_family_duplicates.txt
 		$gzip ${i%_dup*}_family_duplicates.txt
 		) &
@@ -3446,7 +3446,7 @@ else
   done
 	wait
 	for i in *_family_duplicates.txt.gz;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_family_duplicates.txt.gz}temp.txt
+		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat "$i") > ${i%*_family_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_family_duplicates.txt.gz}temp.txt
  		mv ${i%*_family_duplicates.txt.gz}temp.txt.gz $i
 		) &
@@ -3459,7 +3459,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_family_taxa.txt
 
   for i in *_family_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16}' OFS='\t' <(zcat $i) > ${i%_family_duplicates*}_family_inter.txt
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16}' OFS='\t' <(zcat "$i") > ${i%_family_duplicates*}_family_inter.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3531,7 +3531,7 @@ else
 
 
   for i in *_unique_reads.txt.gz;do (
-     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_family_unique_reads*}_family_taxa.txt) | \
+     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' ${i%*_family_unique_reads*}_family_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16}' OFS='\t' > ${i%_family_uniq*}_family_unique_uncultured.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3540,9 +3540,9 @@ else
   done
 	wait
 	for i in *_family_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_family_unique_uncultured.txt}temp.txt 2> /dev/null
-		:> $i &&
-		mv ${i%*_family_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_family_unique_uncultured.txt}"temp.txt &&
+		:> "$i" &&
+		mv "${i%*_family_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -3551,7 +3551,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_family_taxa.txt 2> /dev/null
   for i in *_family_unique_uncultured.txt;do (
-     mv $i ${i%*_family_unique_uncultured*}_unique_sequences.txt 2> /dev/null
+     mv "$i" ${i%*_family_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3562,7 +3562,7 @@ else
   rm *_family_unique_uncultured.txt *_family_inter.txt *_family_inter2.txt *_duplicate_count.txt *_multialign_family_reads.txt *_family_duplicates.txt.gz 2> /dev/null
 
 	for i in *_family_OTU.txt;do (
-	   cat $i ${i%_family_OTU*}_unique_sequences.txt > ${i%_family_OTU*}_complete_family_reads.txt
+	   cat "$i" ${i%_family_OTU*}_unique_sequences.txt > ${i%_family_OTU*}_complete_family_reads.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -3598,7 +3598,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_family
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -3648,7 +3648,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -3824,13 +3824,13 @@ if [[ "$family_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 			cd "${projdir}"/metagenome/alignment/
 			mv ./uncultured/uncultured*megablast.gz ./ &&
 			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
-			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time family_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 			wait
 			mv ${projdir}/metagenome/results/family_level ${projdir}/metagenome/results/uncultured_family_level
 			mv ${projdir}/metagenome/sighits/sighits_family ${projdir}/metagenome/sighits/uncultured_sighits_family
@@ -3865,7 +3865,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3875,7 +3875,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-8 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -3890,7 +3890,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_order_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_order_unique_reads.txt
 		$gzip ${i%_sighits*}_order_unique_reads.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -3946,7 +3946,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in *_dup.txt.gz;do (
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_dup.txt.gz}_order_taxa.txt) | \
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_dup.txt.gz}_order_taxa.txt) | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' OFS='\t' > ${i%_dup*}_order_duplicates.txt
 		$gzip ${i%_dup*}_order_duplicates.txt
 		) &
@@ -3956,7 +3956,7 @@ else
   done
 	wait
 	for i in *_order_duplicates.txt.gz;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_order_duplicates.txt.gz}temp.txt
+		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat "$i") > ${i%*_order_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_order_duplicates.txt.gz}temp.txt
  		mv ${i%*_order_duplicates.txt.gz}temp.txt.gz $i
 		) &
@@ -3968,7 +3968,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_order_taxa.txt
 
   for i in *_order_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15}' OFS='\t' <(zcat $i) > ${i%_order_duplicates*}_order_inter.txt
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15}' OFS='\t' <(zcat "$i") > ${i%_order_duplicates*}_order_inter.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4039,7 +4039,7 @@ else
 
 
   for i in *_unique_reads.txt.gz;do (
-     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_order_unique_reads*}_order_taxa.txt) | \
+     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_order_unique_reads*}_order_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' OFS='\t' > ${i%_order_uniq*}_order_unique_uncultured.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4048,9 +4048,9 @@ else
   done
 	wait
 	for i in *_order_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_order_unique_uncultured.txt}temp.txt 2> /dev/null
- 		:> $i &&
-		mv ${i%*_order_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_order_unique_uncultured.txt}"temp.txt &&
+ 		:> "$i" &&
+		mv "${i%*_order_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4059,7 +4059,7 @@ else
 	wait
   rm *_uniq_inter.txt && rm *_order_taxa.txt 2> /dev/null
   for i in *_order_unique_uncultured.txt;do (
-     mv $i ${i%*_order_unique_uncultured*}_unique_sequences.txt 2> /dev/null
+     mv "$i" "${i%*_order_unique_uncultured*}"_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4070,7 +4070,7 @@ else
 	rm *_order_unique_uncultured.txt *_order_inter.txt *_order_inter2.txt *_duplicate_count.txt *_multialign_order_reads.txt *_order_duplicates.txt.gz 2> /dev/null
 
 	for i in *_order_OTU.txt;do (
-	   cat $i ${i%_order_OTU*}_unique_sequences.txt > ${i%_order_OTU*}_complete_order_reads.txt
+	   cat "$i" ${i%_order_OTU*}_unique_sequences.txt > ${i%_order_OTU*}_complete_order_reads.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4106,7 +4106,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_order
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -4156,7 +4156,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -4333,13 +4333,13 @@ if [[ "$order_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			mv ./uncultured/uncultured*megablast.gz ./ &&
 			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time order_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 			wait
 			mv ${projdir}/metagenome/results/order_level ${projdir}/metagenome/results/uncultured_order_level
 			mv ${projdir}/metagenome/sighits/sighits_order ${projdir}/metagenome/sighits/uncultured_sighits_order
@@ -4375,7 +4375,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -4385,7 +4385,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -4400,7 +4400,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_class_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_class_unique_reads.txt
 		$gzip ${i%_sighits*}_class_unique_reads.txt ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4456,7 +4456,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in *_dup.txt.gz;do (
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_dup.txt.gz}_class_taxa.txt) | \
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_dup.txt.gz}_class_taxa.txt) | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' OFS='\t' > ${i%_dup*}_class_duplicates.txt
 		$gzip ${i%_dup*}_class_duplicates.txt
 		) &
@@ -4466,7 +4466,7 @@ else
   done
 	wait
 	for i in *_class_duplicates.txt.gz;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_class_duplicates.txt.gz}temp.txt
+		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat "$i") > ${i%*_class_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_class_duplicates.txt.gz}temp.txt
  		mv ${i%*_class_duplicates.txt.gz}temp.txt.gz $i
 		) &
@@ -4478,7 +4478,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_class_taxa.txt
 
   for i in *_class_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14}' OFS='\t' <(zcat $i) > ${i%_class_duplicates*}_class_inter.txt
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14}' OFS='\t' <(zcat "$i") > ${i%_class_duplicates*}_class_inter.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4549,7 +4549,7 @@ else
 
 
   for i in *_unique_reads.txt.gz;do (
-     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat $i )) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_class_unique_reads*}_class_taxa.txt) | \
+     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_class_unique_reads*}_class_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' OFS='\t' > ${i%_class_uniq*}_class_unique_uncultured.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4558,9 +4558,9 @@ else
   done
 	wait
 	for i in *_class_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_class_unique_uncultured.txt}temp.txt 2> /dev/null
- 		:> $i &&
-		mv ${i%*_class_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_class_unique_uncultured.txt}"temp.txt &&
+ 		:> "$i" &&
+		mv "${i%*_class_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -4568,7 +4568,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_class_taxa.txt 2> /dev/null
   for i in *_class_unique_uncultured.txt;do (
-     mv $i ${i%*_class_unique_uncultured*}_unique_sequences.txt 2> /dev/null
+     mv "$i" "${i%*_class_unique_uncultured*}"_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4579,7 +4579,7 @@ else
   rm *_class_unique_uncultured.txt *_class_inter.txt *_class_inter2.txt *_duplicate_count.txt *_multialign_class_reads.txt *_class_duplicates.txt.gz 2> /dev/null
 
 	for i in *_class_OTU.txt;do (
-	   cat $i ${i%_class_OTU*}_unique_sequences.txt > ${i%_class_OTU*}_complete_class_reads.txt
+	   cat "$i" ${i%_class_OTU*}_unique_sequences.txt > ${i%_class_OTU*}_complete_class_reads.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -4615,7 +4615,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_class
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -4665,7 +4665,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -4842,13 +4842,13 @@ if [[ "$class_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/result
 			mv ./uncultured/uncultured*megablast.gz ./ &&
 			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time class_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 			wait
 			mv ${projdir}/metagenome/results/class_level ${projdir}/metagenome/results/uncultured_class_level
 			mv ${projdir}/metagenome/sighits/sighits_class ${projdir}/metagenome/sighits/uncultured_sighits_class
@@ -4882,7 +4882,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -4892,7 +4892,7 @@ else
 				wait
 			else
 				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-10 {print $0}' <(zcat $i | awk '$6>=95') <(zcat $i | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+				next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
@@ -4907,7 +4907,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	for i in *_sighits.txt.gz;do (
-		zcat $i | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_phylum_unique_reads.txt
+		zcat "$i" | awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' > ${i%_sighits*}_phylum_unique_reads.txt
 		$gzip ${i%_sighits*}_phylum_unique_reads.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -4963,7 +4963,7 @@ else
 	rm *_taxids_dup.txt
 
   for i in *_dup.txt.gz;do (
-    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat $i) ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_dup.txt.gz}_phylum_taxa.txt) | \
+    paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_dup.txt.gz}_phylum_taxa.txt) | \
 		awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > ${i%_dup*}_phylum_duplicates.txt
 		$gzip ${i%_dup*}_phylum_duplicates.txt
 		) &
@@ -4973,7 +4973,7 @@ else
   done
 	wait
 	for i in *_phylum_duplicates.txt.gz;do (
-		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat $i) > ${i%*_phylum_duplicates.txt.gz}temp.txt
+		 awk -F '\t' '$11 != "NA"' OFS='\t' <(zcat "$i") > ${i%*_phylum_duplicates.txt.gz}temp.txt
 		 $gzip ${i%*_phylum_duplicates.txt.gz}temp.txt
  		mv ${i%*_phylum_duplicates.txt.gz}temp.txt.gz $i
 		) &
@@ -4985,7 +4985,7 @@ else
   rm *_dup_inter.txt *_dup.txt.gz *_phylum_taxa.txt
 
   for i in *_phylum_duplicates.txt.gz;do (
-    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13}' OFS='\t' <(zcat $i) > ${i%_phylum_duplicates*}_phylum_inter.txt
+    awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13}' OFS='\t' <(zcat "$i") > ${i%_phylum_duplicates*}_phylum_inter.txt
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -5058,7 +5058,7 @@ else
 
 
   for i in *_unique_reads.txt.gz;do (
-     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat $i) ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_phylum_unique_reads*}_phylum_taxa.txt) | \
+     paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_phylum_unique_reads*}_phylum_taxa.txt) | \
 		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > ${i%_phylum_uniq*}_phylum_unique_uncultured.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -5067,9 +5067,9 @@ else
   done
 	wait
 	for i in *_phylum_unique_uncultured.txt;do (
-		awk -F '\t' '$11 != "NA"' OFS='\t' $i > ${i%*_phylum_unique_uncultured.txt}temp.txt 2> /dev/null
-		:> $i &&
-		mv ${i%*_phylum_unique_uncultured.txt}temp.txt $i 2> /dev/null
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_phylum_unique_uncultured.txt}"temp.txt &&
+		:> "$i" &&
+		mv "${i%*_phylum_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait
@@ -5077,7 +5077,7 @@ else
 	 done
   rm *_uniq_inter.txt && rm *_phylum_taxa.txt 2> /dev/null
   for i in *_phylum_unique_uncultured.txt;do (
-     mv $i ${i%*_phylum_unique_uncultured*}_unique_sequences.txt 2> /dev/null
+     mv "$i" ${i%*_phylum_unique_uncultured*}_unique_sequences.txt 2> /dev/null
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -5088,7 +5088,7 @@ else
 	rm *_phylum_unique_uncultured.txt *_phylum_inter.txt *_phylum_inter2.txt *_duplicate_count.txt *_multialign_phylum_reads.txt *_phylum_duplicates.txt.gz 2> /dev/null
 
 	for i in *_phylum_OTU.txt;do (
-	   cat $i ${i%_phylum_OTU*}_unique_sequences.txt > ${i%_phylum_OTU*}_complete_phylum_reads.txt
+	   cat "$i" ${i%_phylum_OTU*}_unique_sequences.txt > ${i%_phylum_OTU*}_complete_phylum_reads.txt
 		 ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
@@ -5124,7 +5124,7 @@ fi
 cd "${projdir}"/metagenome/sighits/sighits_phylum
 # remove diagnostic sequences within edit distance range
 for i in *_sighits.txt.gz;do (
-	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat $i) | gzip > ${i%_sighits*}_line.txt.gz
+	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -5174,7 +5174,7 @@ rm -rf edit_db edit_alignment splitccf
 zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat $i) | awk '{sub(/_line.*$/,"",$10)}1' | gzip > ${i%_sighits*}_edits.txt.gz
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
 	mv ${i%_sighits*}_edits.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
@@ -5356,13 +5356,13 @@ if [[ "$phylum_level" == "true" ]] && [[ -z "$(ls -A ${projdir}/metagenome/resul
 			mv ./uncultured/uncultured*megablast.gz ./ &&
 			mv ./uncultured_combined_compressed.megablast.gz ./uncultured/ &&
 			wait
-			for i in *megablast.gz; do mv $i ${i#uncultured_}; done
+			for i in *megablast.gz; do mv "$i" ${i#uncultured_}; done
 			wait
 			cd "${projdir}"
 			time phylum_level 2>> ${projdir}/log.out
 			wait
 			cd "${projdir}"/metagenome/alignment/
-			for i in *megablast.gz; do mv $i ./uncultured/uncultured_"${i}"; done
+			for i in *megablast.gz; do mv "$i" ./uncultured/uncultured_"${i}"; done
 			wait
 			mv ${projdir}/metagenome/results/phylum_level ${projdir}/metagenome/results/uncultured_phylum_level
 			mv ${projdir}/metagenome/sighits/sighits_phylum ${projdir}/metagenome/sighits/uncultured_sighits_phylum
@@ -6048,7 +6048,7 @@ annotate() {
 		for i in ./alignment/cultured/*haplotig.megablast.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 			awk 'NR>1{print $1}' $taxid_genes | sort -T "${projdir}"/tmp | uniq | grep -Fwf - \
-			<(zcat $i | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
+			<(zcat "$i" | awk -F'\t' '{print $9"\t"$7"\t"$1"\t"$2"\t"$10}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | awk '{gsub(/-/,"\t",$3);}1' | awk '{$3=""}1' |\
 			cat <(printf "tax_id\tsequence\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz
 			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
 			zcat ${i%*haplotig.megablast.gz}taxids_sequences_genes_geneID.txt.gz | awk '{print $1}' | sort -T "${projdir}"/tmp | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
@@ -6063,7 +6063,7 @@ annotate() {
 		for i in ./sighits/sighits_strain/*_sighits.txt.gz; do (
 			taxid_genes=$(ls ./results/strain_level_minUniq_*/strain_taxainfo_mean_normalized.txt | tail -n1)
 			awk 'NR>1{print $1}' $taxid_genes | sort -T "${projdir}"/tmp | uniq | grep -Fwf - \
-			<(zcat $i | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
+			<(zcat "$i" | awk -F'\t' '{print $8"\t"$6"\t"$10"\t"$1"\t"$2"\t"$9}') | awk -F'\t' '!seen[$1$4]++' | awk -F'\t' '!seen[$1$2]++' | \
 			cat <(printf "tax_id\tsequence\tseqid\tRelative_Abundance\tGenBank_ID\tgene_annotation\n") - | gzip > ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz
 			taxnamecol=$(head -n1 $taxid_genes | tr '\t' '\n' | cat -n | grep 'taxname' | awk '{print $1}')
 			zcat ${i%*_sighits.txt.gz}taxids_sequences_genes_geneID_Diagnostic.txt.gz | awk '{print $1}' | sort -T "${projdir}"/tmp | uniq -c | awk '{$1=$1};1' | awk '{gsub(/ /,"\t");}1' | \
