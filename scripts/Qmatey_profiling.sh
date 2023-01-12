@@ -127,8 +127,8 @@ fi
 if [[ -z $minRD ]]; then
 	export minRD=1
 fi
-if [[ -z $edit_distance ]]; then
-	export edit_distance=2
+if [[ -z $hamming_distance ]]; then
+	export hamming_distance=2
 fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1,2
@@ -1387,14 +1387,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] ; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 
 		wait
@@ -1460,8 +1460,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		fi
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1470,10 +1470,10 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1482,8 +1482,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1653,14 +1653,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -1738,14 +1738,14 @@ else
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 
 		wait
@@ -1810,8 +1810,8 @@ else
 		fi
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1820,10 +1820,10 @@ else
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1832,8 +1832,8 @@ else
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
 			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
 			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
@@ -1900,18 +1900,18 @@ else
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 				mkdir rRNA
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 	fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture\|unidentified\|unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi '^uncultured\|^unculture\|^unidentified\|^unclassified' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -2581,7 +2581,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_species
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -2592,11 +2592,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -2604,12 +2604,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -2629,12 +2629,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -3086,7 +3086,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_genus
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -3097,11 +3097,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -3109,12 +3109,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -3134,12 +3134,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -3596,7 +3596,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_family
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -3607,11 +3607,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -3619,12 +3619,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -3644,12 +3644,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -4104,7 +4104,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_order
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -4115,11 +4115,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -4127,12 +4127,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -4152,12 +4152,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -4613,7 +4613,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_class
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -4624,11 +4624,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -4636,12 +4636,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -4661,12 +4661,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi
@@ -5122,7 +5122,7 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_phylum
-# remove diagnostic sequences within edit distance range
+# remove diagnostic sequences within hamming distance range
 for i in *_sighits.txt.gz;do (
 	awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 	mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -5133,11 +5133,11 @@ done
 wait
 cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
 rpm=$((reads_per_megablast * 2))
-mkdir edit_db
-mkdir edit_alignment
-cd edit_db
+mkdir hamming_db
+mkdir hamming_alignment
+cd hamming_db
 zcat ../combined.sighits.fasta.gz | \
-~/tools/Qmatey/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out edit_nt -title compute_edit_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
 cd ../
 mkdir splitccf; cd splitccf
 cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
@@ -5145,12 +5145,12 @@ awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fas
 wait $PIDsplit1
 rm combined.sighits.fasta.gz
 for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-	mv $ccf ../edit_alignment/$ccf
-	cd ../edit_alignment
+	mv $ccf ../hamming_alignment/$ccf
+	cd ../hamming_alignment
 	awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 	wait $PIDsplit2
 	for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../edit_db/edit_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+		${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
 		-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 		wait
 		gzip "${sub}_out.blast" &&
@@ -5170,12 +5170,12 @@ for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 	cd ../splitccf/
 done
 cd ../
-rm -rf edit_db edit_alignment splitccf
-zcat combined_sighits_mismatch.txt.gz | awk -v edist="$edit_distance" '$2 >= 1 && $2 <= edist' | awk '{print $1}' > combined_sighits_mismatch.txt
+rm -rf hamming_db hamming_alignment splitccf
+zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
 rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
 for i in *_sighits.txt.gz;do (
-	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_edits.txt.gz
-	mv ${i%_sighits*}_edits.txt.gz $i ) &
+	awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+	mv ${i%_sighits*}_hamming.txt.gz $i ) &
 	if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 		wait
 	fi

@@ -201,7 +201,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |taxids|na|files mapping fasta sequences to taxid(s)|true or false|Optional|
 |input_dbfasta|na|provide fasta file if custom database|string|Optional|
 |map_taxids|na|provide files mapping fasta sequences to taxid(s) if custom database|string|Optional|
-|edit_distance|3|edit distance threshold between orthologs of diagostic sequences|string|required|
+|hamming_distance|2|hamming distance threshold between orthologs of diagostic sequences|string|required|
 
 
 **Taxonomic_Profiling_and_Filtering**
@@ -275,7 +275,7 @@ local_db=/media/sdd/ncbi_db/refseq/refseq_rna,/media/sdd/ncbi_db/refseq/ref_viro
 taxids=true
 input_dbfasta=NA
 map_taxids=NA
-edit_distance=3
+hamming_distance=2
 
 
 ### Taxonomic_Profiling_and_Filtering
