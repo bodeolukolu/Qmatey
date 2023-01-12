@@ -8,7 +8,7 @@ library(ggplot2, quietly = T)
 library(reshape2, quietly = T)
 
 #########################################################
-# Visualization (sensitivity, false positive, and false negative) before cross-taxon validation
+# Visualization (sensitivity, false positive, and false negative) before cross-rank validation
 #########################################################
 phylum <- read.delim(file="./phylum_level/phylum_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 class <- read.delim(file="./class_level/class_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -63,24 +63,24 @@ for (i in c(1,3,5,7,9,11)){
 colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","FDR","false_negative","sensitivity")
 
 
-ctv$Cross_taxon_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
-ctv$Cross_taxon_comparison <- factor(as.character(ctv$Cross_taxon_comparison), levels=unique(ctv$Cross_taxon_comparison))
-write.table(ctv,"cross_taxon_comparison_unvalidated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
-ctv <- subset(ctv, select=c(Cross_taxon_comparison,FDR,sensitivity))
-ctv <- melt(ctv, id="Cross_taxon_comparison")
+ctv$Cross_rank_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
+ctv$Cross_rank_comparison <- factor(as.character(ctv$Cross_rank_comparison), levels=unique(ctv$Cross_rank_comparison))
+write.table(ctv,"cross_rank_comparison_unvalidated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
+ctv <- subset(ctv, select=c(Cross_rank_comparison,FDR,sensitivity))
+ctv <- melt(ctv, id="Cross_rank_comparison")
 ctv$value <- as.numeric(ctv$value)
 
-plot <- ggplot(ctv,aes(x=Cross_taxon_comparison,y=value,group=variable,color=variable))+
+plot <- ggplot(ctv,aes(x=Cross_rank_comparison,y=value,group=variable,color=variable))+
   geom_line(size=1.5)+ylim(0,1)+
-  geom_point()+xlab("Cross Taxon Comparison (unvalidated)")+
+  geom_point()+xlab("Cross Rank Comparison (unvalidated)")+
   ylab("Value")+ theme_bw() + theme(legend.position="bottom") + 
   theme(text = element_text(size = 20),axis.text.x = element_text(angle=30,size=18.5,hjust = 1)) + labs(color='Metric') +
   theme(plot.margin = margin(2,2,2,2, "cm"))
-ggsave(file="cross_taxon_comparison_unvalidated.tiff", plot=plot, width=12, height=6, units=("in"), dpi=300, compression = "lzw")
+ggsave(file="cross_rank_comparison_unvalidated.tiff", plot=plot, width=12, height=6, units=("in"), dpi=300, compression = "lzw")
 
 
 #########################################################
-# Visualization (sensitivity, false positive, and false negative) after cross-taxon validation
+# Visualization (sensitivity, false positive, and false negative) after cross-rank validation
 #########################################################
 phylum <- read.delim(file="./phylum_level/phylum_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
 class <- read.delim(file="./class_level_validated/class_taxainfo_unique_sequences.txt", header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -135,18 +135,18 @@ for (i in c(1,3,5,7,9,11)){
 colnames(ctv) <- c("ref","ref_len","subject","subject_len","overlap","ref_uniq","subjec_uniq","FDR","false_negative","sensitivity")
 
 
-ctv$Cross_taxon_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
-ctv$Cross_taxon_comparison <- factor(as.character(ctv$Cross_taxon_comparison), levels=unique(ctv$Cross_taxon_comparison))
-write.table(ctv,"cross_taxon_comparison_validated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
-ctv <- subset(ctv, select=c(Cross_taxon_comparison,FDR,sensitivity))
-ctv <- melt(ctv, id="Cross_taxon_comparison")
+ctv$Cross_rank_comparison <- paste(ctv$subject,"_vs._",ctv$ref,"_(ref)",sep="") 
+ctv$Cross_rank_comparison <- factor(as.character(ctv$Cross_rank_comparison), levels=unique(ctv$Cross_rank_comparison))
+write.table(ctv,"cross_rank_comparison_validated.txt", sep="\t",row.names=FALSE, col.names=T, quote = F)
+ctv <- subset(ctv, select=c(Cross_rank_comparison,FDR,sensitivity))
+ctv <- melt(ctv, id="Cross_rank_comparison")
 ctv$value <- as.numeric(ctv$value)
 
-plot <- ggplot(ctv,aes(x=Cross_taxon_comparison,y=value,group=variable,color=variable))+
+plot <- ggplot(ctv,aes(x=Cross_rank_comparison,y=value,group=variable,color=variable))+
   geom_line(size=1.5)+ylim(0,1)+
-  geom_point()+xlab("Cross Taxon Comparison (validated)")+
+  geom_point()+xlab("Cross Rank Comparison (validated)")+
   ylab("Value")+ theme_bw() + theme(legend.position="bottom") + 
   theme(text = element_text(size = 20),axis.text.x = element_text(angle=30,size=18.5,hjust = 1)) + labs(color='Metric') +
   theme(plot.margin = margin(2,2,2,2, "cm"))
-ggsave(file="cross_taxon_comparison_validated.tiff", plot=plot, width=12, height=6, units=("in"), dpi=300, compression = "lzw")
+ggsave(file="cross_rank_comparison_validated.tiff", plot=plot, width=12, height=6, units=("in"), dpi=300, compression = "lzw")
 
