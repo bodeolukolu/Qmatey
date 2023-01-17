@@ -772,11 +772,11 @@ else
 					rm ${i%.f*}.tmp1A.txt &&
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($2!~RE2a || $2!~RE2b || $2!~RE2c || $2!~RE2d) {print $0}' <(zcat "$i") | \
+					'($1~RE1a || $1~RE1b || $1~RE1c || $1~RE1d) && ($1!~RE2a || $1!~RE2b || $1!~RE2c || $1!~RE2d) {print $0}' <(zcat "$i") | \
 					awk '{gsub(/\t/,"\n");}1' > ${i%.f*}.tmp2A.txt &&
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'($1!~RE1a || $1!~RE1b || $1!~RE1c || $1!~RE1d) && ($2~RE2a || $2~RE2b || $2~RE2c || $2~RE2d) {print $0}' <(zcat "$i") | \
-					awk '{gsub(/\t/,"\n");}1' > ${i%.f*}.tmp2A.txt &&
+					'($1!~RE1a || $1!~RE1b || $1!~RE1c || $1!~RE1d) && ($1~RE2a || $1~RE2b || $1~RE2c || $1~RE2d) {print $0}' <(zcat "$i") | \
+					awk '{gsub(/\t/,"\n");}1' >> ${i%.f*}.tmp2A.txt &&
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(/RE1a/,"RE1a\nRE1a"); gsub(/RE1b/,"RE1b\nRE1b"); gsub(/RE1c/,"RE1c\nRE1c"); gsub(/RE1d/,"RE1d\nRE1d"); \
 					gsub(/RE2a/,"RE2a\nRE2a"); gsub(/RE2b/,"RE2b\nRE2b"); gsub(/RE2c/,"RE2c\nRE2c"); gsub(/RE2d/,"RE2d\nRE2d"); }1' ${i%.f*}.tmp2A.txt | \
