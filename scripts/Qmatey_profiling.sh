@@ -2582,7 +2582,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_species
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -3089,7 +3089,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_genus
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -3601,7 +3601,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_family
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -4111,7 +4111,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_order
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -4622,7 +4622,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_class
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
@@ -5133,7 +5133,7 @@ fi
 
 cd "${projdir}"/metagenome/sighits/sighits_phylum
 # remove diagnostic sequences within hamming distance range
-if [[ "$hamming_distance" -gt 0 ]]; thhen
+if [[ "$hamming_distance" -gt 0 ]]; then
 	for i in *_sighits.txt.gz;do (
 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
 		mv ${i%_sighits*}_line.txt.gz $i ) &
