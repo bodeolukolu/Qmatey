@@ -349,8 +349,8 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | \
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
 			awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-			'{gsub(/RE1a/,RE1a"\n"RE1a); gsub(/RE1b/,RE1b"\n"RE1b); gsub(/RE1c/,RE1c"\n"RE1c); gsub(/RE1d/,RE1d"\n"RE1d); \
-			gsub(/RE2a/,RE2a"\n"RE2a); gsub(/RE2b/,RE2b"\n"RE2b); gsub(/RE2c/,RE2c"\n"RE2c); gsub(/RE2d/,RE2d"\n"RE2d); }1' > "${unsim}".tmp1.txt
+			'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
+			gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' > "${unsim}".tmp1.txt
 			grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${i%.f*}.tmp1.txt > ${i%.f*}.tmp.txt &&
 			grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}.tmp1.txt >> ${i%.f*}.tmp.txt &&
 			grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${i%.f*}.tmp1.txt >> ${i%.f*}.tmp.txt &&
@@ -575,7 +575,7 @@ else
 					if [[ "$i" == *.R1* ]]; then
 						cat ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null > ../${i/.R1/} && rm ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null
 					elif [[ "$i" == *_R1* ]]; then
-						cat ${i%_R1*}* ../se/${i%_R1*}* 2> /dev/null > ../${i/_R1/} && rm ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null
+						cat ${i%_R1*}* ../se/${i%_R1*}* 2> /dev/null > ../${i/_R1/} && rm ${i%_R1*}* ../se/${i%_R1*}* 2> /dev/null
 					else
 						cat ${i%.f*}* ../se/${i%.f*}* 2> /dev/null > ../${i} && rm ${i%.f*}* ../se/${i%.f*}* 2> /dev/null
 					fi
@@ -765,8 +765,8 @@ else
 					fi
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
-					'{gsub(/RE1a/,RE1a"\n"RE1a); gsub(/RE1b/,RE1b"\n"RE1b); gsub(/RE1c/,RE1c"\n"RE1c); gsub(/RE1d/,RE1d"\n"RE1d); \
-					gsub(/RE2a/,RE2a"\nRE"2a"); gsub(/RE2b/,RE2b"\n"RE2b); gsub(/RE2c/,RE2c"\n"RE2c); gsub(/RE2d/,RE2d"\n"RE2d); }1' <(zcat "$i") | \
+					'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
+					gsub(RE2a,RE2a"\nRE"2a"); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
 					awk -v min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}_chopped.txt
 
 					grep "^$RE1a.*$RE1a\|^$RE1b.*$RE1b\|^$RE1c.*$RE1c\|^$RE1d.*$RE1d\|^$RE2a.*$RE2a\|^$RE2b.*$RE2b\|^$RE2c.*$RE2c\|^$RE2d.*$RE2d" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
