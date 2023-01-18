@@ -208,7 +208,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |Variable      |Default       |Usage         |Input         |required/Optional|
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |taxonomic_level|na|strain,species,genus,family,order,class,phylum|string|Optional|
-|minRD|2|to eliminate reads with base call errors, removes unique sequences with read depth < value|integer|Optional|
+|minRD|1|to eliminate reads with base call errors, removes unique sequences with read depth < value|integer|Optional|
 |min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
 |min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
 |max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
@@ -281,7 +281,7 @@ hamming_distance=2
 ### Taxonomic_Profiling_and_Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
-minRD=2
+minRD=1
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3

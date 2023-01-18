@@ -37,7 +37,7 @@ hamming_distance=2
 
 # Taxonomic_Profiling_and_Filtering
 ####################################################
-minRD=2
+minRD=1
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
