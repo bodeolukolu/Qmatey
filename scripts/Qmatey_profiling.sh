@@ -782,7 +782,7 @@ else
 
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat "$i" | awk -v min="$shotgun_min_fragment_length" 'length >= min' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					zcat "$i" | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
 					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
@@ -793,43 +793,45 @@ else
 		wait
 
 		# perform reads flushing
-		for i in *.f*; do (
-			if [[ "$i" == *"_compressed.f"* ]]; then
-				:
-			else
-				zcat "$i" | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-			fi
-			) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
-			fi
-		done
-		wait
+		if [[ "$subsample_shotgun_R1" != false ]]; then
+			for i in *.f*; do (
+				if [[ "$i" == *"_compressed.f"* ]]; then
+					:
+				else
+					zcat "$i" | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
+				fi
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
 
-		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
-		wait
-		awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
-		mv tmp.txt length_distribution.txt
-		rm tmp.txt
-		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
-		rm length_distribution.txt
+			for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
+			wait
+			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
+			mv tmp.txt length_distribution.txt
+			rm tmp.txt
+			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
+			rm length_distribution.txt
 
 
-		for i in *.f*; do (
-			frag=${i%.f*}
-			if [[ "$i" == *"_compressed.f"* ]]; then
-				:
-			else
-				zcat "$i" | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
-				gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
-				wait
-			fi
-			) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
-			fi
-		done
-		wait
+			for i in *.f*; do (
+				frag=${i%.f*}
+				if [[ "$i" == *"_compressed.f"* ]]; then
+					:
+				else
+					zcat "$i" | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
+					wait
+				fi
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
+		fi
 	fi
 	rm *fastq.gz 2> /dev/null
 	find . -type d -empty -delete
