@@ -1020,7 +1020,7 @@ ref_norm () {
 				$samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)" | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_host_coverage.txt && \
 				cat ${i%.bam}_host_coverage.txt >> host_coverage.txt && \
 				rm ${i%.bam}_host_coverage.txt  && \
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_microbiome_coverage.txt && \
+				$samtools view -f 4 $i | awk '{print $1}' | awk -v sample=${i%.bam} -F '-' '{s+=$2}END{print sample"\t"s}' > ${i%.bam}_microbiome_coverage.txt && \
 				cat ${i%.bam}_microbiome_coverage.txt >> microbiome_coverage.txt && \
 				rm ${i%.bam}_microbiome_coverage.txt
 			done
@@ -1054,7 +1054,8 @@ ref_norm () {
 
 			cd "${projdir}"/metagenome/
 			for i in *.bam; do (
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print ">"$1"\t"$10}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff  - <(zcat ${i%.bam}_compressed.fasta.gz --no-group-separator) | \
+				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 	      wait
@@ -1066,7 +1067,7 @@ ref_norm () {
 			#sample read depth is used to normalize quantification data
 			echo -e "${YELLOW}- calculating a normalization factor"
 			for i in *_compressed.fasta.gz; do
-				zcat "$i" 2> /dev/null | grep '^>' | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
+				zcat "$i" 2> /dev/null | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
 				cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
 				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
 			done
@@ -1094,8 +1095,9 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
 			for i in *.bam; do (
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
-				awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff  - <(zcat ${i%.bam}_compressed.fasta.gz --no-group-separator) | \
+				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1109,7 +1111,7 @@ ref_norm () {
 			cd "${projdir}"/samples
 			echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 			for i in *_compressed.fasta.gz; do (
-				normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) && \
+				normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) &&
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat "$i" 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1167,7 +1169,7 @@ no_norm () {
 	else
 		cd "${projdir}"/samples
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
-		#Increased the spead of reference genome alignment -- especially if read depth is high
+		#Increases the spead of reference genome alignment -- especially if read depth is high
 		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
 				:
@@ -1214,8 +1216,9 @@ no_norm () {
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
 		for i in *.bam; do (
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
-				$samtools view -f 4 $i | cat - <($samtools view -F 4 $i | grep -vwE "(@HD|@SQ|@PG)") | awk '{print $1"\t"$10}' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | \
-				awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff  - <(zcat ${i%.bam}_compressed.fasta.gz --no-group-separator) | \
+				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
