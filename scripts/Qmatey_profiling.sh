@@ -1097,7 +1097,7 @@ ref_norm () {
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
 				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz) --no-group-separator | \
 				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1112,7 +1112,7 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads & compute relative read depth ${WHITE}"
 			for i in *_compressed.fasta.gz; do (
 				normfactor=$( awk -v sample=${i%_compressed.fasta.gz} '$1 == sample' ${projdir}/metagenome/coverage_normalization_factor.txt | awk '{print $2}' ) &&
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' <(zcat "$i" 2> /dev/null) | awk -v norm=$normfactor '{print $1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' <(zcat "$i" 2> /dev/null) | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ${projdir}/metagenome/haplotig/${i%_compressed.fasta.gz}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1218,7 +1218,7 @@ no_norm () {
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
 				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz) --no-group-separator | \
 				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
