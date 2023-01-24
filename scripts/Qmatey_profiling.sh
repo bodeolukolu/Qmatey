@@ -1054,7 +1054,7 @@ ref_norm () {
 
 			cd "${projdir}"/metagenome/
 			for i in *.bam; do (
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff --no-group-separator - <(zcat ${i%.bam}_compressed.fasta.gz) | \
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ${i%.bam}_compressed.fasta.gz) --no-group-separator | \
 				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1095,7 +1095,7 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
 			for i in *.bam; do (
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff --no-group-separator - <(zcat ${i%.bam}_compressed.fasta.gz) | \
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ${i%.bam}_compressed.fasta.gz) --no-group-separator | \
 				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 				) &
@@ -1216,7 +1216,7 @@ no_norm () {
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
 		for i in *.bam; do (
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 2 -Ff --no-group-separator - <(zcat ${i%.bam}_compressed.fasta.gz) | \
+				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ${i%.bam}_compressed.fasta.gz) --no-group-separator | \
 				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			fi
