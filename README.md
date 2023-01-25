@@ -152,7 +152,7 @@ To make generate a custom list of taxids.list, use the NCBI entrez-direct and BL
 
 
 ### Create custom database
-Provide fasta and map_taxids files. Qmatey will use NCBI BLAST tool, makeblastdb, and these files to create the custom database. Example files are provided with the Qmatey download (examples) folder)
+Provide fasta and map_taxids files. Qmatey will use NCBI BLAST tool, makeblastdb, and these files to create the custom database. Example files are provided with the Qmatey download (examples) folder.
 
 
 ### Overview of workflow
