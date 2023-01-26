@@ -5,7 +5,7 @@ taxalevel <- (args[1])
 libdir <- args[2]
 strain_min_uniq_thresh <- as.numeric(args[3])
 zero_inflated <- as.numeric(args[4])
-wgs <- as.numeric(args[5])
+wgs <- (args[5])
 .libPaths( c( .libPaths(), libdir) )
 library(dplyr, quietly = T)
 
