@@ -372,7 +372,6 @@ simulate_reads () {
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
-					rm hold2_${unsim%.gz} &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
@@ -401,8 +400,7 @@ simulate_reads () {
 				cutpos=$(shuf -i 500000-1500000 -n1)
 				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
-					rm hold2_${unsim%.gz}
-					rsync -aAx hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					rm hold2_${unsim%.gz}.tmp
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
@@ -439,8 +437,7 @@ simulate_reads () {
 				$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz > ../${mockfile%.fasta}.sam &&
 				# keep only reads that are perfectly aligned and without hard/soft clipping
 				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
-				:> ../${mockfile%.fasta}.sam
-				rsync -aAx ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
+				mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
 				rm ../${mockfile%.fasta}.sam.tmp
 				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
 				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
