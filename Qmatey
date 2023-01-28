@@ -358,6 +358,9 @@ if [[ "${db}" == "${db% *}" ]] && [[ ! -z ${db} ]]; then
       :
     else
       printf "\n"
+      echo -e "${white}- update of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
+      sleep 60
+      wait
       echo -e "${white}- updating your NCBI "${input_db/*\/}" database ${white}"
       update_database &>> ./db_download.log
     fi
@@ -369,6 +372,9 @@ if [[ "${db}" == "${db% *}" ]] && [[ ! -z ${db} ]]; then
       :
     else
       printf "\n"
+      echo -e "${white}- download of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
+      sleep 60
+      wait
       echo -e "${white}- downloading NCBI "${input_db/*\/}" database in user-defined directory ${white}"
       setup_database &>> ./db_download.log
     fi
@@ -395,6 +401,9 @@ else
     else
       for i in "${arr[@]}"; do
         input_db=${i%/*}
+        echo -e "${white}- update of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
+        sleep 60
+        wait
         echo -e "${white}- updating your NCBI "${input_db/*\/}" database ${white}"
         update_database &>> ./db_download.log
       done
@@ -409,6 +418,9 @@ else
       printf "\n"
       for i in "${arr[@]}"; do
         input_db=${i%/*}
+        echo -e "${white}- download of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
+        sleep 60 
+        wait
         echo -e "${white}- downloading NCBI "${input_db/*\/}" database in user-defined directory ${white}"
         setup_database &>> ./db_download.log
       done
