@@ -356,7 +356,6 @@ simulate_reads () {
 			grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
 			grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
 			grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
-			rm ${unsim} &&
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm ${unsim}.tmp1.txt &&
@@ -401,7 +400,6 @@ simulate_reads () {
 				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
-					rm hold2_${unsim%.gz}.tmp
 					cutpos=$((cutpos / 2)) &&
 					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
 				done
@@ -438,7 +436,6 @@ simulate_reads () {
 				# keep only reads that are perfectly aligned and without hard/soft clipping
 				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
 				mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
-				rm ../${mockfile%.fasta}.sam.tmp
 				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
 				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
 				wait
