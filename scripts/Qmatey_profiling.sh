@@ -356,10 +356,10 @@ simulate_reads () {
 			grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
 			grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
 			grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
+			rm ${unsim} &&
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
-			rm ${unsim}.tmp1.txt &&
-			rm ${unsim}.tmp.txt &&
+			find . -name *.tmp*.txt -type f -delete 2> /dev/null &&
 			wait
 		fi
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
