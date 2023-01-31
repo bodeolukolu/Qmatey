@@ -52,10 +52,10 @@ fi
 
 
 cd "${projdir}"
-if [[ -z "$subsample_shotgun_R1" ]] || [[ "$subsample_shotgun_R1" == "true"]]; then
+if [[ -z "$subsample_shotgun_R1" ]] || [[ "$subsample_shotgun_R1" == "true" ]]; then
 	subsample_shotgun_R1=ATGCAT
 fi
-if [[ -z "$subsample_shotgun_R2" ]] || [[ "$subsample_shotgun_R2" == "true"]]; then
+if [[ -z "$subsample_shotgun_R2" ]] || [[ "$subsample_shotgun_R2" == "true" ]]; then
 	subsample_shotgun_R2=CATG
 fi
 
