@@ -52,10 +52,10 @@ fi
 
 
 cd "${projdir}"
-if [[ -z "$subsample_shotgun_R1" ]]; then
+if [[ -z "$subsample_shotgun_R1" ]] || [[ "$subsample_shotgun_R1" == "true"]]; then
 	subsample_shotgun_R1=ATGCAT
 fi
-if [[ -z "$subsample_shotgun_R2" ]]; then
+if [[ -z "$subsample_shotgun_R2" ]] || [[ "$subsample_shotgun_R2" == "true"]]; then
 	subsample_shotgun_R2=CATG
 fi
 
@@ -137,7 +137,7 @@ if [[ -z $maxindel ]]; then
 	export maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	export max_target=1000000
+	export max_target=10000
 fi
 if [[ -z "$cross_taxon_validation" ]]; then
 	export cross_taxon_validation=true
@@ -359,9 +359,11 @@ simulate_reads () {
 			rm ${unsim} &&
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
-			find . -name *.tmp*.txt -type f -delete 2> /dev/null &&
+			rm -rf "*tmp*" 2> /dev/null &&
 			wait
 		fi
+		rm -rf "*tmp*" 2> /dev/null &&
+
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > ./hold1_"${unsim}" &&
@@ -390,6 +392,7 @@ simulate_reads () {
 			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
 		fi
+
 		if [[ "$simulation_lib" =~ "shotgun" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
@@ -409,6 +412,7 @@ simulate_reads () {
 			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
 		fi
+
 	done
 	for unsim in *.fasta.gz; do
 		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$max_read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
@@ -420,49 +424,46 @@ simulate_reads () {
 
 	cd "${projdir}"/simulate_genomes/
 	for simdir in */ ; do
-		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
-			mkdir -p refgenome
-			cd "$simdir"
-			echo -e "Taxa\tGenome_size\tsequenced\tPerc_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
-			while IFS="" read -r p || [ -n "$p" ]; do
-				mockfile=$(echo $p | awk '{print $2}') &&
-				mockfile=${mockfile}.fasta
-				cp "$mockfile" ../refgenome &&
-				cd ../refgenome &&
-				$bwa index -a bwtsw "$mockfile" &&
-				$samtools faidx "$mockfile" &&
-				$java -jar $picard CreateSequenceDictionary REFERENCE=$mockfile    OUTPUT=${mockfile%.fasta}.dict &&
-				$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz > ../${mockfile%.fasta}.sam &&
-				# keep only reads that are perfectly aligned and without hard/soft clipping
-				grep -v '^@' ../${mockfile%.fasta}.sam | grep 'NM:i:0' | awk '$6 !~ /H|S/{print $0}' | cat <(grep '^@' ../${mockfile%.fasta}.sam) - > ../${mockfile%.fasta}.sam.tmp &&
-				mv ../${mockfile%.fasta}.sam.tmp ../${mockfile%.fasta}.sam &&
-				grep -v '@' ../${mockfile%.fasta}.sam | awk -v taxname="${mockfile%.fasta}" '{print taxname"\t"$1}' | awk -F"\t" '{gsub(/_fraglength/,"\t");}1' | \
-				awk -F"\t" '{print $1"\t"$3}' >> ../"${simdir%/*}"_fragment_length.txt
-				wait
-				Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
-				Sequenced_fetch=$(grep -v '^@' ../${mockfile%.fasta}.sam | awk '{print $10}' | awk '{!seen[$0]++}END{for (i in seen) print seen[i]}' | wc -c) &&
-				Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch" | awk '{gsub(/^./,"0.");}1') &&
-				printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-				wait
-				rm -rf ./refgenome/* 2> /dev/null
-				rm ../${mockfile%.fasta}.sam 2> /dev/null
-				cd ../$simdir
-			done < abundance.txt
-			awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
-			:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-			mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
-			cd ../
+		mkdir -p refgenome
+		cd "$simdir"
+		echo -e "Taxa\tGenome_size_(bp)\tSequenced_(bp)\tPercent_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		while IFS="" read -r p || [ -n "$p" ]; do
+			mockfile=$(echo $p | awk '{print $2}') &&
+			mockfile=${mockfile}.fasta &&
+			cp "$mockfile" ../refgenome &&
+			cd ../refgenome &&
+			$bwa index -a bwtsw "$mockfile" &&
+			$samtools faidx "$mockfile" &&
+			$java -jar $picard CreateSequenceDictionary REFERENCE=$mockfile    OUTPUT=${mockfile%.fasta}.dict &&
+			$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz | $samtools view -bS - > ../${mockfile%.fasta}.bam &&
+			Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
+			Sequenced_fetch=$($samtools flagstat ../${mockfile%.fasta}.bam | grep '+ 0 mapped' | awk '{print $1}') &&
+			Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch") &&
+			printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^./,"0.",$4);}1' | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^0./,"0",$4);}1' >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+			rm -rf ./refgenome/* &&
+			rm ../${mockfile%.fasta}.bam 2> /dev/null &&
+			cd ../$simdir
 			wait
-		fi
+		done < abundance.txt
+		wait
+		rm -rf "${projdir}"/simulate_genomes/refgenome
+		awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
+		:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+		mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+		cd ../
 	done
-	rm -rf "${projdir}"/simulate_genomes/refgenome 2> /dev/null
 }
 cd "${projdir}"
-if [ "$simulate_reads" == 1 ]; then
-	echo -e "${magenta}- generating sequence reads for simulated metagenome profiling of synthetic/mock community ${white}\n"
-	time simulate_reads &>> log.out
+if [[ "$simulate_reads" == 1 ]]; then
+	if [[ -d samples ]]; then
+		echo -e "${magenta}- samples directory/folder exists. Delete samples directory/folder before running simulation ${white}\n"
+		echo -e "${magenta}- Qmatey will quit in 10 seconds ${white}\n"
+		sleep 10 && exit 1
+	else
+		echo -e "${magenta}- generating sequence reads for simulated metagenome profiling of synthetic/mock community ${white}\n"
+		time simulate_reads &>> log.out
+	fi
 fi
-
 
 
 #################################################################################################################
@@ -2246,7 +2247,7 @@ cp -r strain_level strain_level_hold
 for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	cd ./strain_level
 	if [[ "$genome_scaling" == true ]]; then
-		if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+		if [[ "$subsample_shotgun_R1" == false ]]; then
 			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 		else
 			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -2758,7 +2759,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -3266,7 +3267,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -3778,7 +3779,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -4288,7 +4289,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -4799,7 +4800,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
@@ -5310,7 +5311,7 @@ wait
 
 
 if [[ "$genome_scaling" == true ]]; then
-	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	if [[ "$subsample_shotgun_R1" == false ]]; then
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
 	else
 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null

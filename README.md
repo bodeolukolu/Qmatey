@@ -169,8 +169,8 @@ Using a text editor, save a file containing any of the following variables as 'c
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
-|subsample_shotgun_R1|ATGCAT|subsample reads based on: (i) REnase site motif(s) or (ii) false|string|Optional|
-|subsample_shotgun_R2|CATG|subsample reads based on: (i) REnase site motif(s) or (ii) false|string|Optional|
+|subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false|string|Optional|
+|subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false|string|Optional|
 |shotgun_min_read_length|50|minimum read length after subsampling|string|Optional|
 
 **Simulation parameters**
@@ -247,8 +247,8 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
-subsample_shotgun_R1=ATGCAT
-subsample_shotgun_R2=CATG
+subsample_shotgun_R1=true
+subsample_shotgun_R2=true
 shotgun_min_read_length=50
 
 # simulation_parameters

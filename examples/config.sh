@@ -5,8 +5,8 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
-subsample_shotgun_R1=ATGCAT
-subsample_shotgun_R2=CATG
+subsample_shotgun_R1=true
+subsample_shotgun_R2=true
 shotgun_min_read_length=50
 
 # simulation_parameters
