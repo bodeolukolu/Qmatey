@@ -182,7 +182,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |simulation_motif_R2|CATG|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
 |fragment_size_range|50,600|minimum and maximum genomic fragment size (comma-separated)|string|Optional|
 |max_read_length|150|maximum read length for each of R1 and/or R2 reads |string|Optional|
-|gcov|30|whole genome sequencing coverage |string|Optional|
+|gcov|3|whole genome sequencing coverage |string|Optional|
 
 
 **Normalzation**
@@ -201,7 +201,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |taxids|na|files mapping fasta sequences to taxid(s)|true or false|Optional|
 |input_dbfasta|na|provide fasta file if custom database|string|Optional|
 |map_taxids|na|provide files mapping fasta sequences to taxid(s) if custom database|string|Optional|
-|hamming_distance|2|hamming distance threshold between orthologs of diagostic sequences|string|required|
+|hamming_distance|1|hamming distance threshold between orthologs of diagostic sequences|string|required|
 
 
 **Taxonomic_Profiling_and_Filtering**
@@ -258,7 +258,7 @@ simulation_motif_R1=ATGCAT
 simulation_motif_R2=CATG
 fragment_size_range=50,600
 max_read_length=150
-gcov=30
+gcov=3
 
 
 ### Normalization
@@ -275,7 +275,7 @@ local_db=/media/sdd/ncbi_db/refseq/refseq_rna,/media/sdd/ncbi_db/refseq/ref_viro
 taxids=true
 input_dbfasta=NA
 map_taxids=NA
-hamming_distance=2
+hamming_distance=1
 
 
 ### Taxonomic_Profiling_and_Filtering
