@@ -1306,7 +1306,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			else
 				mkdir splitccf; cd splitccf
 				cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-				awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+				awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 				wait $PIDsplit1
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
@@ -1572,7 +1572,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			else
 			  mkdir splitccf; cd splitccf
 			  cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-			  awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+			  awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 			  wait $PIDsplit1
 			  rm combined_compressed_metagenomes.fasta.gz
 			fi
@@ -2645,7 +2645,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -3152,7 +3152,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -3664,7 +3664,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -4174,7 +4174,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -4685,7 +4685,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -5196,7 +5196,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
