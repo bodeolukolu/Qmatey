@@ -24,7 +24,7 @@ if (taxalevel == "strain"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_tax_id1 <- final$tax_id
   
@@ -87,7 +87,7 @@ if (taxalevel == "species"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_species1 <- final$species
   
@@ -150,7 +150,7 @@ if (taxalevel == "genus"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_genus1 <- final$genus
   
@@ -213,7 +213,7 @@ if (taxalevel == "family"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_family1 <- final$family
   
@@ -276,7 +276,7 @@ if (taxalevel == "order"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_order1 <- final$order
   
@@ -339,7 +339,7 @@ if (taxalevel == "class"){
   finalq$threshold <- round(finalq$q95 * 0.05, digit=0)
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_max - final$threshold
-  final <- subset(final, final$keep > 0)
+  final <- subset(final, final$keep >= 0)
   if (wgs == "true") { final <- subset(final, final$mean_max > final$q5) }
   keep_class1 <- final$class
   
