@@ -231,7 +231,6 @@ Using a text editor, save a file containing any of the following variables as 'c
 |reads_per_megablast|1000 or 20|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
 |genome_scaling|true|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
-|qcov|50|minimum query coverage|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
 
@@ -300,7 +299,6 @@ nodes=1
 reads_per_megablast=1000
 genome_scaling=true
 zero_inflated=0.01
-qcov=50
 exclude_rRNA=false
 annotate_seq=false
 ```

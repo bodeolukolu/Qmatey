@@ -148,7 +148,7 @@ export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
-  	export reads_per_megablast=100
+  	export reads_per_megablast=1000
   fi
 fi
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -179,9 +179,6 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
       export reads_per_megablast=20
     fi
   fi
-fi
-if [[ -z $qcov ]]; then
-	export qcov=50
 fi
 if [[ -z $min_percent_sample ]]; then
 	export min_percent_sample=5,10,20
@@ -1276,15 +1273,19 @@ blast () {
 if [[ "$fastMegaBLAST" == true ]]; then
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
-		zcat *.fasta.gz | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		:> ${i%.f*}_compressed.tmp.fasta
-		export startmotif=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		for sm in ${startmotif//,/ }; do
-		  cat combined_compressed_metagenomes.tmp.fasta | grep ^$sm | sort -T "${projdir}"/tmp >> ${i%.f*}_compressed.tmp.fasta
-		  wait
+		find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
+		:> combined_compressed_metagenomes_tmp.fasta
+		export startmotifa=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+		for sma in ${startmotifa//,/ }; do
+		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+		  for smb in ${startmotifb//,/ }; do
+				sm=$sma$smb
+				cat combined_compressed_metagenomes.fasta | grep ^$sm | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
+		  done
 		done
-		awk '{print ">"NR"\n"$1}' ${i%.f*}_compressed.tmp.fasta > combined_compressed_metagenomes.fasta
-		rm ${i%.f*}_compressed.tmp.fasta
+		wait
+		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta > combined_compressed_metagenomes.fasta
+		rm combined_compressed_metagenomes_tmp.fasta
 		$gzip combined_compressed_metagenomes.fasta
 	fi
 
@@ -1303,7 +1304,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			else
 				mkdir splitccf; cd splitccf
 				cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-				awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+				awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 				wait $PIDsplit1
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
@@ -1337,11 +1338,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						fi
 						wait
@@ -1372,11 +1373,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						fi
 						wait
@@ -1472,12 +1473,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target \
-				-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target \
-				-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			fi
@@ -1569,7 +1570,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			else
 			  mkdir splitccf; cd splitccf
 			  cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-			  awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+			  awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 			  wait $PIDsplit1
 			  rm combined_compressed_metagenomes.fasta.gz
 			fi
@@ -1602,11 +1603,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						fi
 						wait
@@ -1637,11 +1638,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 							wait
 						fi
 						wait
@@ -1738,15 +1739,19 @@ else
 	:
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
-		zcat *.fasta.gz | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		:> ${i%.f*}_compressed.tmp.fasta
-		export startmotif=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		for sm in ${startmotif//,/ }; do
-		  cat combined_compressed_metagenomes.tmp.fasta | grep ^$sm | sort -T "${projdir}"/tmp >> ${i%.f*}_compressed.tmp.fasta
-		  wait
+		find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
+		:> combined_compressed_metagenomes_tmp.fasta
+		export startmotifa=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+		for sma in ${startmotifa//,/ }; do
+		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+		  for smb in ${startmotifb//,/ }; do
+				sm=$sma$smb
+				cat combined_compressed_metagenomes.fasta | grep ^$sm | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
+		  done
 		done
-		awk '{print ">"NR"\n"$1}' ${i%.f*}_compressed.tmp.fasta > combined_compressed_metagenomes.fasta
-		rm ${i%.f*}_compressed.tmp.fasta
+		wait
+		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta > combined_compressed_metagenomes.fasta
+		rm combined_compressed_metagenomes_tmp.fasta
 		$gzip combined_compressed_metagenomes.fasta
 	fi
 
@@ -1762,11 +1767,11 @@ else
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-  			-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
+  			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-  			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
+  			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		fi
   		wait
@@ -1830,12 +1835,12 @@ else
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target \
-				-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target \
-				-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
+				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			fi
@@ -1924,11 +1929,11 @@ else
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-  			-qcov_hsp_perc "$qcov" -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
+  			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-  			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
+  			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		fi
   		wait
@@ -2642,7 +2647,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -2652,7 +2657,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
@@ -3149,7 +3154,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -3159,7 +3164,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
@@ -3661,7 +3666,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -3671,7 +3676,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
@@ -4171,7 +4176,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -4181,7 +4186,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
@@ -4682,7 +4687,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 	cd ../
 	mkdir splitccf; cd splitccf
 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
-	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
 	wait $PIDsplit1
 	rm combined.sighits.fasta.gz
 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
@@ -4692,7 +4697,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
@@ -5203,7 +5208,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-qcov_hsp_perc "$qcov" -outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
+			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 			wait
 			gzip "${sub}_out.blast" &&
 			rm "$sub" )&
