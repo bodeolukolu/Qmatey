@@ -793,7 +793,7 @@ else
 					grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
 					sleep 2
 					wait
-					rm ${i%.f*}_chopped.txt ${i%.f*}.fasta.gz &&
+					rm ${i%.f*}_chopped.txt ${i%.f*}.fasta.gz
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt
 					wait
@@ -966,7 +966,7 @@ ref_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
@@ -1009,7 +1009,7 @@ ref_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
@@ -1192,7 +1192,7 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
@@ -1221,7 +1221,7 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
