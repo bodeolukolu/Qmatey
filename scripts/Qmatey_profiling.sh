@@ -99,7 +99,7 @@ if [[ $taxonomic_level =~ phylum ]]; then
 	export phylum_level=true
 fi
 if [[ -z "$genome_scaling" ]]; then
-	export genome_scaling=true
+	export genome_scaling=false
 fi
 if [[ -z "$zero_inflated" ]]; then
 	export zero_inflated=0.01
@@ -123,9 +123,10 @@ fi
 
 if [[ -z $minRD ]]; then
 	export minRD=1
+	export zminRD=true
 fi
 if [[ -z $hamming_distance ]]; then
-	export hamming_distance=1
+	export hamming_distance=0
 fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1,2
@@ -345,11 +346,17 @@ simulate_reads () {
 			awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 			'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
 			gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' > ${unsim}.tmp1.txt &&
-			grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${unsim}.tmp1.txt > ${unsim}.tmp.txt &&
-			grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
-			grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
-			grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
-			grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${unsim}.tmp1.txt >> ${unsim}.tmp.txt &&
+			sleep 2
+			grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null > ${unsim}.tmp.txt &&
+			sleep 2
+			grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
+			sleep 2
+			grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
+			sleep 2
+			grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
+			sleep 2
+			grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
+			sleep 2
 			rm ${unsim} &&
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
@@ -589,7 +596,6 @@ if test -f flushed_reads.txt; then
 	echo -e "${magenta}- \n- improved flushed ends of reads was previously performed  ${white}\n"
 else
 	if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-
 		for i in *.f*; do (
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				fa_fq=$(zcat ${projdir}/samples/$i 2> /dev/null | head -n1 | cut -c1-1)
@@ -616,7 +622,6 @@ else
 			fi
 		done
 		wait
-
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
 				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
@@ -632,43 +637,63 @@ else
 			fi
 		done
 
-		for i in *.f*; do (
-			if [[ "$i" == *"_compressed.f"* ]]; then
-				:
-			else
-				zcat "$i" | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
-			fi
-			) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
-			fi
-		done
-		wait
+		if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+			for i in *.f*; do (
+				frag=${i%.f*}
+				if [[ "$i" == *"_compressed.f"* ]]; then
+					:
+				else
+					zcat "$i" | '{print substr($0,1,150)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
+					wait
+				fi
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
+		fi
 
-		for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
-		wait
-		awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
-		mv tmp.txt length_distribution.txt
-		rm tmp.txt
-		export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
-		rm length_distribution.txt
+		if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]]; then
+			for i in *.f*; do (
+				if [[ "$i" == *"_compressed.f"* ]]; then
+					:
+				else
+					zcat "$i" | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=100; i++){x=int(rand()*NR) + 1; print a[x];}}' > ${i%.f}_length_distribution.txt
+				fi
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
+
+			for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm $lenfile; done
+			wait
+			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
+			mv tmp.txt length_distribution.txt
+			rm tmp.txt
+			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
+			rm length_distribution.txt
 
 
-		for i in *.f*; do (
-			frag=${i%.f*}
-			if [[ "$i" == *"_compressed.f"* ]]; then
-				:
-			else
-				zcat "$i" | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
-				gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
-				wait
-			fi
-			) &
-			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-				wait
-			fi
-		done
-		wait
+			for i in *.f*; do (
+				frag=${i%.f*}
+				if [[ "$i" == *"_compressed.f"* ]]; then
+					:
+				else
+					zcat "$i" | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag=$frag '{print ">"frag"_"NR"\n"$0}' | \
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
+					wait
+				fi
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
+			wait
+		fi
 	fi
 
 	if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -754,16 +779,21 @@ else
 
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
-					gsub(RE2a,RE2a"\nRE"2a"); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
+					gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
 					awk -v min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}_chopped.txt
 
 					grep "^$RE1a.*$RE1a\|^$RE1b.*$RE1b\|^$RE1c.*$RE1c\|^$RE1d.*$RE1d\|^$RE2a.*$RE2a\|^$RE2b.*$RE2b\|^$RE2c.*$RE2c\|^$RE2d.*$RE2d" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
-
-					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}_chopped.txt > ${i%.f*}.tmp2.txt &&
-					grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${i%.f*}_chopped.txt >> ${i%.f*}.tmp2.txt &&
-					grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${i%.f*}_chopped.txt >> ${i%.f*}.tmp2.txt &&
-					grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${i%.f*}_chopped.txt >> ${i%.f*}.tmp2.txt &&
-					rm ${i%.f*}_chopped.txt &&
+					sleep 2
+					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null > ${i%.f*}.tmp2.txt &&
+					sleep 2
+					grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
+					sleep 2
+					grep "^$RE2a.*$RE1a$\|^$RE2a.*$RE1b$\|^$RE2a.*$RE1c$\|^$RE2a.*$RE1d$\|^$RE2b.*$RE1a$\|^$RE2b.*$RE1b$\|^$RE2b.*$RE1c$\|^$RE2b.*$RE1d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
+					sleep 2
+					grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
+					sleep 2
+					wait
+					rm ${i%.f*}_chopped.txt ${i%.f*}.fasta.gz &&
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt
 					wait
@@ -934,6 +964,11 @@ ref_norm () {
 					wait
 				fi
 				wait
+				if [[ "$zminRD" == true ]]; then
+					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-""$2"\t"$3}' > ${i%.f*}_compressed.tmp.fasta.gz
+					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -964,12 +999,18 @@ ref_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
-					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
+				fi
+				wait
+				if [[ "$zminRD" == true ]]; then
+					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-""$2"\n"$3}' > ${i%.f*}_compressed.tmp.fasta.gz
+					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1141,12 +1182,18 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 						wait
 					done
 				else
-					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					wait
+				fi
+				wait
+				if [[ "$zminRD" == true ]]; then
+					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-""$2"\n"$3}' > ${i%.f*}_compressed.tmp.fasta.gz
+					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1164,12 +1211,18 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
-					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\n"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
+				fi
+				wait
+				if [[ "$zminRD" == true ]]; then
+					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat=$minimumRD '$2 >= pat' | sort -T "${projdir}"/tmp -nr | awk '{print $1"-""$2"\t"$3}' > ${i%.f*}_compressed.tmp.fasta.gz
+					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then

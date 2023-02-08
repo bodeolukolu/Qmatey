@@ -18,7 +18,6 @@ fragment_size_range=50,600
 max_read_length=150
 gcov=30
 
-
 # Normalization
 ####################################################
 normalization=true
@@ -33,15 +32,13 @@ local_db=/media/sdd/ncbi_db/nt/nt
 taxids=true
 input_dbfasta=NA
 map_taxids=NA
-hamming_distance=2
 
 # Taxonomic_Profiling_and_Filtering
 ####################################################
-minRD=1
+taxonomic_level=strain,species,genus,family,order,class,phylum
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
-
 
 # Visualizations
 ####################################################
@@ -49,12 +46,10 @@ sunburst_taxlevel=strain,species,genus,family,order,class
 sunburst_nlayers=phylum,genus,species
 compositional_corr=strain,species,genus,family,order,class,phylum
 
-
 # Advanced_Parameters
 ####################################################
 nodes=1
 reads_per_megablast=1000
-genome_scaling=true
 zero_inflated=0.01
 exclude_rRNA=false
 annotate_seq=false

@@ -201,14 +201,12 @@ Using a text editor, save a file containing any of the following variables as 'c
 |taxids|na|files mapping fasta sequences to taxid(s)|true or false|Optional|
 |input_dbfasta|na|provide fasta file if custom database|string|Optional|
 |map_taxids|na|provide files mapping fasta sequences to taxid(s) if custom database|string|Optional|
-|hamming_distance|1|hamming distance threshold between orthologs of diagostic sequences|string|required|
 
 
 **Taxonomic_Profiling_and_Filtering**
 |Variable      |Default       |Usage         |Input         |required/Optional|
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |taxonomic_level|na|strain,species,genus,family,order,class,phylum|string|Optional|
-|minRD|1|to eliminate reads with base call errors, removes unique sequences with read depth < value|integer|Optional|
 |min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
 |min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
 |max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
@@ -229,7 +227,6 @@ Using a text editor, save a file containing any of the following variables as 'c
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |nodes|1|number of nodes|integer|Optional|
 |reads_per_megablast|1000 or 20|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
-|genome_scaling|true|exlude potential false positives based on expected phylum-level genome size range: qRRS/WGS data|true or false|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
@@ -280,7 +277,6 @@ hamming_distance=1
 ### Taxonomic_Profiling_and_Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
-minRD=1
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
