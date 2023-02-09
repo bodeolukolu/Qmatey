@@ -748,7 +748,7 @@ else
 				:
 			else
 				if [[ -z "$shotgun_min_fragment_length" ]]; then
-					shotgun_min_fragment_length=50
+					shotgun_min_fragment_length=100
 				fi
 				if [[ "$subsample_shotgun_R1" != false ]]; then
 					echo $subsample_shotgun_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
@@ -782,7 +782,7 @@ else
 					gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
 					awk -v min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}_chopped.txt
 
-					grep "^$RE1a.*$RE1a\|^$RE1b.*$RE1b\|^$RE1c.*$RE1c\|^$RE1d.*$RE1d\|^$RE2a.*$RE2a\|^$RE2b.*$RE2b\|^$RE2c.*$RE2c\|^$RE2d.*$RE2d" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
+					grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
 					sleep 2
 					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null > ${i%.f*}.tmp2.txt &&
 					sleep 2
@@ -793,14 +793,14 @@ else
 					grep "^$RE2c.*$RE1a$\|^$RE2c.*$RE1b$\|^$RE2c.*$RE1c$\|^$RE2c.*$RE1d$\|^$RE2d.*$RE1a$\|^$RE2d.*$RE1b$\|^$RE2d.*$RE1c$\|^$RE2d.*$RE1d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
 					sleep 2
 					wait
-					rm ${i%.f*}_chopped.txt ${i%.f*}.fasta.gz
+					rm ${i%.f*}_chopped.txt
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt
 					wait
 
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat "$i" | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					zcat "$i" | grep -v '>' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
 					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
@@ -941,6 +941,7 @@ fi
 echo -e "\e[97m########################################################\n \e[38;5;210m Read Compression, Normalization, and exclusion of reads from reference genomes \n\e[97m########################################################\n"
 ref_norm () {
 	cd "${projdir}"
+	# print "sample\treads_input\tsubsetted_filtered_reads\tPercent_retained" ${projdir}/metagenome/proportion_retained_reads.txt
 	export startmotif=TTT,ATT,CTT,GTT,TAT,AAT,CAT,GAT,TCT,ACT,CCT,GCT,TGT,AGT,CGT,GGT,TTA,ATA,CTA,GTA,TAA,AAA,CAA,GAA,TCA,ACA,CCA,GCA,TGA,AGA,CGA,GGA,TTC,ATC,CTC,GTC,TAC,AAC,CAC,GAC,TCC,ACC,CCC,GCC,TGC,AGC,CGC,GGC,TTG,ATG,CTG,GTG,TAG,AAG,CAG,GAG,TCG,ACG,CCG,GCG,TGG,AGG,CGG,GGG
 	if [[ -z "$(ls -A ./norm_ref/*.dict 2> /dev/null)" ]]; then
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
@@ -949,6 +950,7 @@ ref_norm () {
 		#All duplicate reads are compressed into one representative read with duplication reflected as a numeric value
 		#Increases the speed of reference genome alignment -- especially if read depth is high
 		rm ${projdir}/metagenome/microbiome_coverage.txt 2> /dev/null
+
 
 		for i in *.f*; do (
 			if [[ "$i" == *"_compressed.f"* ]]; then
@@ -969,6 +971,10 @@ ref_norm () {
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
+				# Nreads_input=$(zcat $i | grep '>' | wc -l)
+				# Nreads_filter=$(zcat ${i%.f*}_compressed.fasta.gz | grep '>' | awk -F '-' '{s+=$2}END{print s}')
+				# Percentage=$($Nreads_filter * 100)
+				# awk -v samp="${i%.f*}" -v pat1="$Nreads_input" pat2="$Nreads_filter" -v pat3="$Percentage" '{print samp"\t"pat1"\t"pat2"\t"pat3/pat1}' >> ${projdir}/metagenome/proportion_retained_reads.txt
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1011,6 +1017,8 @@ ref_norm () {
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+				else
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1070,7 +1078,7 @@ ref_norm () {
 					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 					cd "${projdir}"/samples
 					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
-					$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
+					# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 					$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 					rm ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
@@ -1083,8 +1091,9 @@ ref_norm () {
 
 			cd "${projdir}"/metagenome/
 			for i in *.bam; do (
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz) --no-group-separator | \
-				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | $gzip > ../samples/${i%.bam}_compressed.fasta.gz
+				$samtools view -f 4 $i | awk '{print $1}' | \
+				grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}') --no-group-separator | \
+				$gzip > ../samples/${i%.bam}_compressed.fasta.gz
 				rm $i ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 	      wait
@@ -1124,8 +1133,8 @@ ref_norm () {
 			echo -e "${YELLOW}- compile metagenome reads into fasta format & compute relative read depth ${WHITE}"
 			for i in *.bam; do (
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz) --no-group-separator | \
-				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
+				$samtools view -f 4 $i | awk '{print $1}' | \
+				grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}') --no-group-separator | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1223,6 +1232,8 @@ no_norm () {
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+				else
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1241,7 +1252,7 @@ no_norm () {
 				$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 				cd "${projdir}"/samples
 				$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
-				$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
+				# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 				$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
@@ -1257,8 +1268,8 @@ no_norm () {
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
 		for i in *.bam; do (
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
-				$samtools view -f 4 $i | awk '{print $1}' | grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz) --no-group-separator | \
-				awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
+				$samtools view -f 4 $i | awk '{print $1}' | \
+				grep -w -A 1 -Ff - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}') --no-group-separator | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
 			fi
 			) &

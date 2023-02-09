@@ -7,7 +7,7 @@ samples_alt_dir=false
 library_type=qRRS
 subsample_shotgun_R1=true
 subsample_shotgun_R2=true
-shotgun_min_read_length=50
+shotgun_min_read_length=100
 
 # simulation_parameters
 ####################################################
