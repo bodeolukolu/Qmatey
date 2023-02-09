@@ -456,8 +456,8 @@ simulate_reads () {
 }
 cd "${projdir}"
 if [[ "$simulate_reads" == 1 ]]; then
-	if [[ -d samples ]]; then
-		echo -e "${magenta}- samples directory/folder exists. Delete samples directory/folder before running simulation ${white}\n"
+	if [[ "$(ls ./samples/*.f* | wc -l)" -gt 0 ]]; then
+		echo -e "${magenta}- samples directory/folder contains fasta/fastq files. Delete samples directory/folder before running simulation ${white}\n"
 		echo -e "${magenta}- Qmatey will quit in 10 seconds ${white}\n"
 		sleep 10 && exit 1
 	else

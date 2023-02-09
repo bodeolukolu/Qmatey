@@ -419,7 +419,7 @@ else
       for i in "${arr[@]}"; do
         input_db=${i%/*}
         echo -e "${white}- download of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
-        sleep 60 
+        sleep 60
         wait
         echo -e "${white}- downloading NCBI "${input_db/*\/}" database in user-defined directory ${white}"
         setup_database &>> ./db_download.log
