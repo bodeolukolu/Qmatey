@@ -1094,9 +1094,8 @@ ref_norm () {
 			cd "${projdir}"/metagenome/
 			for i in *.bam; do (
 				$samtools view -f 4 $i | awk '{print $1}' | \
-				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') | \
-				$gzip > ../samples/${i%.bam}_compressed.fasta.gz &&
-				rm $i
+				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') > ../samples/${i%.bam}_compressed.fasta &&
+				rm $i && gzip ../samples/${i%.bam}_compressed.fasta &&
 				wait ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 	      wait
