@@ -1046,7 +1046,7 @@ ref_norm () {
 			done
 			wait
 
-			cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt
+			cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt &&
 			rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
 			cd "${projdir}"/metagenome
@@ -1062,11 +1062,12 @@ ref_norm () {
 				rm ${i%.bam}_microbiome_coverage.txt
 			done
 			wait
-			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2,"\t",$4,"\t",$2+$4}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\n') - > coverage_normalize.txt
+			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2,"\t",$4,"\t",$2+$4}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\n') - > coverage_normalize.txt &&
 			maximum=$(sort -T "${projdir}"/tmp -nr -k3,3 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
-			awk -v maximum=$maximum 'NR>1{print $1,maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt
-			awk 'NR>1{print $1,"\t",($2/$4)*100,"\t",($3/$4)*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_Metagenome\tPercent_Host\n') - > ./results/metagenome_derived_perc.txt
-			rm host_coverage.txt microbiome_coverage.txt
+			awk -v maximum=$maximum 'NR>1{print $1,maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt &&
+			awk 'NR>1{print $1,"\t",($2/$4)*100,"\t",($3/$4)*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_Metagenome\tPercent_Host\n') - > ./results/metagenome_derived_perc.txt &&
+			rm host_coverage.txt microbiome_coverage.txt &&
+			wait
 		fi
 
 		if [[ "${norm_method}" == samples ]]; then
@@ -1077,24 +1078,26 @@ ref_norm () {
 					cd "${projdir}"/norm_ref
 					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 					cd "${projdir}"/samples
-					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
+					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam &&
 					# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 					$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
-					rm ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
+					rm ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam &&
+					wait
 				fi
 			done
 			wait
 
-			cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt
+			cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt &&
 			rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
 
 			cd "${projdir}"/metagenome/
 			for i in *.bam; do (
 				$samtools view -f 4 $i | awk '{print $1}' | \
 				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') | \
-				$gzip > ../samples/${i%.bam}_compressed.fasta.gz
-				rm $i ) &
+				$gzip > ../samples/${i%.bam}_compressed.fasta.gz &&
+				rm $i
+				wait ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 	      wait
 	      fi
@@ -1106,13 +1109,15 @@ ref_norm () {
 			echo -e "${YELLOW}- calculating a normalization factor"
 			for i in *_compressed.fasta.gz; do
 				zcat "$i" 2> /dev/null | awk -v sample=${i%_compressed.fasta.gz} -F '-' '{s+=$2}END{print sample"\t"s}' > ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt && \
-				cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt
-				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt
+				cat ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt >> ${projdir}/metagenome/microbiome_coverage.txt &&
+				rm ${projdir}/metagenome/${i%_compressed.fasta.gz}_microbiome_coverage.txt &&
+				wait
 			done
 			wait
 			maximum=$(sort -T "${projdir}"/tmp -nr -k2,2 ${projdir}/metagenome/microbiome_coverage.txt | awk 'NF > 0' | awk 'NR==1{print $2; exit}')
-			awk -v maximum=$maximum '{print $1,maximum/$2}' ${projdir}/metagenome/microbiome_coverage.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > ${projdir}/metagenome/coverage_normalization_factor.txt
-			rm ${projdir}/metagenome/microbiome_coverage.txt
+			awk -v maximum=$maximum '{print $1,maximum/$2}' ${projdir}/metagenome/microbiome_coverage.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > ${projdir}/metagenome/coverage_normalization_factor.txt &&
+			rm ${projdir}/metagenome/microbiome_coverage.txt &&
+			wait
 		fi
 
 	fi
@@ -1135,7 +1140,8 @@ ref_norm () {
 				normfactor=$( awk -v sample=${i%.bam} '$1 == sample' coverage_normalization_factor.txt | awk '{print $2}' ) && \
 				$samtools view -f 4 $i | awk '{print $1}' | \
 				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') | \
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk -v norm=$normfactor '{print ">"$1"-"$2*norm"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz &&
+				wait
 				) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 				wait
@@ -1251,7 +1257,7 @@ no_norm () {
 				cd "${projdir}"/norm_ref/
 				$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
 				cd "${projdir}"/samples
-				$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
+				$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam &&
 				# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 				printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 				$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
@@ -1261,8 +1267,9 @@ no_norm () {
 		done
 		wait
 
-		cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt
-		rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt
+		cat ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt > ${projdir}/metagenome/results/ref_aligned_summaries/ref_aligned_summaries_unique_reads.txt &&
+		rm -r ${projdir}/metagenome/results/ref_aligned_summaries/*_summ.txt &&
+		wait
 
 		cd "${projdir}"/metagenome
 		echo -e "${YELLOW}- compile metagenome reads into fasta format ${WHITE}"
@@ -1270,7 +1277,8 @@ no_norm () {
 			if test ! -f ./haplotig/${i%.bam}_metagenome.fasta.gz; then
 				$samtools view -f 4 $i | awk '{print $1}' | \
 				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') | \
-				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz
+				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t"); gsub(/>/,""); print}' | awk '{print ">"$1"-"$2"\n"$3}' | $gzip > ./haplotig/${i%.bam}_metagenome.fasta.gz &&
+				wait
 			fi
 			) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
