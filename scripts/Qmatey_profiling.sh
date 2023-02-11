@@ -98,7 +98,9 @@ fi
 if [[ $taxonomic_level =~ phylum ]]; then
 	export phylum_level=true
 fi
-if [[ -z "$genome_scaling" ]]; then
+if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+	export genome_scaling=true
+else
 	export genome_scaling=false
 fi
 if [[ -z "$zero_inflated" ]]; then
@@ -423,36 +425,36 @@ simulate_reads () {
 		wait
 	done
 
-	cd "${projdir}"/simulate_genomes/
-	for simdir in */ ; do
-		mkdir -p refgenome
-		cd "$simdir"
-		echo -e "Taxa\tGenome_size_(bp)\tSequenced_(bp)\tPercent_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
-		while IFS="" read -r p || [ -n "$p" ]; do
-			mockfile=$(echo $p | awk '{print $2}') &&
-			mockfile=${mockfile}.fasta &&
-			cp "$mockfile" ../refgenome &&
-			cd ../refgenome &&
-			$bwa index -a bwtsw "$mockfile" &&
-			$samtools faidx "$mockfile" &&
-			$java -jar $picard CreateSequenceDictionary REFERENCE=$mockfile    OUTPUT=${mockfile%.fasta}.dict &&
-			$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz | $samtools view -bS - > ../${mockfile%.fasta}.bam &&
-			Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
-			Sequenced_fetch=$($samtools flagstat ../${mockfile%.fasta}.bam | grep '+ 0 mapped' | awk '{print $1}') &&
-			Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch") &&
-			printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^./,"0.",$4);}1' | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^0./,"0",$4);}1' >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-			rm -rf ./refgenome/* &&
-			rm ../${mockfile%.fasta}.bam 2> /dev/null &&
-			cd ../$simdir
-			wait
-		done < abundance.txt
-		wait
-		rm -rf "${projdir}"/simulate_genomes/refgenome
-		awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
-		:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
-		mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
-		cd ../
-	done
+	# cd "${projdir}"/simulate_genomes/
+	# for simdir in */ ; do
+	# 	mkdir -p refgenome
+	# 	cd "$simdir"
+	# 	echo -e "Taxa\tGenome_size_(bp)\tSequenced_(bp)\tPercent_Sequenced" > ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+	# 	while IFS="" read -r p || [ -n "$p" ]; do
+	# 		mockfile=$(echo $p | awk '{print $2}') &&
+	# 		mockfile=${mockfile}.fasta &&
+	# 		cp "$mockfile" ../refgenome &&
+	# 		cd ../refgenome &&
+	# 		$bwa index -a bwtsw "$mockfile" &&
+	# 		$samtools faidx "$mockfile" &&
+	# 		$java -jar $picard CreateSequenceDictionary REFERENCE=$mockfile    OUTPUT=${mockfile%.fasta}.dict &&
+	# 		$bwa mem -t $threads $mockfile ../../samples/${simdir%/*}_R1.fasta.gz ../../samples/${simdir%/*}_R2.fasta.gz | $samtools view -bS - > ../${mockfile%.fasta}.bam &&
+	# 		Taxa_gzfetch=$(grep -v '>' "$mockfile" | wc -c | awk '{print $1}') &&
+	# 		Sequenced_fetch=$($samtools flagstat ../${mockfile%.fasta}.bam | grep '+ 0 mapped' | awk '{print $1}') &&
+	# 		Perc=$(bc <<<"scale=3; $Sequenced_fetch*100/$Taxa_gzfetch") &&
+	# 		printf "${mockfile%.fasta}\t$Taxa_gzfetch\t$Sequenced_fetch\t$Perc\n" | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^./,"0.",$4);}1' | awk -F"\t" 'BEGIN{OFS="\t"}{gsub(/^0./,"0",$4);}1' >> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+	# 		rm -rf ./refgenome/* &&
+	# 		rm ../${mockfile%.fasta}.bam 2> /dev/null &&
+	# 		cd ../$simdir
+	# 		wait
+	# 	done < abundance.txt
+	# 	wait
+	# 	rm -rf "${projdir}"/simulate_genomes/refgenome
+	# 	awk '{gsub(/\.\./,".",$4);}1' ../${simdir%/*}_taxa_Seq_Genome_Cov.txt > ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp &&
+	# 	:> ../${simdir%/*}_taxa_Seq_Genome_Cov.txt &&
+	# 	mv ../${simdir%/*}_taxa_Seq_Genome_Cov.tmp ../${simdir%/*}_taxa_Seq_Genome_Cov.txt
+	# 	cd ../
+	# done
 }
 cd "${projdir}"
 if [[ "$simulate_reads" == 1 ]]; then
