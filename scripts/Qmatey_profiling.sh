@@ -643,7 +643,7 @@ else
 				if [[ "$i" == *"_compressed.f"* ]]; then
 					:
 				else
-					zcat "$i" | grep -v '>' | '{print substr($0,1,150)}' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
+					zcat "$i" | grep -v '>' | awk '{print substr($0,1,150)}' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
 					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
