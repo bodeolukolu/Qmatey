@@ -25,7 +25,7 @@ if (taxalevel == "strain"){
   final <- merge(final, finalq, by=c("phylum"), all.y = T)
   final$keep <- final$mean_mean - final$threshold
   # final <- subset(final, final$keep >= 0)
-  if (wgs == "true") { final <- subset(final, final$mean_mean > final$q5) }
+  # if (wgs == "true") { final <- subset(final, final$mean_mean > final$q5) }
   keep_tax_id1 <- final$tax_id
   
   final <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)

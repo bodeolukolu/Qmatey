@@ -1209,7 +1209,7 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
+					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
 					mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				fi
 			fi ) &
