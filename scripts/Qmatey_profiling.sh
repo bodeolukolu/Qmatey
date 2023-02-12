@@ -98,9 +98,7 @@ fi
 if [[ $taxonomic_level =~ phylum ]]; then
 	export phylum_level=true
 fi
-if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-	export genome_scaling=true
-else
+if [[ "$genome_scaling" ]]; then
 	export genome_scaling=false
 fi
 if [[ -z "$zero_inflated" ]]; then
@@ -970,8 +968,13 @@ ref_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					if [[ "$subsample_shotgun_R1" == false ]]; then
+						minimumRD=$((minimumRD * 5))
+					fi
+					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+
 				fi
 				# Nreads_input=$(zcat $i | grep '>' | wc -l)
 				# Nreads_filter=$(zcat ${i%.f*}_compressed.fasta.gz | grep '>' | awk -F '-' '{s+=$2}END{print s}')
@@ -1017,6 +1020,10 @@ ref_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					if [[ "$subsample_shotgun_R1" == false ]]; then
+						minimumRD=$((minimumRD * 5))
+					fi
+					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				else
@@ -1209,6 +1216,10 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					if [[ "$subsample_shotgun_R1" == false ]]; then
+						minimumRD=$((minimumRD * 5))
+					fi
+					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
 					mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				fi
@@ -1238,6 +1249,10 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+					if [[ "$subsample_shotgun_R1" == false ]]; then
+						minimumRD=$((minimumRD * 5))
+					fi
+					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				else
