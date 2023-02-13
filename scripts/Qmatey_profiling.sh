@@ -967,14 +967,19 @@ ref_norm () {
 				fi
 				wait
 				if [[ "$zminRD" == true ]]; then
-					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$subsample_shotgun_R1" == false ]]; then
-						minimumRD=$((minimumRD * 5))
-					fi
-					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
-
+					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+						minimumRD=4
+						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
+						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+						if [[ "$subsample_shotgun_R1" == false ]]; then
+							minimumRD=$((minimumRD * 5))
+						fi
+						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				fi
 				# Nreads_input=$(zcat $i | grep '>' | wc -l)
 				# Nreads_filter=$(zcat ${i%.f*}_compressed.fasta.gz | grep '>' | awk -F '-' '{s+=$2}END{print s}')
@@ -1387,7 +1392,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ -d splitccf ]]; then
 				cd splitccf
 			else
@@ -2272,7 +2277,7 @@ cd "${projdir}"/metagenome/sighits/sighits_strain
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk -F '\t' '{print $8";"}' <(zcat sighits.txt.gz) | awk -F ';' '{print $1}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
-awk '{gsub(/ /,"_"); print }' > rankedlineage_subhits.txt
+awk '{gsub(/ /,"_"); print }' | awk '$2!=$3' > rankedlineage_subhits.txt
 rm taxids_sighits.txt
 cd "${projdir}"/metagenome/sighits/sighits_strain/
 awk '{print $1}' rankedlineage_subhits.txt > strain_taxa_mean_temp.txt
@@ -2342,7 +2347,7 @@ paste strain_taxainfo_mean_norm0.txt strain_taxainfo_mean_holdingtaxinfo.txt | a
 rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt strain_taxainfo_mean_holdingtaxinfo.txt strain_taxainfo_mean_norm0.txt
 
 for i in *.txt; do
-	awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
+	awk '{gsub(/-/,"_"); print}' | $i > ${i%.txt}.temp &&
 	:> $i &&
 	mv ${i%.txt}.temp $i
 done
