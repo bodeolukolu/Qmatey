@@ -49,6 +49,7 @@ compositional_corr=strain,species,genus,family,order,class,phylum
 # Advanced_Parameters
 ####################################################
 nodes=1
+minRD=0
 reads_per_megablast=1000
 zero_inflated=0.01
 exclude_rRNA=false
