@@ -120,7 +120,9 @@ if [[ -z $compositional_corr ]]; then
 else
 	export run_corr=true
 fi
-
+if [[ "$minRD" -gt 0 ]]; then
+	export zminRD=false
+fi
 if [[ -z $minRD ]]; then
 	export minRD=1
 	export zminRD=true
