@@ -982,6 +982,7 @@ ref_norm () {
 						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					fi
 				fi
 				# Nreads_input=$(zcat $i | grep '>' | wc -l)
 				# Nreads_filter=$(zcat ${i%.f*}_compressed.fasta.gz | grep '>' | awk -F '-' '{s+=$2}END{print s}')
@@ -2349,7 +2350,7 @@ paste strain_taxainfo_mean_norm0.txt strain_taxainfo_mean_holdingtaxinfo.txt | a
 rm strain_taxainfo_mean_holdingtaxid.txt strain_taxainfo_mean_buildnorm.txt strain_taxainfo_mean_holdingtaxinfo.txt strain_taxainfo_mean_norm0.txt
 
 for i in *.txt; do
-	awk '{gsub(/-/,"_"); print}' | $i > ${i%.txt}.temp &&
+	awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
 	:> $i &&
 	mv ${i%.txt}.temp $i
 done
