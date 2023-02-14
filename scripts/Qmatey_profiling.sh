@@ -976,8 +976,10 @@ ref_norm () {
 						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					else
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-						if [[ "$subsample_shotgun_R1" == false ]]; then
-							minimumRD=$((minimumRD * 5))
+						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+							if [[ "$subsample_shotgun_R1" == false ]]; then
+								minimumRD=$((minimumRD * 5))
+							fi
 						fi
 						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
@@ -1028,8 +1030,10 @@ ref_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$subsample_shotgun_R1" == false ]]; then
-						minimumRD=$((minimumRD * 5))
+					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+						if [[ "$subsample_shotgun_R1" == false ]]; then
+							minimumRD=$((minimumRD * 5))
+						fi
 					fi
 					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
@@ -1224,8 +1228,10 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$subsample_shotgun_R1" == false ]]; then
-						minimumRD=$((minimumRD * 5))
+					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+						if [[ "$subsample_shotgun_R1" == false ]]; then
+							minimumRD=$((minimumRD * 5))
+						fi
 					fi
 					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
@@ -1257,8 +1263,10 @@ no_norm () {
 				wait
 				if [[ "$zminRD" == true ]]; then
 					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | sort -T "${projdir}"/tmp -nr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$subsample_shotgun_R1" == false ]]; then
-						minimumRD=$((minimumRD * 5))
+					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+						if [[ "$subsample_shotgun_R1" == false ]]; then
+							minimumRD=$((minimumRD * 5))
+						fi
 					fi
 					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
@@ -1518,16 +1526,15 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] ; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
-
 		wait
 
 		cd "${projdir}"/metagenome/haplotig
@@ -1590,37 +1597,15 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			rm ../alignment/combined_compressed.megablast
 		fi
 
-		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
-			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
-			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
+		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
-		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] ; then
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
-			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
-			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
-		fi
-		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]] && [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
-			zcat ../alignment/combined_compressed.megablast.gz > ../alignment/temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/temp.megablast  | $gzip > ../alignment/combined_compressed.megablast.gz
-			zcat ../alignment/uncultured_combined_compressed.megablast.gz > ../alignment/uncultured_temp.megablast
-			awk 'BEGIN{FS="\t";}{if(a[$1]<$3){a[$1]=$3;}}END{for(i in a){print i"\t"a[i];}}' uncultured_temp.megablast | sort -T "${projdir}"/tmp -V -k1,1n | \
-			awk -F'\t' 'BEGIN{FS=OFS="\t"} NR==FNR{c[$1FS$2]++;next};c[$1FS$3] > 0' - ../alignment/uncultured_temp.megablast  | $gzip > ../alignment/uncultured_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -1784,14 +1769,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == true ]]; then
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			mkdir rRNA
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
-			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i 'rRNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/rRNA/rRNA_combined_compressed.megablast.gz
+			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi 'uncultured\|unculture\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | grep -vi 'rRNA\|ribosomal RNA\|ribosomal_RNA' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz && mv ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz ${projdir}/metagenome/alignment/combined_compressed.megablast.gz
 		fi
 		wait
 
@@ -2558,7 +2543,7 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_species
 
   for i in *_taxids_dup.txt; do
-  	awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -2646,7 +2631,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	for i in *_taxids_uniq.txt; do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -3151,7 +3136,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	for i in *_taxids_uniq.txt;do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -3568,7 +3553,7 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_family
 
   for i in *_taxids_dup.txt; do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_dup*}_dup_inter.txt
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -3661,7 +3646,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	for i in *_taxids_uniq.txt; do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -4080,7 +4065,7 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_order
 
   for i in *_taxids_dup.txt; do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_dup*}_dup_inter.txt
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -4171,7 +4156,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	for i in *_taxids_uniq.txt;do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -4592,7 +4577,7 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_class
 
   for i in *_taxids_dup.txt; do
-  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_dup*}_dup_inter.txt
+  awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
 	done
   wait
 
@@ -4683,7 +4668,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	for i in *_taxids_uniq.txt; do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -5194,7 +5179,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	for i in *_taxids_uniq.txt; do
-	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i> ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F '\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
