@@ -291,15 +291,10 @@ simulate_reads () {
 		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,""); gsub(/.fna/,"");}1' | sed '$ s/$//' > abundance.tmp &&  mv abundance.tmp abundance.txt
 		wait
 		for (( gline=1; gline <= gcov; gline++ )); do
-			while IFS="" read -r p || [ -n "$p" ]; do (
+			while IFS="" read -r p || [ -n "$p" ]; do
 				endt=$(echo "$p" | awk '{print $1}')
-				for (( rd=1; rd<=endt; rd++ )); do
-					cat "$(echo $p | awk '{print $2}')".fasta | gzip >> ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
-				done
-				wait ) &
-				if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
-					wait
-				fi
+				cat "$(echo $p | awk '{print $2}')".fasta | awk -v endt="$endt" '{a[NR]=$0}END{for (i=0; i<endt; i++){for(k in a){print a[k]}}}' |\
+				gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
 			done < abundance.txt
 			wait
 			cat ../taxa_*.fa.gz >> ../"${simdir%/*}".fasta.gz &&
