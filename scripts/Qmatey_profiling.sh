@@ -290,17 +290,16 @@ simulate_reads () {
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
 		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,""); gsub(/.fna/,"");}1' | sed '$ s/$//' > abundance.tmp &&  mv abundance.tmp abundance.txt
 		wait
-		for (( gline=1; gline <= gcov; gline++ )); do
-			while IFS="" read -r p || [ -n "$p" ]; do
-				endt=$(echo "$p" | awk '{print $1}')
-				cat "$(echo $p | awk '{print $2}')".fasta | awk -v endt="$endt" '{a[NR]=$0}END{for (i=0; i<endt; i++){for(k in a){print a[k]}}}' |\
-				gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
-			done < abundance.txt
-			wait
-			cat ../taxa_*.fa.gz >> ../"${simdir%/*}".fasta.gz &&
-			rm ../taxa_*.fa.gz &&
-			wait
-		done
+		while IFS="" read -r p || [ -n "$p" ]; do
+			endt=$(echo "$p" | awk '{print $1}')
+			endt=$((endt * gcov))
+			cat "$(echo $p | awk '{print $2}')".fasta | awk -v endt="$endt" '{a[NR]=$0}END{for (i=0; i<endt; i++){for(k in a){print a[k]}}}' |\
+			gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
+		done < abundance.txt
+		wait
+		cat ../taxa_*.fa.gz >> ../"${simdir%/*}".fasta.gz &&
+		rm ../taxa_*.fa.gz &&
+		wait
 		cd ../
 	done
 
