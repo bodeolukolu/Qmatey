@@ -671,7 +671,6 @@ else
 			wait
 			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
 			mv tmp.txt length_distribution.txt
-			rm tmp.txt
 			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 			rm length_distribution.txt
 
@@ -827,7 +826,6 @@ else
 			wait
 			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
 			mv tmp.txt length_distribution.txt
-			rm tmp.txt
 			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 			rm length_distribution.txt
 
@@ -1030,7 +1028,7 @@ ref_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					:
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
@@ -1233,7 +1231,7 @@ no_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					:
+					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
@@ -1273,7 +1271,7 @@ no_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					:
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
