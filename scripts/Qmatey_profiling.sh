@@ -290,11 +290,14 @@ simulate_reads () {
 		cd "$simdir" && gunzip ./*.gz 2> /dev/null
 		awk '{ sub("\r$", ""); print }' abundance.txt | awk '{gsub(/ /,"_"); gsub(/.fasta.gz/,""); gsub(/.fasta/,""); gsub(/.fna/,"");}1' | sed '$ s/$//' > abundance.tmp &&  mv abundance.tmp abundance.txt
 		wait
-		while IFS="" read -r p || [ -n "$p" ]; do
+		while IFS="" read -r p || [ -n "$p" ]; do (
 			endt=$(echo "$p" | awk '{print $1}')
 			endt=$((endt * gcov))
 			cat "$(echo $p | awk '{print $2}')".fasta | awk -v endt="$endt" '{a[NR]=$0}END{for (i=0; i<endt; i++){for(k in a){print a[k]}}}' |\
-			gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz
+			gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz  ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				wait
+			fi
 		done < abundance.txt
 		wait
 		cat ../taxa_*.fa.gz >> ../"${simdir%/*}".fasta.gz &&
@@ -962,23 +965,27 @@ ref_norm () {
 					wait
 				fi
 				wait
-				if [[ "$zminRD" == true ]]; then
-					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-						minimumRD=4
-						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
-					else
-						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
-						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-							if [[ "$subsample_shotgun_R1" == false ]]; then
-								minimumRD=$((minimumRD * 5))
+				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+					:
+				else
+					if [[ "$zminRD" == true ]]; then
+						if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+							minimumRD=4
+							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+						else
+							minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+							sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+							if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+								if [[ "$subsample_shotgun_R1" == false ]]; then
+									minimumRD=$((minimumRD * 5))
+								fi
 							fi
+							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 						fi
-						printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 				# Nreads_input=$(zcat $i | grep '>' | wc -l)
@@ -1023,19 +1030,23 @@ ref_norm () {
 					wait
 				fi
 				wait
-				if [[ "$zminRD" == true ]]; then
-					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
-					sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-						if [[ "$subsample_shotgun_R1" == false ]]; then
-							minimumRD=$((minimumRD * 5))
-						fi
-					fi
-					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+					:
 				else
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					if [[ "$zminRD" == true ]]; then
+						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+							if [[ "$subsample_shotgun_R1" == false ]]; then
+								minimumRD=$((minimumRD * 5))
+							fi
+						fi
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					fi
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1222,17 +1233,21 @@ no_norm () {
 					wait
 				fi
 				wait
-				if [[ "$zminRD" == true ]]; then
-					minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
-					sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-						if [[ "$subsample_shotgun_R1" == false ]]; then
-							minimumRD=$((minimumRD * 5))
+				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+					:
+				else
+					if [[ "$zminRD" == true ]]; then
+						minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+							if [[ "$subsample_shotgun_R1" == false ]]; then
+								minimumRD=$((minimumRD * 5))
+							fi
 						fi
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
+						mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					fi
-					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
-					mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1258,19 +1273,23 @@ no_norm () {
 					wait
 				fi
 				wait
-				if [[ "$zminRD" == true ]]; then
-					minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
-					sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-					if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-						if [[ "$subsample_shotgun_R1" == false ]]; then
-							minimumRD=$((minimumRD * 5))
-						fi
-					fi
-					printf "normalized from coverage of samples\t$minimumRD\n" > ${projdir}/metagenome/minimumRD_empirical.txt
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+					:
 				else
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					if [[ "$zminRD" == true ]]; then
+						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+							if [[ "$subsample_shotgun_R1" == false ]]; then
+								minimumRD=$((minimumRD * 5))
+							fi
+						fi
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					fi
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
