@@ -5019,7 +5019,7 @@ else
 fi
 ##########################################################################
 phylum_level() {
-echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing phylum-Level classification \n\e[97m########################################################\n"
+echo -e "\e[97m########################################################\n \e[38;5;210mQmatey is Performing Phylum-Level classification \n\e[97m########################################################\n"
 echo -e "${YELLOW}- performing exact matching for phylum-level profiling"
 cd "${projdir}"/metagenome/sighits
 mkdir -p sighits_phylum
