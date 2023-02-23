@@ -359,10 +359,9 @@ simulate_reads () {
 			rm "${unsim}" &&
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
-			rm -rf "*tmp*" 2> /dev/null &&
+			rm -rf "*tmp*" 2> /dev/null
 			wait
 		fi
-		rm -rf "*tmp*" 2> /dev/null &&
 
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
