@@ -1454,23 +1454,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+					(
+						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							fi
 							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
-							wait
-						fi
-						wait
-						gzip "${sub}_out.blast" &&
-						rm "$sub" )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-							wait
-						fi
-					done
+							gzip "${sub}_out.blast" &&
+							rm "$sub" )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+					)
 					wait
 					for subfile in *_out.blast.gz; do
 						cat "$subfile" >> ${ccf}.blast.gz &&
@@ -1489,23 +1491,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+					(
+						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							fi
 							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
-							wait
-						fi
-						wait
-						gzip "${sub}_out.blast" &&
-						rm "$sub" )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-							wait
-						fi
-					done
+							gzip "${sub}_out.blast" &&
+							rm "$sub" )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+					)
 					wait
 					for subfile in *_out.blast.gz; do
 						cat "$subfile" >> ${ccf}.blast.gz &&
@@ -1696,23 +1700,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd "${projdir}"/metagenome/alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+					(
+						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							fi
 							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
-							wait
-						fi
-						wait
-						gzip "${sub}_out.blast" &&
-						rm "$sub" )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-							wait
-						fi
-					done
+							gzip "${sub}_out.blast" &&
+							rm "$sub" )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+					)
 					wait
 					for subfile in *_out.blast.gz; do
 						cat "$subfile" >> ${ccf}.blast.gz &&
@@ -1731,23 +1737,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd ../../alignment
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+					(
+						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
+								wait
+							fi
 							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
-							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
-							wait
-						fi
-						wait
-						gzip "${sub}_out.blast" &&
-						rm "$sub" )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-							wait
-						fi
-					done
+							gzip "${sub}_out.blast" &&
+							rm "$sub" )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+					)
 					wait
 					for subfile in *_out.blast.gz; do
 						cat "$subfile" >> ${ccf}.blast.gz &&
@@ -2751,16 +2759,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
@@ -3258,16 +3268,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
@@ -3770,16 +3782,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
@@ -4280,16 +4294,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
@@ -4791,16 +4807,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
@@ -5302,16 +5320,18 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		cd ../hamming_alignment
 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 		wait $PIDsplit2
-		for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
-			-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
-			wait
-			gzip "${sub}_out.blast" &&
-			rm "$sub" )&
-			if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+		(
+			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target \
+				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
-			fi
-		done
+				gzip "${sub}_out.blast" &&
+				rm "$sub" )&
+				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+					wait
+				fi
+			done
+		)
 		wait
 		for subfile in *_out.blast.gz; do
 			cat "$subfile" >> ${ccf}.blast.gz &&
