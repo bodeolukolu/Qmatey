@@ -1457,11 +1457,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					(
 						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 							if [[ "$taxids" == true ]]; then
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							else
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							fi
@@ -1494,11 +1494,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					(
 						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 							if [[ "$taxids" == true ]]; then
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							else
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							fi
@@ -1594,12 +1594,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			else
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
@@ -1703,11 +1703,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					(
 						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 							if [[ "$taxids" == true ]]; then
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							else
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							fi
@@ -1740,11 +1740,11 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					(
 						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
 							if [[ "$taxids" == true ]]; then
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							else
-								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+								${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 								-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" &&
 								wait
 							fi
@@ -1870,11 +1870,11 @@ else
 		echo -e "${YELLOW}- performing local BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
-  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		else
-  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		fi
@@ -1938,12 +1938,12 @@ else
 		echo -e "${YELLOW}- performing a remote BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
 			if [[ "$taxids" == true ]]; then
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
 			else
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote &&
 				wait
@@ -2032,11 +2032,11 @@ else
 		echo -e "${YELLOW}- performing custom BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
   		if [[ "$taxids" == true ]]; then
-  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		else
-  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 1e-10  \
+  			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast &&
   			wait
   		fi
@@ -2761,7 +2761,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
@@ -3270,7 +3270,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
@@ -3784,7 +3784,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
@@ -4296,7 +4296,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
@@ -4809,7 +4809,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
@@ -5322,7 +5322,7 @@ if [[ "$hamming_distance" -gt 0 ]]; then
 		wait $PIDsplit2
 		(
 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 1e-10  \
+				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast" &&
 				wait
 				gzip "${sub}_out.blast" &&
