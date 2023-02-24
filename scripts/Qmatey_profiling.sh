@@ -1817,17 +1817,6 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				awk -F'\t' 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' <(zcat ../alignment/${i%_metagenome.fasta.gz}_step2.txt.gz) <( zcat ../alignment/uncultured_combined_compressed.megablast.gz 2> /dev/null) | \
 				awk -F'\t' 'BEGIN{OFS="\t"}{print $12,$2,$3,$4,$5,$6,$7,$8,$9,$10}' | awk '{gsub(/^[ \t]+|[ \t]+$/,""); print;}' | gzip > ../alignment/uncultured_${i%_metagenome.fasta.gz}_haplotig.megablast.gz  &&
 				wait
-			  # if [[ "$taxids" = true ]]; then
-			  #   for taxid_files in $(ls ${projdir}/taxids/*.txids); do
-			  #     taxid=${taxid_files%*.txids}
-			  #     taxid=${taxid/*\/}
-			  #     awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($8) in a{print $0, a[$1]}' $taxid_files <(zcat ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz 2> /dev/null) | $gzip > ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid${taxid}.megablast.gz
-			  #   done
-			  #   wait
-			  #   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_temp.megablast.gz
-			  #   find ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz | xargs cat > ../alignment/${i%_metagenome.fasta.gz}_haplotig.megablast.gz &&
-			  #   rm ../alignment/${i%_metagenome.fasta.gz}_haplotig_taxid*.megablast.gz
-			  # fi
 				rm ../alignment/"${i%_metagenome.fasta.gz}"_step*.txt.gz
 			fi )&
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
