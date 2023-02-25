@@ -14,7 +14,7 @@ shotgun_min_read_length=100
 simulation_lib=complete_digest
 simulation_motif_R1=ATGCAT
 simulation_motif_R2=CATG
-fragment_size_range=50,600
+fragment_size_range=300,600
 max_read_length=150
 gcov=30
 
