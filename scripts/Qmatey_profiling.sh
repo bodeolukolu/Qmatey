@@ -382,11 +382,11 @@ simulate_reads () {
 			for (( gline=1; gline <= $end; gline+=100000 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt 50000 ]] || [[ "$cutpos" -gt 50000 ]]; do
+				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt $maxfrag ]] || [[ "$cutpos" -gt $maxfrag ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
-					cutpos=$(awk -v minfrag=5000 -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+5000)-(cutpos-5000)))+(cutpos-5000) }')
+					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+$minfrag)-(cutpos-$minfrag)))+(cutpos-$minfrag) }')
 				done
 				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
 			done
