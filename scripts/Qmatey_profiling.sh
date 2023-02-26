@@ -340,9 +340,9 @@ simulate_reads () {
 
 	for unsim in *.fasta.gz; do
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
-			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > ./hold1_"${unsim}" &&
-			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
+			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > hold0_"${unsim}"
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > hold1_"${unsim}" &&
+			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat hold1_${unsim}))"
 			for (( gline=1; gline <= $end; gline+=100000 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
@@ -372,6 +372,7 @@ simulate_reads () {
 			awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 			awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm -rf "*tmp*" 2> /dev/null
+			rm hold*  2> /dev/null
 			wait
 		fi
 
@@ -973,7 +974,7 @@ ref_norm () {
 					wait
 				fi
 				wait
-				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+				if [[ "$simulate_reads" == 1 ]]; then
 					:
 				else
 					if [[ "$zminRD" == true ]]; then
@@ -1038,7 +1039,7 @@ ref_norm () {
 					wait
 				fi
 				wait
-				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+				if [[ "$simulate_reads" == 1 ]]; then
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
@@ -1241,7 +1242,7 @@ no_norm () {
 					wait
 				fi
 				wait
-				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+				if [[ "$simulate_reads" == 1 ]]; then
 					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
@@ -1281,7 +1282,7 @@ no_norm () {
 					wait
 				fi
 				wait
-				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
+				if [[ "$simulate_reads" == 1 ]]; then
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
