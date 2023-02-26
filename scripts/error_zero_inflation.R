@@ -14,7 +14,7 @@ if (taxalevel == "strain"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < strain_min_uniq_thresh] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_tax_id <- final$zinflate
+  keep_tax_id <- final[,1]
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -40,7 +40,7 @@ if (taxalevel == "species"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_species <- final$zinflate
+  keep_species <- final[,1]
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -66,7 +66,7 @@ if (taxalevel == "genus"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_genus <- final$zinflate
+  keep_genus <- final[,1]
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -92,7 +92,7 @@ if (taxalevel == "family"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_family <- final$zinflate
+  keep_family <- final[,1]
   
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -119,7 +119,7 @@ if (taxalevel == "order"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_order <- final$zinflate  
+  keep_order <- final[,1] 
 
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -145,7 +145,7 @@ if (taxalevel == "class"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_class <- final$zinflate  
+  keep_class <- final[,1]  
 
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
@@ -171,7 +171,7 @@ if (taxalevel == "phylum"){
   final[,2:ncol(final)] [final[,2:ncol(final)] < 2] <- NA; final <- as.data.frame(final)
   final$zinflate <- rowSums(!is.na(final))/(ncol(final)-1)
   final <-  subset(final, final$zinflate > zero_inflated)
-  keep_phylum <- final$zinflate  
+  keep_phylum <- final[,1] 
   
   uniq_seq <- read.delim(file=paste(taxalevel,"_taxainfo_unique_sequences.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
   mean <- read.delim(file=paste(taxalevel,"_taxainfo_mean.txt",sep=""), header=T, sep="\t", fill= T, quote="", check.names = T)
