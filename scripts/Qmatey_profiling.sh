@@ -633,15 +633,15 @@ else
 		wait
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 &&
-				rm "$i" && mv ${i%_R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 ${i%_R2.fasta.gz}.fasta.gz
+				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta &&
+				rm "$i" && mv ${i%_R2.fasta.gz}.tmp.fasta ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 &&
-				rm "$i" && mv ${i%.R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 ${i%.R2.fasta.gz}.fasta.gz
+				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				rm "$i" && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
@@ -653,7 +653,7 @@ else
 					:
 				else
 					zcat "$i" | grep -v '>' | awk '{print substr($0,1,150)}' | awk 'length >=64' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
-					gzip > ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 && mv ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 $i
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
 				) &
@@ -692,7 +692,7 @@ else
 					:
 				else
 					zcat "$i" | grep -v '>' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk 'length >=64' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
-					gzip > ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 && mv ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 $i
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
 				) &
@@ -736,15 +736,15 @@ else
 		# concatenate R1 and R2 reads
 		for i in *_R2.fasta.gz; do
 			if test -f $i; then
-				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 &&
-				rm "$i" && mv ${i%_R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 ${i%_R2.fasta.gz}.fasta.gz
+				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
+				rm "$i" && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
 		for i in *.R2.fasta.gz; do
 			if test -f $i; then
-				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 &&
-				rm "$i" && mv ${i%.R2.fasta.gz}.-max_target_seqs $max_target -evalue 0.01 ${i%.R2.fasta.gz}.fasta.gz
+				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
+				rm "$i" && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
@@ -808,8 +808,8 @@ else
 
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat "$i" | grep -v '>' | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.-max_target_seqs $max_target -evalue 0.01 &&
-					mv ${i%.f*}.-max_target_seqs $max_target -evalue 0.01 $i
+					zcat "$i" | grep -v '>' | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -847,7 +847,7 @@ else
 					:
 				else
 					zcat "$i" | grep -v '>' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
-					gzip > ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 && mv ${i%.f*}_-max_target_seqs $max_target -evalue 0.01 $i
+					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
 				) &
@@ -980,8 +980,8 @@ ref_norm () {
 						if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 							minimumRD=4
 							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
-							mv ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01 ${i%.f*}_compressed.fasta.gz
+							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 						else
 							minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
 							sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
@@ -991,8 +991,8 @@ ref_norm () {
 								fi
 							fi
 							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
-							mv ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01 ${i%.f*}_compressed.fasta.gz
+							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 						fi
 					fi
 				fi
@@ -1039,7 +1039,7 @@ ref_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
@@ -1050,10 +1050,10 @@ ref_norm () {
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
-						mv ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01 ${i%.f*}_compressed.fasta.gz
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					else
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
@@ -1242,7 +1242,7 @@ no_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.-max_target_seqs $max_target -evalue 0.01
+					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
@@ -1253,8 +1253,8 @@ no_norm () {
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.-max_target_seqs $max_target -evalue 0.01
-						mv ../metagenome/haplotig/${i%.f*}_metagenome.-max_target_seqs $max_target -evalue 0.01 ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+						zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
+						mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					fi
 				fi
 			fi ) &
@@ -1282,7 +1282,7 @@ no_norm () {
 				fi
 				wait
 				if [[ "$simulation_lib"  =~ "complete_digest" ]]; then
-					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					if [[ "$zminRD" == true ]]; then
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
@@ -1293,10 +1293,10 @@ no_norm () {
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
-						mv ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01 ${i%.f*}_compressed.fasta.gz
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					else
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.-max_target_seqs $max_target -evalue 0.01
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
