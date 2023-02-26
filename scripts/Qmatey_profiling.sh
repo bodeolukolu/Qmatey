@@ -63,7 +63,7 @@ if [[ -z "$simulation_lib" ]]; then
 	simulation_lib=complete_digest
 fi
 if [[ -z "$fragment_size_range" ]]; then
-	export fragment_size_range=64,600
+	export fragment_size_range=300,600
 fi
 if [[ -z "$gcov" ]]; then
 	export gcov=3
@@ -340,9 +340,21 @@ simulate_reads () {
 
 	for unsim in *.fasta.gz; do
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
-			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${unsim}) | \
-			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | \
-			awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
+			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
+			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > ./hold1_"${unsim}" &&
+			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
+			for (( gline=1; gline <= $end; gline+=100000 )); do
+				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
+				cutpos=$(shuf -i 500000-1500000 -n1)
+				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt 50000 ]] || [[ "$cutpos" -gt 50000 ]]; do
+					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
+					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
+					cutpos=$((cutpos / 2)) &&
+					cutpos=$(awk -v minfrag=5000 -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+5000)-(cutpos-5000)))+(cutpos-5000) }')
+				done
+				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
+			done
+			zcat ${unsim}.tmp | grep -v '>' | awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 			'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
 			gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' > ${unsim}.tmp1.txt &&
 			sleep 2
@@ -370,11 +382,11 @@ simulate_reads () {
 			for (( gline=1; gline <= $end; gline+=100000 )); do
 				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
 				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
+				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt 50000 ]] || [[ "$cutpos" -gt 50000 ]]; do
 					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
 					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
 					cutpos=$((cutpos / 2)) &&
-					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
+					cutpos=$(awk -v minfrag=5000 -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+5000)-(cutpos-5000)))+(cutpos-5000) }')
 				done
 				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
 			done
@@ -386,7 +398,6 @@ simulate_reads () {
 			sed 's/[^'"$RE2b"']*\('"$RE2b"'.*\)/\1/' | sed 's!'"$RE2b"'[^'"$RE2b"']*$!'"$RE2b"'!' | \
 			sed 's/[^'"$RE2c"']*\('"$RE2c"'.*\)/\1/' | sed 's!'"$RE2c"'[^'"$RE2c"']*$!'"$RE2c"'!' | \
 			sed 's/[^'"$RE2d"']*\('"$RE2d"'.*\)/\1/' | sed 's!'"$RE2d"'[^'"$RE2d"']*$!'"$RE2d"'!' | \
-
 			awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
 			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
@@ -2870,7 +2881,7 @@ wait
 paste species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_norm0.txt
 paste species_taxainfo_mean_norm0.txt species_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > species_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/species/{print NR; exit}' species_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' species_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' species_taxainfo_mean_normalized.txt > species_taxainfo_mean_normalized.tmp
 mv species_taxainfo_mean_normalized.tmp species_taxainfo_mean_normalized.txt
 rm species_taxainfo_mean_buildnorm.txt species_taxainfo_mean_holdingtaxinfo.txt species_taxainfo_mean_norm0.txt
 
@@ -3387,7 +3398,7 @@ wait
 paste genus_taxainfo_mean_buildnorm.txt > genus_taxainfo_mean_norm0.txt
 paste genus_taxainfo_mean_norm0.txt genus_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > genus_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/genus/{print NR; exit}' genus_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' genus_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' genus_taxainfo_mean_normalized.txt > genus_taxainfo_mean_normalized.tmp
 mv genus_taxainfo_mean_normalized.tmp genus_taxainfo_mean_normalized.txt
 rm genus_taxainfo_mean_buildnorm.txt genus_taxainfo_mean_holdingtaxinfo.txt genus_taxainfo_mean_norm0.txt
 
@@ -3908,7 +3919,7 @@ wait
 paste family_taxainfo_mean_buildnorm.txt > family_taxainfo_mean_norm0.txt
 paste family_taxainfo_mean_norm0.txt family_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > family_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/family/{print NR; exit}' family_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' family_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' family_taxainfo_mean_normalized.txt > family_taxainfo_mean_normalized.tmp
 mv family_taxainfo_mean_normalized.tmp family_taxainfo_mean_normalized.txt
 rm family_taxainfo_mean_buildnorm.txt family_taxainfo_mean_holdingtaxinfo.txt family_taxainfo_mean_norm0.txt
 
@@ -4427,7 +4438,7 @@ wait
 paste order_taxainfo_mean_buildnorm.txt > order_taxainfo_mean_norm0.txt
 paste order_taxainfo_mean_norm0.txt order_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > order_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/order/{print NR; exit}' order_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' order_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' order_taxainfo_mean_normalized.txt > order_taxainfo_mean_normalized.tmp
 mv order_taxainfo_mean_normalized.tmp order_taxainfo_mean_normalized.txt
 rm order_taxainfo_mean_buildnorm.txt order_taxainfo_mean_holdingtaxinfo.txt order_taxainfo_mean_norm0.txt
 
@@ -4947,7 +4958,7 @@ wait
 paste class_taxainfo_mean_buildnorm.txt > class_taxainfo_mean_norm0.txt
 paste class_taxainfo_mean_norm0.txt class_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > class_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/class/{print NR; exit}' class_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' class_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' class_taxainfo_mean_normalized.txt > class_taxainfo_mean_normalized.tmp
 mv class_taxainfo_mean_normalized.tmp class_taxainfo_mean_normalized.txt
 rm class_taxainfo_mean_buildnorm.txt class_taxainfo_mean_holdingtaxinfo.txt class_taxainfo_mean_norm0.txt
 
@@ -5467,7 +5478,7 @@ wait
 paste phylum_taxainfo_mean_buildnorm.txt > phylum_taxainfo_mean_norm0.txt
 paste phylum_taxainfo_mean_norm0.txt phylum_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > phylum_taxainfo_mean_normalized.txt
 pos=$(awk -v RS='\t' '/phylum/{print NR; exit}' phylum_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' phylum_taxainfo_mean_normalized.tmp
+awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' phylum_taxainfo_mean_normalized.txt > phylum_taxainfo_mean_normalized.tmp
 mv phylum_taxainfo_mean_normalized.tmp phylum_taxainfo_mean_normalized.txt
 rm phylum_taxainfo_mean_buildnorm.txt phylum_taxainfo_mean_holdingtaxinfo.txt phylum_taxainfo_mean_norm0.txt
 
