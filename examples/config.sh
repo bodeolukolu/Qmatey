@@ -16,7 +16,7 @@ simulation_motif_R1=ATGCAT
 simulation_motif_R2=CATG
 fragment_size_range=300,600
 max_read_length=150
-gcov=30
+gcov=3
 
 # Normalization
 ####################################################
