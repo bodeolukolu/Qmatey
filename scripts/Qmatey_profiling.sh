@@ -2598,7 +2598,8 @@ else
 	wait
 
 	for i in *_species_duplicates.txt.gz;do (
-		zcat "$i" | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
+		# zcat "$i" | grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' > ${i%*_species_duplicates.txt.gz}temp.txt
+		awk -F'\t' '$11 != "NA"' OFS='\t' <( zcat "$i") > ${i%*_species_duplicates.txt.gz}temp.txt
 		$gzip ${i%*_species_duplicates.txt.gz}temp.txt
 		rm "$i" &&
 		mv ${i%*_species_duplicates.txt.gz}temp.txt.gz $i
@@ -2686,7 +2687,8 @@ else
 	done
 	wait
 	for i in *_species_unique_uncultured.txt;do (
-		grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' "$i" > "${i%*_species_unique_uncultured.txt}"temp.txt 2> /dev/null
+		# grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' "$i" > "${i%*_species_unique_uncultured.txt}"temp.txt 2> /dev/null
+		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_species_unique_uncultured.txt}"temp.txt &&
 		mv "${i%*_species_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
