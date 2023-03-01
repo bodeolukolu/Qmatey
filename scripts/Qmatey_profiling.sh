@@ -1477,7 +1477,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1510,13 +1510,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1616,14 +1616,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			fi
 		else
@@ -1718,13 +1718,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1756,13 +1756,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1879,13 +1879,13 @@ else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		fi
   		wait
@@ -1943,14 +1943,14 @@ else
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			fi
 		else
@@ -2032,13 +2032,13 @@ else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		fi
   		wait
