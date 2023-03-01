@@ -2677,14 +2677,14 @@ else
 
 	for i in *_unique_reads.txt.gz;do (
 	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' "${i%*_species_unique_reads*}"_species_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > "${i%_species_uniq*}"_species_unique_uncultured.txt ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > "${i%_species_uniq*}"_species_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
 	done
 	wait
 	for i in *_species_unique_uncultured.txt;do (
-		# grep -v $'^\([^\t]*\t\)\{11\}\"NA"\t' "$i" > "${i%*_species_unique_uncultured.txt}"temp.txt 2> /dev/null
 		awk -F '\t' '$11 != "NA"' OFS='\t' "$i" > "${i%*_species_unique_uncultured.txt}"temp.txt &&
 		mv "${i%*_species_unique_uncultured.txt}"temp.txt "$i" 2> /dev/null
 		) &
@@ -3124,8 +3124,8 @@ else
 
 	for i in *_unique_reads.txt.gz;do (
 	   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <(zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7}' OFS='\t' "${i%*_genus_unique_reads*}"_genus_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' OFS='\t' > "${i%_genus_uniq*}"_genus_unique_uncultured.txt
-		 ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' OFS='\t' > "${i%_genus_uniq*}"_genus_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -3576,8 +3576,8 @@ else
 
   for i in *_unique_reads.txt.gz;do (
      paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i")) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6}' OFS='\t' "${i%*_family_unique_reads*}"_family_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16}' OFS='\t' > "${i%_family_uniq*}"_family_unique_uncultured.txt
-		 ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16}' OFS='\t' > "${i%_family_uniq*}"_family_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -4028,8 +4028,8 @@ else
 
   for i in *_unique_reads.txt.gz;do (
      paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4, $5}' OFS='\t' ${i%*_order_unique_reads*}_order_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' OFS='\t' > ${i%_order_uniq*}_order_unique_uncultured.txt
-		 ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' OFS='\t' > ${i%_order_uniq*}_order_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -4482,8 +4482,8 @@ else
 
   for i in *_unique_reads.txt.gz;do (
      paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i" )) <(awk -F '\t' '{print $1, $2, $3, $4}' OFS='\t' ${i%*_class_unique_reads*}_class_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' OFS='\t' > ${i%_class_uniq*}_class_unique_uncultured.txt
-		 ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' OFS='\t' > ${i%_class_uniq*}_class_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
@@ -4935,8 +4935,8 @@ else
 
   for i in *_unique_reads.txt.gz;do (
      paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' <( zcat "$i") ) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' ${i%*_phylum_unique_reads*}_phylum_taxa.txt) | \
-		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > ${i%_phylum_uniq*}_phylum_unique_uncultured.txt
-		 ) &
+		 awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > ${i%_phylum_uniq*}_phylum_unique_uncultured.txt &&
+		 wait ) &
 		 if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			 wait
 		 fi
