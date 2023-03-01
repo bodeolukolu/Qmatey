@@ -128,7 +128,7 @@ if [[ -z $minRD ]]; then
 	export zminRD=true
 fi
 if [[ -z $min_strain_uniq ]]; then
-	export min_strain_uniq=1,2
+	export min_strain_uniq=1
 fi
 if [[ -z $maxindel ]]; then
 	export maxindel=100
@@ -1471,13 +1471,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1510,13 +1510,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1616,14 +1616,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			fi
 		else
@@ -1718,13 +1718,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1756,13 +1756,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						if [[ "$taxids" == true ]]; then
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						else
 							${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 							-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 							wait
 						fi
 						wait
@@ -1879,13 +1879,13 @@ else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		fi
   		wait
@@ -1943,14 +1943,14 @@ else
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			else
 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${blast_location}" -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
 				-out ../alignment/combined_compressed.megablast -remote
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
 			fi
 		else
@@ -2032,13 +2032,13 @@ else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		else
   			${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
 				wait
-				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then touch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "reduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment" > Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 				wait
   		fi
   		wait
@@ -2372,15 +2372,15 @@ cd "${projdir}"/metagenome/results/
 cp -r strain_level strain_level_hold
 for min_strain_uniq_ematch in ${min_strain_uniq//,/ }; do
 	cd ./strain_level
-	if [[ "$genome_scaling" == true ]]; then
-		if [[ "$subsample_shotgun_R1" == false ]]; then
-			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-		else
-			Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-		fi
-	else
-			Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-	fi
+	# if [[ "$genome_scaling" == true ]]; then
+	# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+	# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+	# 	else
+	# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+	# 	fi
+	# else
+	# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" strain "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+	# fi
 
 	file=${projdir}/exclude_taxa.txt
 	# if test -f $file; then
@@ -2827,15 +2827,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" species "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -3276,15 +3276,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" genus "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -3730,15 +3730,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" family "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -4182,15 +4182,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" order "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -4635,15 +4635,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" class "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -5088,15 +5088,15 @@ done
 wait
 
 
-if [[ "$genome_scaling" == true ]]; then
-	if [[ "$subsample_shotgun_R1" == false ]]; then
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
-	else
-		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
-	fi
-else
-		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
-fi
+# if [[ "$genome_scaling" == true ]]; then
+# 	if [[ "$subsample_shotgun_R1" == false ]]; then
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "true" &>/dev/null
+# 	else
+# 		Rscript "${Qmatey_dir}/scripts/phylum_level_genome_scaling.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated "false" &>/dev/null
+# 	fi
+# else
+# 		Rscript "${Qmatey_dir}/scripts/error_zero_inflation.R" phylum "${Qmatey_dir}/tools/R" $min_strain_uniq_ematch $zero_inflated &>/dev/null
+# fi
 
 file=${projdir}/exclude_taxa.txt
 # if test -f $file; then
@@ -5247,12 +5247,12 @@ cross_taxon_validate() {
 	mv ./validated ../strain_level_minUniq_1_validated
 	wait
 	#############################
-	echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 2)"
-	cd "${projdir}"/metagenome/results/strain_level_minUniq_2
-	mkdir -p validated
-	Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
-	mv ./validated ../strain_level_minUniq_2_validated
-	wait
+	# echo -e "${YELLOW}- performing cross-taxon validation and filtering at strain level (mininimum unique seqeuence = 2)"
+	# cd "${projdir}"/metagenome/results/strain_level_minUniq_2
+	# mkdir -p validated
+	# Rscript "${Qmatey_dir}/scripts/cross_taxon_validation.R" "../species_level_validated/species" "strain" "species" "${Qmatey_dir}/tools/R" "./validated/strain" &&
+	# mv ./validated ../strain_level_minUniq_2_validated
+	# wait
 	#############################
 
 	cd "${projdir}"/metagenome/results/
