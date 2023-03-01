@@ -127,6 +127,9 @@ if [[ -z $minRD ]]; then
 	export minRD=1
 	export zminRD=true
 fi
+if [[ -z $hamming_distance ]]; then
+	export hamming_distance=0
+fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1,2
 fi
@@ -2739,6 +2742,74 @@ else
 fi
 
 cd "${projdir}"/metagenome/sighits/sighits_species
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat "${ccf}".blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
+
+cd "${projdir}"/metagenome/sighits/sighits_species
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
 awk '{print $8}' <(zcat sighits.txt.gz) | awk '{gsub(";","\n"); print}' | sort -T "${projdir}"/tmp -u -n | sed -e '1s/staxids/tax_id/' > taxids_sighits.txt && rm sighits.txt.gz
 awk 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}'  ${projdir}/rankedlineage_edited.dmp taxids_sighits.txt | \
@@ -3185,6 +3256,74 @@ else
 
 	rm *_complete_genus_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_genus_OTU.txt
 fi
+
+cd "${projdir}"/metagenome/sighits/sighits_genus
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat "${ccf}".blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
 
 cd "${projdir}"/metagenome/sighits/sighits_genus
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
@@ -3639,6 +3778,73 @@ else
 	rm *_complete_family_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_family_OTU.txt
 fi
 
+cd "${projdir}"/metagenome/sighits/sighits_family
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
 
 cd "${projdir}"/metagenome/sighits/sighits_family
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
@@ -4091,6 +4297,73 @@ else
 	rm *_complete_order_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_order_OTU.txt
 fi
 
+cd "${projdir}"/metagenome/sighits/sighits_order
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
 
 cd "${projdir}"/metagenome/sighits/sighits_order
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
@@ -4544,6 +4817,73 @@ else
 	rm *_complete_class_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_class_OTU.txt
 fi
 
+cd "${projdir}"/metagenome/sighits/sighits_class
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz $i ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
 
 cd "${projdir}"/metagenome/sighits/sighits_class
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
@@ -4997,6 +5337,73 @@ else
 	rm *_complete_phylum_reads.txt *_sighits_temp.txt *_unique_reads.txt.gz *_unique_sequences.txt *_sighits_temp2.txt *_phylum_OTU.txt
 fi
 
+cd "${projdir}"/metagenome/sighits/sighits_phylum
+# remove diagnostic sequences within hamming distance range
+# if [[ "$hamming_distance" -gt 0 ]]; then
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR>1{$10=$10"_line"NR}1' OFS="\t" <(zcat "$i") | gzip > ${i%_sighits*}_line.txt.gz
+# 		mv ${i%_sighits*}_line.txt.gz "$i" ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	cat *_sighits.txt.gz | zcat | grep -v 'qseq' | awk '{print ">"$10"\n"$6}' | awk '{gsub(/-/,"");}1' | gzip > combined.sighits.fasta.gz
+# 	rpm=$((reads_per_megablast * 2))
+# 	mkdir hamming_db
+# 	mkdir hamming_alignment
+# 	cd hamming_db
+# 	zcat ../combined.sighits.fasta.gz | \
+# 	${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/makeblastdb -in - -out hamming_nt -title compute_hamming_distance -parse_seqids -blastdb_version 5 -dbtype nucl
+# 	cd ../
+# 	mkdir splitccf; cd splitccf
+# 	cp ../combined.sighits.fasta.gz ./combined.sighits.fasta.gz
+# 	awk 'NR%200000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined.sighits.fasta.gz 2> /dev/null) & PIDsplit1=$!
+# 	wait $PIDsplit1
+# 	rm combined.sighits.fasta.gz
+# 	for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+# 		mv $ccf ../hamming_alignment/$ccf
+# 		cd ../hamming_alignment
+# 		awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+# 		wait $PIDsplit2
+# 		(
+# 			for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+# 				${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query "$sub" -db "../hamming_db/hamming_nt" -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
+# 				-outfmt "6 qseqid mismatch" -out "${sub}_out.blast"
+# 				wait
+# 				if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; thentouch Megablast_killed; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+# 				wait
+# 				gzip "${sub}_out.blast" &&
+# 				rm "$sub" )&
+# 				if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+# 					wait
+# 				fi
+# 			done
+# 		)
+# 		wait
+# 		for subfile in *_out.blast.gz; do
+# 			cat "$subfile" >> ${ccf}.blast.gz &&
+# 			rm "$subfile" && wait
+# 		done
+# 		wait
+# 		cat ${ccf}.blast.gz >> ../combined_sighits_mismatch.txt.gz &&
+# 		rm "${ccf}".blast.gz; rm "$ccf" &&
+# 		cd ../splitccf/
+# 	done
+# 	cd ../
+# 	rm -rf hamming_db hamming_alignment splitccf
+# 	zcat combined_sighits_mismatch.txt.gz | awk -v hdist="$hamming_distance" '$2 >= 1 && $2 <= hdist' | awk '{print $1}' > combined_sighits_mismatch.txt
+# 	rm combined.sighits.fasta.gz combined_sighits_mismatch.txt.gz
+# 	for i in *_sighits.txt.gz;do (
+# 		awk 'NR==FNR {a[$0]} FNR!=NR && !($10 in a)' combined_sighits_mismatch.txt <(zcat "$i") | awk '{sub(/_line.*$/,"",$10)}1' | awk '{gsub(/ /,"\t");}1' | gzip > ${i%_sighits*}_hamming.txt.gz
+# 		mv ${i%_sighits*}_hamming.txt.gz "$i" ) &
+# 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+# 			wait
+# 		fi
+# 	done
+# 	wait
+# 	rm combined_sighits_mismatch.txt
+# fi
 
 cd "${projdir}"/metagenome/sighits/sighits_phylum
 find . -type f -name '*_sighits.txt.gz' -exec cat {} + > sighits.txt.gz
