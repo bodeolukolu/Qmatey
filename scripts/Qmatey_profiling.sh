@@ -974,24 +974,22 @@ ref_norm () {
 				if [[ "$simulate_reads" == 1 ]]; then
 					:
 				else
-					if [[ "$zminRD" == true ]]; then
-						if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-							minimumRD=4
-							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
-						else
-							minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
-							sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
-							if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-								if [[ "$subsample_shotgun_R1" == false ]]; then
-									minimumRD=$((minimumRD * 5))
-								fi
+					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+						minimumRD=4
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
+						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
+						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
+							if [[ "$subsample_shotgun_R1" == false ]]; then
+								minimumRD=$((minimumRD * 5))
 							fi
-							printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-							zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-							mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 						fi
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\t"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 				# Nreads_input=$(zcat $i | grep '>' | wc -l)
@@ -1040,7 +1038,12 @@ ref_norm () {
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmpfasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				else
-					if [[ "$zminRD" == true ]]; then
+					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+						minimumRD=4
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -1051,8 +1054,6 @@ ref_norm () {
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
 						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
-					else
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
@@ -1244,8 +1245,13 @@ no_norm () {
 					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
 					mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				else
-					if [[ "$zminRD" == true ]]; then
-						minimumRD=$(zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
+					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+						minimumRD=4
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
+						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 							if [[ "$subsample_shotgun_R1" == false ]]; then
@@ -1253,8 +1259,8 @@ no_norm () {
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
-						zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
-						mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
@@ -1285,7 +1291,12 @@ no_norm () {
 					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				else
-					if [[ "$zminRD" == true ]]; then
+					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
+						minimumRD=4
+						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
+						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+					else
 						minimumRD=$(zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t"); print $2}' | awk 'BEGIN{srand();} {a[NR]=$0} END{for(i=1; i<=10000; i++){x=int(rand()*NR) + 1; print a[x];}}' | \
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
@@ -1296,8 +1307,6 @@ no_norm () {
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
 						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
 						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
-					else
-						zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
