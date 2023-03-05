@@ -289,7 +289,6 @@ simulate_reads () {
 		wait
 		while IFS="" read -r p || [ -n "$p" ]; do (
 			endt=$(echo "$p" | awk '{print $1}')
-			endt=$((endt * gcov))
 			cat "$(echo $p | awk '{print $2}')".fasta | awk -v endt="$endt" '{a[NR]=$0}END{for (i=0; i<endt; i++){for(k in a){print a[k]}}}' |\
 			gzip > ../taxa_"$(echo $p | awk '{print $2}')".fa.gz  ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -340,17 +339,25 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > hold1_"${unsim}" &&
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat hold1_${unsim}))"
-			for (( gline=1; gline <= $end; gline+=100000 )); do
-				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
-				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt 50000 ]] || [[ "$cutpos" -gt 50000 ]]; do
-					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
-					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
-					cutpos=$((cutpos / 2)) &&
-					cutpos=$(awk -v minfrag=5000 -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+5000)-(cutpos-5000)))+(cutpos-5000) }')
+			for g in $(seq $gcov); do (
+				for (( gline=1; gline <= $end; gline+=100000 )); do
+					awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz}_gcov${g} &&
+					cutpos=$(shuf -i 500000-1500000 -n1)
+					while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz}_gcov${g})" -gt 50000 ]] || [[ "$cutpos" -gt 50000 ]]; do
+						fold -w "$cutpos" hold2_${unsim%.gz}_gcov${g} > hold2_${unsim%.gz}_gcov${g}.tmp &&
+						mv hold2_${unsim%.gz}_gcov${g}.tmp hold2_${unsim%.gz}_gcov${g} &&
+						cutpos=$((cutpos / 2)) &&
+						cutpos=$(awk -v minfrag=5000 -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+5000)-(cutpos-5000)))+(cutpos-5000) }')
+					done
+					gzip -c hold2_${unsim%.gz}_gcov${g} >> ${unsim}_gcov${g}.tmp && rm hold2_${unsim%.gz}_gcov${g}
 				done
-				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			done
+			cat ${unsim}_gcov*.tmp > ${unsim}.tmp
+			rm ${unsim}_gcov*.tmp
 			zcat ${unsim}.tmp | grep -v '>' | awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 			'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
 			gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' > ${unsim}.tmp1.txt &&
@@ -377,17 +384,25 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > ./hold1_"${unsim}" &&
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
-			for (( gline=1; gline <= $end; gline+=100000 )); do
-				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
-				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt $maxfrag ]] || [[ "$cutpos" -gt $maxfrag ]]; do
-					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
-					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
-					cutpos=$((cutpos / 2)) &&
-					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+$minfrag)-(cutpos-$minfrag)))+(cutpos-$minfrag) }')
+			for g in $(seq $gcov); do (
+				for (( gline=1; gline <= $end; gline+=100000 )); do
+					awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz}_gcov${g} &&
+					cutpos=$(shuf -i 500000-1500000 -n1)
+					while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz}_gcov${g})" -gt $maxfrag ]] || [[ "$cutpos" -gt $maxfrag ]]; do
+						fold -w "$cutpos" hold2_${unsim%.gz}_gcov${g} > hold2_${unsim%.gz}_gcov${g}.tmp &&
+						mv hold2_${unsim%.gz}_gcov${g}.tmp hold2_${unsim%.gz}_gcov${g} &&
+						cutpos=$((cutpos / 2)) &&
+						cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+$minfrag)-(cutpos-$minfrag)))+(cutpos-$minfrag) }')
+					done
+					gzip -c hold2_${unsim%.gz}_gcov${g} >> ${unsim}_gcov${g}.tmp && rm hold2_${unsim%.gz}_gcov${g}
 				done
-				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			done
+			cat ${unsim}_gcov*.tmp > ${unsim}.tmp
+			rm ${unsim}_gcov*.tmp
 			zcat ${unsim}.tmp | grep -v '>' | sed 's/[^'"$RE1a"']*\('"$RE1a"'.*\)/\1/' | sed 's!'"$RE1a"'[^'"$RE1a"']*$!'"$RE1a"'!' | \
 			sed 's/[^'"$RE1b"']*\('"$RE1b"'.*\)/\1/' | sed 's!'"$RE1b"'[^'"$RE1b"']*$!'"$RE1b"'!' | \
 			sed 's/[^'"$RE1c"']*\('"$RE1c"'.*\)/\1/' | sed 's!'"$RE1c"'[^'"$RE1c"']*$!'"$RE1c"'!' | \
@@ -405,17 +420,25 @@ simulate_reads () {
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
-			for (( gline=1; gline<=$end; gline+=100000 )); do
-				awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
-				cutpos=$(shuf -i 500000-1500000 -n1)
-				while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
-					fold -w "$cutpos" hold2_${unsim%.gz} > hold2_${unsim%.gz}.tmp &&
-					mv hold2_${unsim%.gz}.tmp hold2_${unsim%.gz} &&
-					cutpos=$((cutpos / 2)) &&
-					cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
+			for g in $(seq $gcov); do (
+				for (( gline=1; gline<=$end; gline+=100000 )); do
+					awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz}_gcov${g} &&
+					cutpos=$(shuf -i 500000-1500000 -n1)
+					while [[ "$(awk '{ if ( length > L ) { L=length} }END{ print L}' hold2_${unsim%.gz}_gcov${g})" -gt "$maxfrag" ]] || [[ "$cutpos" -gt "$maxfrag" ]]; do
+						fold -w "$cutpos" hold2_${unsim%.gz}_gcov${g} > hold2_${unsim%.gz}_gcov${g}.tmp &&
+						mv hold2_${unsim%.gz}_gcov${g}.tmp hold2_${unsim%.gz}_gcov${g} &&
+						cutpos=$((cutpos / 2)) &&
+						cutpos=$(awk -v minfrag=$minfrag -v cutpos=$cutpos 'BEGIN{srand();print int(rand()*((cutpos+minfrag)-(cutpos-minfrag)))+(cutpos-minfrag) }')
+					done
+					gzip -c hold2_${unsim%.gz}_gcov${g} >> ${unsim}_gcov${g}.tmp && rm hold2_${unsim%.gz}_gcov${g}
 				done
-				gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_"${unsim%.gz}"
+				) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
 			done
+			cat ${unsim}_gcov*.tmp > ${unsim}.tmp
+			rm ${unsim}_gcov*.tmp
 			zcat ${unsim}.tmp | grep -v '>' | awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
 			awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > ${unsim} &&
 			rm hold* *.tmp
