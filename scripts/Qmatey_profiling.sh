@@ -338,6 +338,7 @@ simulate_reads () {
 		if [[ "$simulation_lib" =~ "complete_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > hold1_"${unsim}" &&
+			rm hold0_"${unsim}"
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat hold1_${unsim}))"
 			for g in $(seq $gcov); do
 				for (( gline=1; gline <= $end; gline+=100000 )); do
@@ -369,17 +370,18 @@ simulate_reads () {
 				awk '{ print length"\t"$1}' ${unsim}.tmp.txt | awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | \
 				awk -v maxfrag=$maxfrag 'BEGIN{OFS="\t"} {if ($1 <= maxfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov${g}_${unsim} &&
 				rm -rf "*tmp*" 2> /dev/null
-				rm hold*  2> /dev/null
 				wait
 			done
 			cat gcov*_${unsim} > ${unsim}
 			rm gcov*_${unsim}
+			rm hold*  2> /dev/null
 		fi
 
 		if [[ "$simulation_lib" =~ "partial_digest" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip > ./hold1_"${unsim}" &&
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
+			rm hold0_"${unsim}"
 			for g in $(seq $gcov); do
 				for (( gline=1; gline <= $end; gline+=100000 )); do
 					awk -v pat1=$gline -v pat2=$((gline+99999)) 'NR >= pat1 && NR <= pat2' <(zcat hold1_${unsim}) > hold2_${unsim%.gz} &&
@@ -402,16 +404,18 @@ simulate_reads () {
 				sed 's/[^'"$RE2c"']*\('"$RE2c"'.*\)/\1/' | sed 's!'"$RE2c"'[^'"$RE2c"']*$!'"$RE2c"'!' | \
 				sed 's/[^'"$RE2d"']*\('"$RE2d"'.*\)/\1/' | sed 's!'"$RE2d"'[^'"$RE2d"']*$!'"$RE2d"'!' | \
 				awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
-				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov*_${unsim} &&
-				rm hold* *.tmp
+				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov${g}_${unsim} &&
+				rm *.tmp
 			done
 			cat gcov*_${unsim} > ${unsim}
 			rm gcov*_${unsim}
+			rm hold*
 		fi
 
 		if [[ "$simulation_lib" =~ "shotgun" ]]; then
 			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat "${unsim}") | gzip > ./hold0_"${unsim}"
 			awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' <(zcat ./hold0_"${unsim}") | awk -F"\t" '{print $2}' | awk '{gsub(/a/,"A");gsub(/c/,"C");gsub(/g/,"G");gsub(/t/,"T");}1' | shuf | gzip> ./hold1_"${unsim}" &&
+			rm hold0_"${unsim}"
 			end="$(awk '{ if ( length > L ) { L=length} }END{ print L}' <(zcat ./hold1_${unsim}))"
 			for g in $(seq $gcov); do
 				for (( gline=1; gline<=$end; gline+=100000 )); do
@@ -429,14 +433,15 @@ simulate_reads () {
 				cat ${unsim}_gcov*.tmp > ${unsim}.tmp
 				rm ${unsim}_gcov*.tmp
 				zcat ${unsim}.tmp | grep -v '>' | awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
-				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov*_${unsim} &&
-				rm hold* *.tmp
+				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov${g}_${unsim} &&
+				rm *.tmp
 			done
 			cat gcov*_${unsim} > ${unsim}
 			rm gcov*_${unsim}
+			rm hold*
 		fi
 	done
-	
+
 	for unsim in *.fasta.gz; do
 		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$max_read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
 		awk '{print ">read"NR"_fraglength"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R1.fasta.gz &&
