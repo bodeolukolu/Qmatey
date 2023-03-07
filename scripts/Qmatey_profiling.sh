@@ -1004,7 +1004,7 @@ ref_norm () {
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 							if [[ "$subsample_shotgun_R1" == false ]]; then
-								minimumRD=$((minimumRD * 5))
+								minimumRD=$((minimumRD * 1))
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
@@ -1068,7 +1068,7 @@ ref_norm () {
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 							if [[ "$subsample_shotgun_R1" == false ]]; then
-								minimumRD=$((minimumRD * 5))
+								minimumRD=$((minimumRD * 1))
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
@@ -1275,7 +1275,7 @@ no_norm () {
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 							if [[ "$subsample_shotgun_R1" == false ]]; then
-								minimumRD=$((minimumRD * 5))
+								minimumRD=$((minimumRD * 1))
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
@@ -1321,7 +1321,7 @@ no_norm () {
 						sort -T "${projdir}"/tmp -Vr | awk '{all[NR] = $0} END{print all[int(NR*0.25 - 0.5)]}')
 						if [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
 							if [[ "$subsample_shotgun_R1" == false ]]; then
-								minimumRD=$((minimumRD * 5))
+								minimumRD=$((minimumRD * 1))
 							fi
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
@@ -2537,7 +2537,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -2977,7 +2977,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=97') <(zcat "${i}" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3428,7 +3428,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3882,7 +3882,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
