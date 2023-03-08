@@ -2535,7 +2535,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -2975,7 +2975,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3426,7 +3426,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3880,7 +3880,7 @@ else
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
 					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
