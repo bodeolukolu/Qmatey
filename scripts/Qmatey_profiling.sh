@@ -430,8 +430,6 @@ simulate_reads () {
 					gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_${unsim%.gz}
 				done
 
-				cat ${unsim}_gcov*.tmp > ${unsim}.tmp
-				rm ${unsim}_gcov*.tmp
 				zcat ${unsim}.tmp | grep -v '>' | awk -v maxfrag=$maxfrag '{print substr($0,1,maxfrag)}' | awk '{print length"\t"$1}' | \
 				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov${g}_${unsim} &&
 				rm *.tmp
