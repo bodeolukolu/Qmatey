@@ -2842,10 +2842,10 @@ done
 wait
 paste species_taxainfo_mean_buildnorm.txt > species_taxainfo_mean_norm0.txt
 paste species_taxainfo_mean_norm0.txt species_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > species_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/species/{print NR; exit}' species_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' species_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > species_taxainfo_mean_normalized.tmp
-mv species_taxainfo_mean_normalized.tmp species_taxainfo_mean_normalized.txt
-rm species_taxainfo_mean_buildnorm.txt species_taxainfo_mean_holdingtaxinfo.txt species_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/species/{print NR; exit}' species_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' species_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > species_taxainfo_mean_normalized.tmp
+# mv species_taxainfo_mean_normalized.tmp species_taxainfo_mean_normalized.txt
+rm species_taxainfo_mean_buildnorm.txt species_taxainfo_mean_holdingtaxinfo.txt species_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
@@ -3291,10 +3291,10 @@ done
 wait
 paste genus_taxainfo_mean_buildnorm.txt > genus_taxainfo_mean_norm0.txt
 paste genus_taxainfo_mean_norm0.txt genus_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > genus_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/genus/{print NR; exit}' genus_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' genus_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > genus_taxainfo_mean_normalized.tmp
-mv genus_taxainfo_mean_normalized.tmp genus_taxainfo_mean_normalized.txt
-rm genus_taxainfo_mean_buildnorm.txt genus_taxainfo_mean_holdingtaxinfo.txt genus_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/genus/{print NR; exit}' genus_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' genus_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > genus_taxainfo_mean_normalized.tmp
+# mv genus_taxainfo_mean_normalized.tmp genus_taxainfo_mean_normalized.txt
+rm genus_taxainfo_mean_buildnorm.txt genus_taxainfo_mean_holdingtaxinfo.txt genus_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
@@ -3745,10 +3745,10 @@ done
 wait
 paste family_taxainfo_mean_buildnorm.txt > family_taxainfo_mean_norm0.txt
 paste family_taxainfo_mean_norm0.txt family_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > family_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/family/{print NR; exit}' family_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' family_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > family_taxainfo_mean_normalized.tmp
-mv family_taxainfo_mean_normalized.tmp family_taxainfo_mean_normalized.txt
-rm family_taxainfo_mean_buildnorm.txt family_taxainfo_mean_holdingtaxinfo.txt family_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/family/{print NR; exit}' family_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' family_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > family_taxainfo_mean_normalized.tmp
+# mv family_taxainfo_mean_normalized.tmp family_taxainfo_mean_normalized.txt
+rm family_taxainfo_mean_buildnorm.txt family_taxainfo_mean_holdingtaxinfo.txt family_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
@@ -4197,10 +4197,10 @@ done
 wait
 paste order_taxainfo_mean_buildnorm.txt > order_taxainfo_mean_norm0.txt
 paste order_taxainfo_mean_norm0.txt order_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > order_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/order/{print NR; exit}' order_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' order_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > order_taxainfo_mean_normalized.tmp
-mv order_taxainfo_mean_normalized.tmp order_taxainfo_mean_normalized.txt
-rm order_taxainfo_mean_buildnorm.txt order_taxainfo_mean_holdingtaxinfo.txt order_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/order/{print NR; exit}' order_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' order_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > order_taxainfo_mean_normalized.tmp
+# mv order_taxainfo_mean_normalized.tmp order_taxainfo_mean_normalized.txt
+rm order_taxainfo_mean_buildnorm.txt order_taxainfo_mean_holdingtaxinfo.txt order_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
@@ -4650,10 +4650,10 @@ done
 wait
 paste class_taxainfo_mean_buildnorm.txt > class_taxainfo_mean_norm0.txt
 paste class_taxainfo_mean_norm0.txt class_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > class_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/class/{print NR; exit}' class_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' class_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > class_taxainfo_mean_normalized.tmp
-mv class_taxainfo_mean_normalized.tmp class_taxainfo_mean_normalized.txt
-rm class_taxainfo_mean_buildnorm.txt class_taxainfo_mean_holdingtaxinfo.txt class_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/class/{print NR; exit}' class_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' class_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > class_taxainfo_mean_normalized.tmp
+# mv class_taxainfo_mean_normalized.tmp class_taxainfo_mean_normalized.txt
+rm class_taxainfo_mean_buildnorm.txt class_taxainfo_mean_holdingtaxinfo.txt class_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
@@ -5103,10 +5103,10 @@ done
 wait
 paste phylum_taxainfo_mean_buildnorm.txt > phylum_taxainfo_mean_norm0.txt
 paste phylum_taxainfo_mean_norm0.txt phylum_taxainfo_mean_holdingtaxinfo.txt | awk '{gsub(/\t\t/,"\t"); print $0 }' > phylum_taxainfo_mean_normalized.txt
-pos=$(awk -v RS='\t' '/phylum/{print NR; exit}' phylum_taxainfo_mean_normalized.txt)
-awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' phylum_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > phylum_taxainfo_mean_normalized.tmp
-mv phylum_taxainfo_mean_normalized.tmp phylum_taxainfo_mean_normalized.txt
-rm phylum_taxainfo_mean_buildnorm.txt phylum_taxainfo_mean_holdingtaxinfo.txt phylum_taxainfo_mean_norm0.txt
+# pos=$(awk -v RS='\t' '/phylum/{print NR; exit}' phylum_taxainfo_mean_normalized.txt)
+# awk -v pat="$pos" -F'\t'  'BEGIN {OFS="\t"}; {k=$pat; $pat=""; print k,$0}' phylum_taxainfo_mean_normalized.txt | awk 'BEGIN{FS="\t+"; OFS="\t"} {$1=$1; print}' > phylum_taxainfo_mean_normalized.tmp
+# mv phylum_taxainfo_mean_normalized.tmp phylum_taxainfo_mean_normalized.txt
+rm phylum_taxainfo_mean_buildnorm.txt phylum_taxainfo_mean_holdingtaxinfo.txt phylum_taxainfo_mean_norm0.txt 2> /dev/null
 
 for i in *.txt; do
   awk '{gsub(/-/,"_"); print}' $i > ${i%.txt}.temp &&
