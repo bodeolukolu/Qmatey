@@ -766,6 +766,34 @@ else
 		done
 
 		# if subsampling of WGS reads is not false, subsample with in silico qRRS
+		if [[ "$subsample_shotgun_R1" != false ]]; then
+			echo $subsample_shotgun_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
+			RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
+			RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
+			RE1c=$(grep 'RE3' REnase_R1.txt | awk '{print $2}')
+			RE1d=$(grep 'RE4' REnase_R1.txt | awk '{print $2}')
+			if [[ -z "$RE1b" ]]; then RE1b=999; fi
+			if [[ -z "$RE1c" ]]; then RE1c=999; fi
+			if [[ -z "$RE1d" ]]; then RE1d=999; fi
+			rm REnase_R1.txt
+			if [[ "$subsample_shotgun_R2"  != false ]]; then
+				echo $subsample_shotgun_R2 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
+				RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
+				RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
+				RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
+				RE2d=$(grep 'RE4' REnase_R2.txt | awk '{print $2}')
+				if [[ -z "$RE2b" ]]; then RE2b=999; fi
+				if [[ -z "$RE2c" ]]; then RE2c=999; fi
+				if [[ -z "$RE2d" ]]; then RE2d=999; fi
+				rm REnase_R2.txt
+			else
+				RE2a=999
+				RE2b=999
+				RE2c=999
+				RE2d=999
+			fi
+		fi
+
 	  for i in *.f*; do (
 			frag=${i%.f*}
 			if [[ "$i" == *"_compressed.f"* ]]; then
@@ -775,32 +803,6 @@ else
 					shotgun_min_fragment_length=100
 				fi
 				if [[ "$subsample_shotgun_R1" != false ]]; then
-					echo $subsample_shotgun_R1 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R1.txt
-					RE1a=$(grep 'RE1' REnase_R1.txt | awk '{print $2}')
-					RE1b=$(grep 'RE2' REnase_R1.txt | awk '{print $2}')
-					RE1c=$(grep 'RE3' REnase_R1.txt | awk '{print $2}')
-					RE1d=$(grep 'RE4' REnase_R1.txt | awk '{print $2}')
-					if [[ -z "$RE1b" ]]; then RE1b=999; fi
-					if [[ -z "$RE1c" ]]; then RE1c=999; fi
-					if [[ -z "$RE1d" ]]; then RE1d=999; fi
-					rm REnase_R1.txt
-					if [[ "$subsample_shotgun_R2"  != false ]]; then
-						echo $subsample_shotgun_R2 | awk '{gsub(/,/,"\n");}1' | awk '{print "RE"NR"\t"$1}' > REnase_R2.txt
-						RE2a=$(grep 'RE1' REnase_R2.txt | awk '{print $2}')
-						RE2b=$(grep 'RE2' REnase_R2.txt | awk '{print $2}')
-						RE2c=$(grep 'RE3' REnase_R2.txt | awk '{print $2}')
-						RE2d=$(grep 'RE4' REnase_R2.txt | awk '{print $2}')
-						if [[ -z "$RE2b" ]]; then RE2b=999; fi
-						if [[ -z "$RE2c" ]]; then RE2c=999; fi
-						if [[ -z "$RE2d" ]]; then RE2d=999; fi
-						rm REnase_R2.txt
-					else
-						RE2a=999
-						RE2b=999
-						RE2c=999
-						RE2d=999
-					fi
-
 					awk -v RE1a="$RE1a" -v RE1b="$RE1b" -v RE1c="$RE1c" -v RE1d="$RE1d" -v RE2a="$RE2a" -v RE2b="$RE2b" -v RE2c="$RE2c" -v RE2d="$RE2d" \
 					'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
 					gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
@@ -821,7 +823,6 @@ else
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm "${i%.f*}".tmp1.txt ${i%.f*}.tmp2.txt
 					wait
-
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					zcat "$i" | grep -v '>' | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
