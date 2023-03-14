@@ -2599,7 +2599,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_species
 
   for i in *_taxids_dup.txt; do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -2688,7 +2689,8 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_species
 	for i in *_taxids_uniq.txt; do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		 awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -3042,7 +3044,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_genus
 
   for i in *_taxids_dup.txt; do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -3135,7 +3138,8 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_genus
 	for i in *_taxids_uniq.txt;do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		 awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -3493,7 +3497,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_family
 
   for i in *_taxids_dup.txt; do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -3586,7 +3591,8 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_family
 	for i in *_taxids_uniq.txt; do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		 awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -3947,7 +3953,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_order
 
   for i in *_taxids_dup.txt; do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -4038,7 +4045,8 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_order
 	for i in *_taxids_uniq.txt;do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		 awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -4401,7 +4409,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_class
 
   for i in *_taxids_dup.txt; do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
 	done
   wait
 
@@ -4492,7 +4501,8 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_class
 	for i in *_taxids_uniq.txt; do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		 awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
@@ -4852,7 +4862,8 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_phylum
 
   for i in *_taxids_dup.txt;do
-  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp "$i" > ${i%_taxids_dup*}_dup_inter.txt
+  	awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i | \
+		awk '{$1=""}1' OFS='\t' | awk '{$1=$1}1' OFS='\t' > ${i%_taxids_dup*}_dup_inter.txt
   done
   wait
 
@@ -4945,7 +4956,7 @@ else
 
 	cd "${projdir}"/metagenome/sighits/sighits_phylum
 	for i in *_taxids_uniq.txt; do
-	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp "$i" > ${i%_taxids_uniq*}_uniq_inter.txt
+	   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp $i > ${i%_taxids_uniq*}_uniq_inter.txt
 	done
 	wait
 
