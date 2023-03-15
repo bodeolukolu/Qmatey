@@ -5,6 +5,7 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
+HDsubsample=false
 subsample_shotgun_R1=true
 subsample_shotgun_R2=true
 shotgun_min_read_length=100

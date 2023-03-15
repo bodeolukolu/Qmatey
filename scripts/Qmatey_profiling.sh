@@ -58,6 +58,9 @@ fi
 if [[ -z "$subsample_shotgun_R2" ]] || [[ "$subsample_shotgun_R2" == "true" ]]; then
 	subsample_shotgun_R2=CATG
 fi
+if [[ -z "$HDsubsample" ]]; then
+	HDsubsample=false
+fi
 
 if [[ -z "$simulation_lib" ]]; then
 	simulation_lib=complete_digest
@@ -356,6 +359,10 @@ simulate_reads () {
 				'{gsub(RE1a,RE1a"\n"RE1a); gsub(RE1b,RE1b"\n"RE1b); gsub(RE1c,RE1c"\n"RE1c); gsub(RE1d,RE1d"\n"RE1d); \
 				gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' > ${unsim}.tmp1.txt &&
 				sleep 2
+				if [[ "$HDsubsample" == true ]]; then
+					grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
+					sleep 2
+				fi
 				grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
 				sleep 2
 				grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${unsim}.tmp1.txt 2> /dev/null >> ${unsim}.tmp.txt &&
@@ -806,8 +813,10 @@ else
 					gsub(RE2a,RE2a"\n"RE2a); gsub(RE2b,RE2b"\n"RE2b); gsub(RE2c,RE2c"\n"RE2c); gsub(RE2d,RE2d"\n"RE2d); }1' <(zcat "$i") | \
 					awk -v min="$shotgun_min_fragment_length" 'length >= min' > ${i%.f*}_chopped.txt
 
-					# grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
-					# sleep 2
+					if [[ "$HDsubsample" == true ]]; then
+						grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
+						sleep 2
+					fi
 					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null > ${i%.f*}.tmp2.txt &&
 					sleep 2
 					grep "^$RE1c.*$RE2a$\|^$RE1c.*$RE2b$\|^$RE1c.*$RE2c$\|^$RE1c.*$RE2d$\|^$RE1d.*$RE2a$\|^$RE1d.*$RE2b$\|^$RE1d.*$RE2c$\|^$RE1d.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null >> ${i%.f*}.tmp2.txt &&
