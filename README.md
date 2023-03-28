@@ -181,7 +181,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |simulation_lib|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
 |simulation_motif_R1|ATGCAT|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
 |simulation_motif_R2|CATG|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
-|fragment_size_range|300,600|minimum and maximum genomic fragment size (comma-separated)|string|Optional|
+|fragment_size_range|64,600|minimum and maximum genomic fragment size (comma-separated)|string|Optional|
 |max_read_length|150|maximum read length for each of R1 and/or R2 reads |string|Optional|
 |gcov|3|whole genome sequencing coverage |string|Optional|
 

@@ -66,7 +66,7 @@ if [[ -z "$simulation_lib" ]]; then
 	simulation_lib=complete_digest
 fi
 if [[ -z "$fragment_size_range" ]]; then
-	export fragment_size_range=300,600
+	export fragment_size_range=64,600
 fi
 if [[ -z "$gcov" ]]; then
 	export gcov=3
