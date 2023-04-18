@@ -8,23 +8,22 @@ Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NC
 
 
 ## Features
-* Exact-matching (and exact-matching of consensus) sequence.
 * User-friendly and fully automated
+* Exact-matching at strain Level
+* Exact-matching of consensus sequence (EMC) at species- to phylum-level.
 * User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
-* simulates metagenome sequencing (options: completely-digested, partially-digested, and randomly-sheared/shotgun libraries) and profiling.
-* Input data: whole genome shotgun sequencing (WGS), reduced representation sequencing (RRS/qRRS), and amplicon sequencing (e.g. 16S/ITS).
-* Generates and simulates metagenome profiling of mock/synthetic community (simulated library prep: complete/partial digest and shotgun).
-* Data compression and indexing (reads of all samples into single file) improves speed (avoids alignment of the same read hundreds to thousands of times).
-* speed optimization of parallelized MegaBLAST jobs.
-* Allows for various types of normalization (relative abundance).
-- minimize false positives, false negatives, and multiple testing problems.
+* Input data: amplicon sequencing (e.g. 16S/ITS), shotgun/WGS, reduced representation sequencing (RRS/qRRS).
+* Simulates metagenome sequencing/profiling (complete/partial digest or shotgun/WGS libraries).
+* Data compression and indexing improves speed by hundreds to thousands of times.
+* Speed optimization of parallelized MegaBLAST jobs.
+* Relative abundance based on spike-in/host sequences (recommended).
+- Minimize false positive and false negative rates.
 * implements a novel "cross-taxon validation" method.
-- Eliminate samples with highly enriched zero-inflated data (typically due to technical issues)
-- correlation network bsaed on CCLasso (correlation inference for compositional data through least absolute shrinkage and selection operator)
+- correlation network based on CCLasso method (asensitive to compositional data/multi-way interactions).
 * QC-plots to evaluate the predictive accuracy of profiles.
-* visualization of results
+* Various visualizations.
 
-Qmatey is undergoing beta testing. If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
+If you have any feedback pertaining to Qmatey's operation, please contact Bode Olukolu (bolukolu@utk.edu).
 
 ## Developers
 * Alison K. Adams (UTK, TN)
