@@ -61,8 +61,8 @@ rel_stderr <- subset(rel_stderr, species != class)
 rel_stderr <- subset(rel_stderr, species != phylum)
   
 
-write.table(uniq_seq,paste(args[5],"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
-write.table(mean,paste(args[5],"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
-write.table(norm_mean,paste(args[5],"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
-write.table(stderr,paste(args[5],"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
-write.table(rel_stderr,paste(args[5],"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
+write.table(uniq_seq,paste(args[1],"_taxainfo_unique_sequences.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
+write.table(mean,paste(args[1],"_taxainfo_mean.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
+write.table(norm_mean,paste(args[1],"_taxainfo_mean_normalized.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
+write.table(stderr,paste(args[1],"_taxainfo_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
+write.table(rel_stderr,paste(args[1],"_taxainfo_rel_quantification_accuracy.txt",sep=""), sep="\t",row.names=FALSE, col.names=T, quote = F)
