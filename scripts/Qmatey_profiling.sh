@@ -1465,7 +1465,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		  done
 		done
 		wait
-		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta
+		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
 		wait
 		rm combined_compressed_metagenomes_full.tmp
 		rm combined_compressed_metagenomes_tmp.fasta
@@ -1926,7 +1926,7 @@ else
 		  done
 		done
 		wait
-		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta
+		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
 		rm combined_compressed_metagenomes_full.tmp
 		rm combined_compressed_metagenomes_tmp.fasta
 	fi
