@@ -23,8 +23,10 @@ fi
 
 main () {
   echo -e "${white}\n############################################## ${orange}\n- downloading and installing samtools ${white}\n##############################################${white}"
-  wget https://sourceforge.net/projects/samtools/files/latest/download &&
-  tar -xvjf download*; rm download*; cd samtools*; make; cd ..
+  wget https://github.com/samtools/samtools/releases/download/1.17/samtools-1.17.tar.bz2 &&
+  tar -xvf samtools-1.17.tar.bz2;  cd samtools-1.17; make
+  rm ../samtools-1.17.tar.bz2
+  cd ../
 }
 dirtool=samtools*
 if [ -d $dirtool ]; then
