@@ -4,14 +4,14 @@
 
 
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact-matching algorithm for strain-level profiling. For species-level to phylum-level profiling, it implements exact-matching of consensus sequence that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome assemblies.
+Qmatey is a quantitative metagenomic/microbiome taxonomic binning and profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact matching algorithm for strain-level profiling. For species to phylum level profiling, it implements exact-matching of consensus sequence (EMC) that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome assemblies.
 
 
 ## Features
 * User-friendly and fully automated
 * Exact-matching at strain Level
 * Exact-matching of consensus sequence (EMC) at species- to phylum-level.
-* User-defined parameters for strain- to phylum-level taxonomic identification and quantification.
+* User-defined parameters for strain to phylum level taxonomic classification.
 * Input data: amplicon sequencing (e.g. 16S/ITS), shotgun/WGS, reduced representation sequencing (RRS/qRRS).
 * Simulates metagenome sequencing/profiling (complete/partial digest or shotgun/WGS libraries).
 * Data compression and indexing improves speed by hundreds to thousands of times.
