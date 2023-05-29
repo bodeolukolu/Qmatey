@@ -774,7 +774,8 @@ if [[ "$cluster" == true ]]; then
    n_nodes=1
   fi
   if [[ "$n_nodes" -gt 1 ]]; then
-    while [[ -z "${projdir}/multi_node_run_ready.txt" ]]; do sleep 300; done
+    while [[ ! -f "${projdir}/multi_node_run_ready.txt" ]]; do sleep 300; done
+    wait
     for nn in $(seq 2 "$n_nodes"); do
       printf "njob=${nn}\n\n" | cat <(awk '/extract_parameters_above_for_megablast_splitrun_multi_node_mode/{exit} 1' ${projdir}/Qmatey_run.sh ) - | \
       cat - ${Qmatey_dir}/scripts/megablast_split_node.sh > ${projdir}/megablast_splitrun_node_${nn}.sh &&

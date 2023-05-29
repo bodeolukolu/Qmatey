@@ -1591,7 +1591,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 			fi
 			if [[ $nodes -gt 1 ]]; then
-				count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt | wc -l)
+				count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt 2> /dev/null | wc -l)
 				while [[ "$count_megablast_node" < $(($nodes - 1)) ]]; do
 					sleep 300
 				done
@@ -1837,7 +1837,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 			fi
 			if [[ $nodes -gt 1 ]]; then
-				count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt | wc -l)
+				count_megablast_node=$(ls ${projdir}/megablast_done_node*.txt 2> /dev/null | wc -l)
 				while [[ "$count_megablast_node" < $(($nodes - 1)) ]]; do
 					sleep 300
 				done

@@ -45,17 +45,17 @@ blast () {
     echo -e "${YELLOW}- performing a local BLAST in multi-node mode"
     cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
 		for ccf in $(ls * | sort -V); do
-			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/$ccf
+			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/
 			cd /tmp/Qmatey_multi_node/metagenome/alignment
 			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 					-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db "${local_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 					-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
@@ -83,17 +83,17 @@ blast () {
   	echo -e "${YELLOW}- performing custom BLAST in multi-node mode"
     cd ${projdir}/metagenome/haplotig/splitccf/splitccf_node${njob}
 		for ccf in $(ls * | sort -V); do
-			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/$ccf
+			mv $ccf /tmp/Qmatey_multi_node/metagenome/alignment/
 			cd /tmp/Qmatey_multi_node/metagenome/alignment
 			awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 					-qcov_hsp_perc $qcov -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				else
-					${Qmatey_dir}/tools/ncbi-blast-2.13.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
+					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db "${custom_db}" -num_threads 1 -perc_identity $percid -max_target_seqs $max_target \
 					-qcov_hsp_perc $qcov -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out ${sub}_out.blast &&
 					wait
 				fi
