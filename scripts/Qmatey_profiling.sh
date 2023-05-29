@@ -1596,10 +1596,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					sleep 300
 				done
 				wait
+				cd "${projdir}"/metagenome/alignment
 				cat combined_compressed_node*.megablast.gz > combined_compressed.megablast.gz
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
+			cd "${projdir}"/metagenome/haplotig/splitccf/
 			rmdir * 2> /dev/null
 			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
 			cd ../
@@ -1842,10 +1844,12 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					sleep 300
 				done
 				wait
+				cd "${projdir}"/metagenome/alignment
 				cat combined_compressed_node*.megablast.gz > combined_compressed.megablast.gz
 				rm combined_compressed_node*.megablast.gz
 				wait
 			fi
+			cd "${projdir}"/metagenome/haplotig/splitccf/
 			rmdir * 2> /dev/null
 			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
 			cd ../
