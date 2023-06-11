@@ -989,7 +989,9 @@ ref_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						smR1=$REmotif_R1$sm
+						smR2=$REmotif_R2$sm
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2| awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
@@ -1052,7 +1054,9 @@ ref_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						smR1=$REmotif_R1$sm
+						smR2=$REmotif_R2$sm
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2| awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
@@ -1259,7 +1263,9 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+						smR1=$REmotif_R1$sm
+						smR2=$REmotif_R2$sm
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2 | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 						wait
 					done
 				else
@@ -1305,7 +1311,9 @@ no_norm () {
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
 					for sm in ${startmotif//,/ }; do
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep ^$sm | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
+						smR1=$REmotif_R1$sm
+						smR2=$REmotif_R2$sm
+						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2 | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
 						wait
 					done
 				else
@@ -1445,7 +1453,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		:> combined_compressed_metagenomes_full.tmp
 		for sm in ${startmotif//,/ }; do
 			for i in *.fasta.gz; do
-				zcat $i | grep -v '^>' | grep '^............'$sm | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+				smR1=$REmotif_R1$sm
+				smR2=$REmotif_R2$sm
+				zcat $i | grep -v '^>' | grep -e '^'$smR1 -e '^'$smR2 | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 				wait
 			done
 			cat combined_compressed_metagenomes.tmp >> combined_compressed_metagenomes_full.tmp
@@ -1460,8 +1470,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		for sma in ${startmotifa//,/ }; do
 		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
 		  for smb in ${startmotifb//,/ }; do
-				sm=$sma$smb
-				cat combined_compressed_metagenomes_full.tmp | grep ^$sm | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
+				smR1=$REmotif_R1$sma$smb
+				smR2=$REmotif_R2$sma$smb
+				cat combined_compressed_metagenomes_full.tmp | grep -e '^'$smR1 -e '^'$smR2 | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
 		  done
 		done
 		wait
@@ -1480,7 +1491,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 			if [[ -d splitccf ]]; then
 				cd splitccf
 			else
@@ -1510,7 +1522,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 				touch ${projdir}/multi_node_run_ready.txt
 
-				echo -e "${YELLOW}- performing a local BLAST in multi-node mode"
+				echo -e "${YELLOW}- performing local BLAST in multi-node mode"
 				cd "${projdir}"/metagenome/haplotig/splitccf/splitccf_node1
 				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 					mv $ccf ${projdir}/metagenome/alignment/$ccf
@@ -1603,7 +1615,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			fi
 			cd "${projdir}"/metagenome/haplotig/splitccf/
 			rmdir * 2> /dev/null
-			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
+			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_*.sh 2> /dev/null
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
@@ -1611,7 +1623,15 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 		fi
 		wait
+
 		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
+		fi
+
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -1663,7 +1683,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db $blast_location -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1688,6 +1708,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		if test -f ../alignment/combined_compressed.megablast; then
 			$gzip ../alignment/combined_compressed.megablast &&
 			rm ../alignment/combined_compressed.megablast
+		fi
+
+		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
 		fi
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
@@ -1730,7 +1758,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 			if [[ -d splitccf ]]; then
 			  cd splitccf
 			else
@@ -1851,7 +1879,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			fi
 			cd "${projdir}"/metagenome/haplotig/splitccf/
 			rmdir * 2> /dev/null
-			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_${nn}.sh 2> /dev/null
+			rm "${projdir}"/megablast_node* ${projdir}/multi_node_run_ready.txt ${projdir}/megablast_splitrun_node_*.sh 2> /dev/null
 			cd ../
 			rmdir splitccf 2> /dev/null
 		else
@@ -1861,6 +1889,13 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		wait
 		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
+		fi
+
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -1910,7 +1945,9 @@ else
 		:> combined_compressed_metagenomes_full.tmp
 		for sm in ${startmotif//,/ }; do
 			for i in *.fasta.gz; do
-				zcat $i | grep -v '^>' | grep '^............'$sm | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+				smR1=$REmotif_R1$sm
+				smR2=$REmotif_R2$sm
+				zcat $i | grep -v '^>' | grep -e '^'$smR1 -e '^'$smR2 | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 				wait
 			done
 			cat combined_compressed_metagenomes.tmp >> combined_compressed_metagenomes_full.tmp
@@ -1925,8 +1962,9 @@ else
 		for sma in ${startmotifa//,/ }; do
 		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
 		  for smb in ${startmotifb//,/ }; do
-				sm=$sma$smb
-				cat combined_compressed_metagenomes_full.tmp | grep ^$sm | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
+				smR1=$REmotif_R1$sma$smb
+				smR2=$REmotif_R2$sma$smb
+				cat combined_compressed_metagenomes_full.tmp | grep -e '^'$smR1 -e '^'$smR2 | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
 		  done
 		done
 		wait
@@ -1944,7 +1982,7 @@ else
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
@@ -1966,7 +2004,15 @@ else
 			echo -e "${YELLOW}- Skipping BLAST and filtering hits based on defined parameters"
 		fi
 		wait
+
 		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
+		fi
+
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -2007,7 +2053,7 @@ else
 
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db $blast_location -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -2032,6 +2078,14 @@ else
 		if test -f ../alignment/combined_compressed.megablast; then
 			$gzip ../alignment/combined_compressed.megablast &&
 			rm ../alignment/combined_compressed.megablast
+		fi
+
+		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
 		fi
 
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
@@ -2097,7 +2151,7 @@ else
 
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
-		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  || [[ ! -d ${projdir}/metagenome/alignment/cultured ]]; then
+		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
   		if [[ "$taxids" == true ]]; then
   			${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
   			-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out combined_compressed.megablast
@@ -2120,6 +2174,13 @@ else
 
 		wait
 		cd "${projdir}"/metagenome/alignment/
+		if test -f "${projdir}/remove_taxa.txids"; then
+			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			rm combined_compressed.megablast.gz &&
+			gzip combined_compressed.megablast &&
+			wait
+		fi
+
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
