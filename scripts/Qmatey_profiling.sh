@@ -1448,33 +1448,14 @@ if [[ "$fastMegaBLAST" == true ]]; then
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		export startmotif=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		:> combined_compressed_metagenomes.tmp
-		:> combined_compressed_metagenomes_full.tmp
-		for sm in ${startmotif//,/ }; do
-			for i in *.fasta.gz; do
-				smR1=$REmotif_R1$sm
-				smR2=$REmotif_R2$sm
-				zcat $i | grep -v '^>' | grep -e '^'$smR1 -e '^'$smR2 | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
-				wait
-			done
-			cat combined_compressed_metagenomes.tmp >> combined_compressed_metagenomes_full.tmp
-			:> combined_compressed_metagenomes.tmp
+		for i in *.fasta.gz; do
+			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 			wait
 		done
 		wait
+		awk '{A[$1]++}END{for(i in A)print i}' combined_compressed_metagenomes.tmp > combined_compressed_metagenomes_full.tmp
 		rm combined_compressed_metagenomes.tmp
-
-		:> combined_compressed_metagenomes_tmp.fasta
-		export startmotifa=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		for sma in ${startmotifa//,/ }; do
-		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		  for smb in ${startmotifb//,/ }; do
-				smR1=$REmotif_R1$sma$smb
-				smR2=$REmotif_R2$sma$smb
-				cat combined_compressed_metagenomes_full.tmp | grep -e '^'$smR1 -e '^'$smR2 | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
-		  done
-		done
+		LC_ALL=C sort -T "${projdir}"/tmp combined_compressed_metagenomes_full.tmp > combined_compressed_metagenomes_tmp.fasta
 		wait
 		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
 		wait
@@ -1940,33 +1921,14 @@ else
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		export startmotif=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		:> combined_compressed_metagenomes.tmp
-		:> combined_compressed_metagenomes_full.tmp
-		for sm in ${startmotif//,/ }; do
-			for i in *.fasta.gz; do
-				smR1=$REmotif_R1$sm
-				smR2=$REmotif_R2$sm
-				zcat $i | grep -v '^>' | grep -e '^'$smR1 -e '^'$smR2 | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
-				wait
-			done
-			cat combined_compressed_metagenomes.tmp >> combined_compressed_metagenomes_full.tmp
-			:> combined_compressed_metagenomes.tmp
+		for i in *.fasta.gz; do
+			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 			wait
 		done
 		wait
+		awk '{A[$1]++}END{for(i in A)print i}' combined_compressed_metagenomes.tmp > combined_compressed_metagenomes_full.tmp
 		rm combined_compressed_metagenomes.tmp
-
-		:> combined_compressed_metagenomes_tmp.fasta
-		export startmotifa=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		for sma in ${startmotifa//,/ }; do
-		  export startmotifb=AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-		  for smb in ${startmotifb//,/ }; do
-				smR1=$REmotif_R1$sma$smb
-				smR2=$REmotif_R2$sma$smb
-				cat combined_compressed_metagenomes_full.tmp | grep -e '^'$smR1 -e '^'$smR2 | sort -T "${projdir}"/tmp >> combined_compressed_metagenomes_tmp.fasta
-		  done
-		done
+		LC_ALL=C sort -T "${projdir}"/tmp combined_compressed_metagenomes_full.tmp > combined_compressed_metagenomes_tmp.fasta
 		wait
 		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
 		rm combined_compressed_metagenomes_full.tmp
