@@ -168,8 +168,6 @@ Using a text editor, save a file containing any of the following variables as 'c
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|original input data: RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
-|REmotif_R1|na|RE motif (overhang) at the beginning of read 1|string|Optional|
-|REmotif_R2|na|RE motif (overhang) at the beginning of read 2|string|Optional|
 |HDsubsample|false|high-density subsampling reads based on combinations motifs flanking reads|string|Optional|
 |subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false|string|Optional|
 |subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false|string|Optional|
@@ -229,7 +227,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |nodes|1|number of nodes|integer|Optional|
 |minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
-|reads_per_megablast|1000 or 20|number of reads processed per thread during MegaBLAST: 1000 for RRS/WGS and 20 for 16S/ITS/amplicon|integer|Optional|
+|reads_per_megablast|10000 or 100|number of reads processed per thread during MegaBLAST: 10000 for RRS/WGS and 100 for 16S/ITS/amplicon|integer|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
@@ -254,8 +252,6 @@ shotgun_min_read_length=50
 # simulation_parameters
 ####################################################
 simulation_lib=complete_digest
-simulation_motif_R1=ATGCAT
-simulation_motif_R2=CATG
 fragment_size_range=50,600
 max_read_length=150
 gcov=3
@@ -297,7 +293,7 @@ compositional_corr=strain,species,genus,family,order,class,phylum
 ####################################################
 nodes=1
 minRD=0
-reads_per_megablast=1000
+reads_per_megablast=10000
 genome_scaling=true
 zero_inflated=0.01
 exclude_rRNA=false

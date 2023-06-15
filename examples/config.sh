@@ -5,8 +5,6 @@ threads=24
 cluster=false
 samples_alt_dir=false
 library_type=qRRS
-REmotif_R1=TGCAT
-REmotif_R2=CATG
 HDsubsample=false
 subsample_shotgun_R1=true
 subsample_shotgun_R2=true
@@ -53,7 +51,7 @@ compositional_corr=strain,species,genus,family,order,class,phylum
 ####################################################
 nodes=1
 minRD=0
-reads_per_megablast=1000
+reads_per_megablast=10000
 zero_inflated=0.01
 exclude_rRNA=false
 annotate_seq=false

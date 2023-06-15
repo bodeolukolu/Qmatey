@@ -151,7 +151,7 @@ export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
-  	export reads_per_megablast=1000
+  	export reads_per_megablast=10000
   fi
 fi
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -159,27 +159,27 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	export exclude_rRNA=false
 	if (echo $local_db | grep -q 'nt'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_megablast=100
     fi
   fi
   if (echo $local_db | grep -q 'refseq'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_megablast=10000
     fi
   fi
   if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_megablast=100
     fi
   fi
   if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_megablast=100
     fi
   fi
   if [[ "$blast_location" == "custom" ]]; then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_megablast=10000
     fi
   fi
 fi
@@ -973,7 +973,7 @@ echo -e "\e[97m########################################################\n \e[38;
 ref_norm () {
 	cd "${projdir}"
 	# print "sample\treads_input\tsubsetted_filtered_reads\tPercent_retained" ${projdir}/metagenome/proportion_retained_reads.txt
-	export startmotif=TTT,ATT,CTT,GTT,TAT,AAT,CAT,GAT,TCT,ACT,CCT,GCT,TGT,AGT,CGT,GGT,TTA,ATA,CTA,GTA,TAA,AAA,CAA,GAA,TCA,ACA,CCA,GCA,TGA,AGA,CGA,GGA,TTC,ATC,CTC,GTC,TAC,AAC,CAC,GAC,TCC,ACC,CCC,GCC,TGC,AGC,CGC,GGC,TTG,ATG,CTG,GTG,TAG,AAG,CAG,GAG,TCG,ACG,CCG,GCG,TGG,AGG,CGG,GGG
+	# export startmotif=TTT,ATT,CTT,GTT,TAT,AAT,CAT,GAT,TCT,ACT,CCT,GCT,TGT,AGT,CGT,GGT,TTA,ATA,CTA,GTA,TAA,AAA,CAA,GAA,TCA,ACA,CCA,GCA,TGA,AGA,CGA,GGA,TTC,ATC,CTC,GTC,TAC,AAC,CAC,GAC,TCC,ACC,CCC,GCC,TGC,AGC,CGC,GGC,TTG,ATG,CTG,GTG,TAG,AAG,CAG,GAG,TCG,ACG,CCG,GCG,TGG,AGG,CGG,GGG
 	if [[ -z "$(ls -A ./norm_ref/*.dict 2> /dev/null)" ]]; then
 		echo -e "$1 \e[31m normalization reference folder is empty, Qmatey will not exclude any read"
 		echo -e "$1 \e[31m Qmatey will use read coverage of samples for normalization"
@@ -988,12 +988,7 @@ ref_norm () {
 				:
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					for sm in ${startmotif//,/ }; do
-						smR1=$REmotif_R1$sm
-						smR2=$REmotif_R2$sm
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2| awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
-						wait
-					done
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
@@ -1053,12 +1048,7 @@ ref_norm () {
 				:
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					for sm in ${startmotif//,/ }; do
-						smR1=$REmotif_R1$sm
-						smR2=$REmotif_R2$sm
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2| awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
-						wait
-					done
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
@@ -1262,12 +1252,7 @@ no_norm () {
 				:
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					for sm in ${startmotif//,/ }; do
-						smR1=$REmotif_R1$sm
-						smR2=$REmotif_R2$sm
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2 | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
-						wait
-					done
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 				else
 					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
 					wait
@@ -1310,12 +1295,7 @@ no_norm () {
 				:
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					for sm in ${startmotif//,/ }; do
-						smR1=$REmotif_R1$sm
-						smR2=$REmotif_R2$sm
-						zcat "$i" 2> /dev/null | awk 'NR%2==0' | grep -e '^'$smR1 -e '^'$smR2 | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip >> ${i%.f*}_compressed.fasta.gz
-						wait
-					done
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				else
 					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
