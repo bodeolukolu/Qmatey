@@ -151,7 +151,7 @@ export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
-  	export reads_per_megablast=10000
+  	export reads_per_megablast=1000
   fi
 fi
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -159,27 +159,27 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	export exclude_rRNA=false
 	if (echo $local_db | grep -q 'nt'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=100
+      export reads_per_megablast=20
     fi
   fi
   if (echo $local_db | grep -q 'refseq'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=10000
+      export reads_per_megablast=1000
     fi
   fi
   if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=100
+      export reads_per_megablast=20
     fi
   fi
   if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=100
+      export reads_per_megablast=20
     fi
   fi
   if [[ "$blast_location" == "custom" ]]; then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=10000
+      export reads_per_megablast=1000
     fi
   fi
 fi
@@ -1449,11 +1449,17 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		done
 		wait
 	fi
+	if [[ -n "$(ls ${projdir}/metagenome/alignment/subfile* 2> /dev/null)" ]]; then
+		mv ${projdir}/metagenome/alignment ${projdir}/metagenome/alignment_w_subfile
+	fi
+
+
 
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
 
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+			mv ${projdir}/metagenome/alignment_w_subfile ${projdir}/metagenome/alignment 2> /dev/null
 			if [[ -d splitccf ]]; then
 				cd splitccf
 			else
@@ -1586,13 +1592,6 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -1645,6 +1644,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 	if [[ "$blast_location" =~ "remote" ]]; then
 		echo -e "${YELLOW}- performing a remote BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+			mv ${projdir}/metagenome/alignment_w_subfile ${projdir}/metagenome/alignment 2> /dev/null
 			if [[ "$taxids" == true ]]; then
 				${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) -db $blast_location -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 				-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" \
@@ -1672,13 +1672,6 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		fi
 
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -1720,6 +1713,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 	if [[ "$blast_location" =~ "custom" ]]; then
 		echo -e "${YELLOW}- performing custom BLAST"
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]  && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+			mv ${projdir}/metagenome/alignment_w_subfile ${projdir}/metagenome/alignment 2> /dev/null
 			if [[ -d splitccf ]]; then
 			  cd splitccf
 			else
@@ -1850,13 +1844,6 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -i $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | awk '{gsub(/77133;/,""); gsub(/340016;/,""); gsub(/175245;/,""); gsub(/137771;/,""); }1' | grep -vi $'uncultured\|unculture\|\t77133\t\|\t340016\t\|\t175245\t\|\t137771\t' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -1948,13 +1935,6 @@ else
 		wait
 
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -2023,13 +2003,6 @@ else
 		fi
 
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA == false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
@@ -2116,13 +2089,6 @@ else
 
 		wait
 		cd "${projdir}"/metagenome/alignment/
-		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
-			rm combined_compressed.megablast.gz &&
-			gzip combined_compressed.megablast &&
-			wait
-		fi
-
 		if test -f ${projdir}/metagenome/alignment/combined_compressed.megablast.gz && [[ $exclude_rRNA ==  false ]]; then
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -i 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/uncultured_combined_compressed.megablast.gz &&
 			zcat ${projdir}/metagenome/alignment/combined_compressed.megablast.gz | grep -vi 'uncultured\|unculture' | $gzip > ${projdir}/metagenome/alignment/tmp_compressed.megablast.gz &&
