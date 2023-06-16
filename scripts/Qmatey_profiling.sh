@@ -1587,7 +1587,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -1673,7 +1673,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -1851,7 +1851,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -1949,7 +1949,7 @@ else
 
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -2024,7 +2024,7 @@ else
 
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -2117,7 +2117,7 @@ else
 		wait
 		cd "${projdir}"/metagenome/alignment/
 		if test -f "${projdir}/remove_taxa.txids"; then
-			awk 'NR == FNR {a[$1]; next} !($1 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
+			awk 'NR==FNR {a[$1]} FNR!=NR && !($9 in a)' ${projdir}/remove_taxa.txids <(zcat combined_compressed.megablast.gz) > combined_compressed.megablast &&
 			rm combined_compressed.megablast.gz &&
 			gzip combined_compressed.megablast &&
 			wait
@@ -2296,6 +2296,12 @@ if test -f $lineagedb; then
 			exit 0
 		fi
 	fi
+fi
+
+if test -f "${projdir}/remove_taxa.txids"; then
+  awk 'NR==FNR {a[$1]} FNR!=NR && !($1 in a)' ${projdir}/remove_taxa.txids ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.temp &&
+  mv ${projdir}/rankedlineage_edited.temp ${projdir}/rankedlineage_edited.dmp &&
+  wait
 fi
 
 cd "${projdir}"/metagenome/alignment
@@ -6014,5 +6020,6 @@ else
 fi
 cd "${projdir}"
 rm -rf "${projdir}"/metagenome*/sighits
+rm rankedlineage_edited.dmp
 touch Analysis_Complete
 echo -e "\n\n${magenta}- Run Complete ${white}"
