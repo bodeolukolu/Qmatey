@@ -555,11 +555,11 @@ else
 			for i in *.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *".R1"* ]]; then
-						cat ${i%.R1*}* > ../${i/.R1/} && rm "${i%.R1*}"* 2> /dev/null
+						cat ${i%.R1*}.* > ../${i/.R1/} && rm "${i%.R1*}".* 2> /dev/null
 					elif [[ "$i" == *_R1* ]]; then
-						cat ${i%_R1*}* > ../${i/_R1/} && rm "${i%_R1*}"* 2> /dev/null
+						cat ${i%_R1*}_* > ../${i/_R1/} && rm "${i%_R1*}"_* 2> /dev/null
 					else
-						cat ${i%.f*}* > ../$i && rm "${i%.f*}"* 2> /dev/null
+						cat ${i%.f*}.* > ../$i && rm "${i%.f*}".* 2> /dev/null
 					fi
 				fi ) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -577,11 +577,11 @@ else
 			for i in *.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *".R1"* ]]; then
-						cat ${i%.R1*}* > ../${i/.R1/} && rm "${i%.R1*}"* 2> /dev/null
+						cat ${i%.R1*}.* > ../${i/.R1/} && rm "${i%.R1*}".* 2> /dev/null
 					elif [[ "$i" == *_R1* ]]; then
-						cat ${i%_R1*}* > ../${i/_R1/} && rm "${i%_R1*}"* 2> /dev/null
+						cat ${i%_R1*}_* > ../${i/_R1/} && rm "${i%_R1*}"_* 2> /dev/null
 					else
-						cat ${i%.f*}* > ../$i && rm "${i%.f*}"* 2> /dev/null
+						cat ${i%.f*}.* > ../$i && rm "${i%.f*}".* 2> /dev/null
 					fi
 				fi ) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -598,11 +598,11 @@ else
 			for i in *R1.f*; do (
 				if [[ ! "$i" =~ R2.f ]]; then
 					if [[ "$i" == *.R1* ]]; then
-						cat ${i%.R1*}* ../se/${i%.R1*}* 2> /dev/null > ../${i/.R1/} && rm "${i%.R1*}"* ../se/${i%.R1*}* 2> /dev/null
+						cat ${i%.R1*}.* ../se/${i%.R1*}.* 2> /dev/null > ../${i/.R1/} && rm "${i%.R1*}".* ../se/${i%.R1*}.* 2> /dev/null
 					elif [[ "$i" == *_R1* ]]; then
-						cat ${i%_R1*}* ../se/${i%_R1*}* 2> /dev/null > ../${i/_R1/} && rm "${i%_R1*}"* ../se/${i%_R1*}* 2> /dev/null
+						cat ${i%_R1*}_* ../se/${i%_R1*}_* 2> /dev/null > ../${i/_R1/} && rm "${i%_R1*}"_* ../se/${i%_R1*}_* 2> /dev/null
 					else
-						cat ${i%.f*}* ../se/${i%.f*}* 2> /dev/null > ../${i} && rm "${i%.f*}"* ../se/${i%.f*}* 2> /dev/null
+						cat ${i%.f*}.* ../se/${i%.f*}.* 2> /dev/null > ../${i} && rm "${i%.f*}".* ../se/${i%.f*}.* 2> /dev/null
 					fi
 				fi ) &
 				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then

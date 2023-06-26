@@ -307,7 +307,7 @@ annotate_seq=false
 
 
 
-## Select Article Referencing GBSapp
+## Select Article Referencing Qmatey
 1. manuscript in preparation
 
 
@@ -347,4 +347,4 @@ While the installation of samtools are automated, the installation requires some
 Versioning will follow major.minor.patch <a href="https://semver.org">semantic versioning format</a>.
 
 ## License
-<a href="https://github.com/bodeolukolu/GBSapp/blob/master/LICENSE">Apache License Version 2.0</a>
+<a href="https://github.com/bodeolukolu/Qmatey/blob/master/LICENSE">Apache License Version 2.0</a>
