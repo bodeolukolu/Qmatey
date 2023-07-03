@@ -927,42 +927,9 @@ else
 		done
 		wait
 
-		ncontigscaffold=$(grep '>' master_ref.fasta | wc -l)
-		if [[ $ncontigscaffold -gt 1000 ]]; then
-			nfakechr=$((threads/2))
-			awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' < master_ref.fasta > master_ref.txt
-			awk 'BEGIN{srand() }
-				{ lines[++d]=$0 }
-					END{
-					while (1){
-						if (e==d) {break}
-							RANDOM = int(1 + rand() * d)
-							if ( RANDOM in lines  ){
-							print lines[RANDOM]
-							delete lines[RANDOM]
-							++e
-						}
-					}
-				}' master_ref.txt > master_ref0.fasta
-			flength=$(wc -l master_ref0.fasta | awk '{print $1}'); nsplit=$(( flength / nfakechr ))
-			split -a 2 -d -l $nsplit master_ref0.fasta Chr
-			rm master_ref*
-			for i in Chr*; do
-				Nstitch=$(printf "A%.0s" $(seq 100))
-				awk -v Nstitch=$Nstitch '{print $1"\t"$2}' $i | awk '{gsub(/\t/,"\n"); print $0}' > "${i}".fasta
-				grep -v '>'  "${i}".fasta |  awk '/^>/{if(N>0) printf("\n"); ++N; printf("%s\t",$0);next;} {printf("%s",$0);}END{printf("\n");}' | fold -w 100 > "${i}".txt
-			done
-			wait
-			for filename in Chr*.txt; do
-				echo ">""${filename%.txt}" >> master_ref.fasta
-				cat "$filename" >> master_ref.fasta
-			done
-			wait
-			rm Chr*
-		fi
-			$bwa index -a bwtsw master_ref.fasta
-			$samtools faidx master_ref.fasta
-			$java -jar $picard CreateSequenceDictionary REFERENCE=master_ref.fasta    OUTPUT=master_ref.dict
+		$bwa index -a bwtsw master_ref.fasta
+		$samtools faidx master_ref.fasta
+		$java -jar $picard CreateSequenceDictionary REFERENCE=master_ref.fasta    OUTPUT=master_ref.dict
 	fi
 fi
 
