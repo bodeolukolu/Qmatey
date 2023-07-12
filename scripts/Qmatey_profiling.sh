@@ -162,7 +162,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
       export reads_per_megablast=20
     fi
   fi
-  if (echo $local_db | grep -q 'refseq'); then
+  if (echo $local_db | grep -q 'ref'); then
     if [[ -z $reads_per_megablast ]]; then
       export reads_per_megablast=1000
     fi
@@ -923,7 +923,7 @@ else
 		echo -e "${YELLOW}- indexing normalization reference genome ${WHITE}"
 		for i in *.fa*; do
 			n=">${i%.fa*}_"
-			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(n,">"); print}' | awk -v n="$n" '{gsub(/>/,n); print}' >> master_ref.fasta
+			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
 		done
 		wait
 
@@ -1365,7 +1365,7 @@ if (echo $local_db | grep -q 'nt'); then
 		export percid=95
 	fi
 fi
-if (echo $local_db | grep -q 'refseq'); then
+if (echo $local_db | grep -q 'ref'); then
 	if [[ -z $percid ]]; then
 		export percid=95
 	fi
