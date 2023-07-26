@@ -271,7 +271,6 @@ local_db=/media/sdd/ncbi_db/refseq/refseq_rna,/media/sdd/ncbi_db/refseq/ref_viro
 taxids=true
 input_dbfasta=NA
 map_taxids=NA
-hamming_distance=1
 
 
 ### Taxonomic_Profiling_and_Filtering

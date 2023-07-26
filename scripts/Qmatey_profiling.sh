@@ -925,6 +925,10 @@ else
 			n=">${i%.fa*}_"
 			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
 		done
+		for i in *.fna; do
+			n=">${i%.fa*}_"
+			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+		done
 		wait
 
 		$bwa index -a bwtsw master_ref.fasta
@@ -1118,7 +1122,8 @@ ref_norm () {
 			for i in *.bam; do (
 				$samtools view -f 4 $i | awk '{print $1}' | \
 				awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ../samples/${i%.bam}_compressed.fasta.gz | awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | awk '{gsub(/>/,"");}1') > ../samples/${i%.bam}_compressed.fasta &&
-				rm "$i" ../samples/${i%.bam}_compressed.fasta.gz &&
+				if test -f ../samples/${i%.bam}_compressed.fasta; then rm "$i" ../samples/${i%.bam}_compressed.fasta.gz; fi
+				wait
 				gzip ../samples/${i%.bam}_compressed.fasta &&
 				wait ) &
 	      if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -1171,7 +1176,9 @@ ref_norm () {
 				fi
 			done
 			wait
-			rm *.bam "${projdir}"/samples/*_compressed.fasta.gz
+			find ./haplotig/ -size 0 -delete
+			if [[ "$(ls ./haplotig/${i%.bam}_metagenome.fasta.gz | wc -l)" -gt 0 ]]; then rm *.bam "${projdir}"/samples/*_compressed.fasta.gz; fi
+			wait
 		fi
 
 		if [[ "${norm_method}" == samples ]]; then
