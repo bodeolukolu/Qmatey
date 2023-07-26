@@ -1062,7 +1062,10 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+					if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+						$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
+						wait
+					fi
 					cd "${projdir}"/samples
 					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
 					#$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
@@ -1103,7 +1106,10 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+					if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+						$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
+						wait
+					fi
 					cd "${projdir}"/samples
 					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam &&
 					# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
@@ -1311,7 +1317,10 @@ no_norm () {
 		for i in *_compressed.fasta.gz; do
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 				cd "${projdir}"/norm_ref/
-				$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam && \
+				if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
+					wait
+				fi
 				cd "${projdir}"/samples
 				$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam &&
 				# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
@@ -1342,7 +1351,8 @@ no_norm () {
 			fi
 		done
 		wait
-		rm *.bam "${projdir}"/samples/*_compressed.fasta.gz
+		find ./haplotig/ -size 0 -delete
+		if [[ "$(ls ./haplotig/${i%.bam}_metagenome.fasta.gz | wc -l)" -gt 0 ]]; then rm *.bam "${projdir}"/samples/*_compressed.fasta.gz; fi
 	fi
 }
 cd "${projdir}"
