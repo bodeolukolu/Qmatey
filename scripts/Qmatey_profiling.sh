@@ -921,13 +921,29 @@ else
 		echo -e "${YELLOW}- indexed genome already available ${WHITE}\n"
 	else
 		echo -e "${YELLOW}- indexing normalization reference genome ${WHITE}"
+    for i in *.fa*; do
+      if (file "$i" | grep -q compressed ); then
+        gunzip $i
+      fi
+    done
+    wait
+    for i in *.fna*; do
+      if (file "$i" | grep -q compressed ); then
+        gunzip $i
+      fi
+    done
+    wait
 		for i in *.fa*; do
-			n=">${i%.fa*}_"
-			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+      if test -f "$i"; then
+  			n=">${i%.fa*}_"
+  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+      fi
 		done
 		for i in *.fna; do
-			n=">${i%.fa*}_"
-			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+      if test -f "$i"; then
+  			n=">${i%.fa*}_"
+  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+      fi
 		done
 		wait
 
@@ -1062,7 +1078,7 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+					if [[ -z "$(ls "${projdir}"/metagenome/"${i%_compressed.fasta.gz}".sam 2> /dev/null)" ]]; then
 						$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
 						wait
 					fi
@@ -1106,7 +1122,7 @@ ref_norm () {
 			for i in *_compressed.fasta.gz; do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
-					if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+					if [[ -z "$(ls "${projdir}"/metagenome/"${i%_compressed.fasta.gz}".sam 2> /dev/null)" ]]; then
 						$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
 						wait
 					fi
@@ -1317,7 +1333,7 @@ no_norm () {
 		for i in *_compressed.fasta.gz; do
 			if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 				cd "${projdir}"/norm_ref/
-				if [[ -z "${projdir}/metagenome/${i%_compressed.fasta.gz}.sam" ]]; then
+				if [[ -z "$(ls "${projdir}"/metagenome/"${i%_compressed.fasta.gz}".sam 2> /dev/null)" ]]; then
 					$bwa mem -t "$threads" master_ref.fasta ${projdir}/samples/$i > ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam
 					wait
 				fi
