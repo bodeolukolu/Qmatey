@@ -37,9 +37,12 @@ if [[ "$slurm_module" =~ "Module"  ]]; then
     $samtools --version | head -n 3
   fi
 
-  Rout=$(R --version | head -n 3)
+  Rout=$(R --version 2>/dev/null | head -n 3)
   if [ -z "$Rout" ];then
-  	module add R
-  	R --version | head -n 3
+  	echo -e "${white}- R not found, so loading R with module load/add on cluster  ${white}"
+    module add R
+  	R --version
+  else
+    R --version
   fi
 fi

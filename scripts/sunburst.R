@@ -49,11 +49,32 @@ remtaxa <- nrow(sunburst)
 #   sunburst <- rbind(sunburst, sunburst_virus)
 # }
 
-sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
-sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
-sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
-sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
-sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
+if (taxlevel == "genus") {
+  sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+  sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
+  sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
+  sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
+  sunburst[["genus"]][is.na(sunburst[["kingdom"]])] <- "Genus Unclassified"
+}
+if (taxlevel == "family") {
+  sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+  sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
+  sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
+  sunburst[["family"]][is.na(sunburst[["kingdom"]])] <- "Family Unclassified"
+}
+if (taxlevel == "order") {
+  sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+  sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
+  sunburst[["order"]][is.na(sunburst[["kingdom"]])] <- "Order Unclassified"
+}
+if (taxlevel == "class") {
+  sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+  sunburst[["class"]][is.na(sunburst[["kingdom"]])] <- "Class Unclassified"
+}
+if (taxlevel == "phylum") {
+  sunburst[["phylum"]][is.na(sunburst[["kingdom"]])] <- "Phylum Unclassified"
+}
+
 # if (taxlevel == "strain") {
 #   for (i in 1:nrow(sunburst)){
 #     if(is.na(sunburst$species[i])){
