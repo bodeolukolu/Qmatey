@@ -130,6 +130,9 @@ if [[ -z $minRD ]]; then
 	export minRD=1
 	export zminRD=true
 fi
+if [[ -z $fullqlen_alignment ]]; then
+	export fullqlen_alignment=false
+fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1
 fi
@@ -169,7 +172,10 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
   fi
   if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
     if [[ -z $reads_per_megablast ]]; then
-      export reads_per_megablast=20
+      export reads_per_
+
+
+			=20
     fi
   fi
   if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
@@ -2292,6 +2298,11 @@ mkdir -p sighits_strain
 cd "${projdir}"/metagenome/results
 mkdir -p strain_level
 cd "${projdir}"/metagenome/alignment
+if [[ "$fullqlen_alignment" == "true" ]]; then
+	export percid=95
+else
+	export alnqlen=32
+fi
 if find ../sighits/sighits_strain/ -mindepth 1 | read; then
 	echo -e "${YELLOW}- significant hits of at strain-level already available for each sample"
 else
@@ -2299,8 +2310,16 @@ else
 		if [[ ! -f "../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 				for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1] {print $0}' <(zcat "${i}" | awk '$6==100') <(zcat ${i%} | awk '$6==100') | awk '$3 >= 32 {print $0}' | awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | gzip > ${i%.gz}strain.gz &&
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1] {print $0}' <(zcat "${i}" | awk '$6==100') <(zcat ${i%} | awk '$6==100') | awk '$3 >= 32 {print $0}' | awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | gzip > ${i%.gz}strain.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1] {print $0}' <(zcat "${i}" | awk '$6==100') <(zcat ${i%} | awk '$6==100') | awk '$3 == $5 {print $0}' | awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | gzip > ${i%.gz}strain.gz
+						wait
+					fi
 					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 					awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 					awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
@@ -2313,8 +2332,14 @@ else
 				mv ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1] {print $0}' <(zcat "$i" | awk '$6==100') <(zcat "$i" | awk '$6==100') | awk '$3 >= 32 {print $0}' | $gzip > ${i%.gz}strain.gz &&
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1] {print $0}' <(zcat "$i" | awk '$6==100') <(zcat "$i" | awk '$6==100') | awk '$3 >= 32 {print $0}' | $gzip > ${i%.gz}strain.gz
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1] {print $0}' <(zcat "$i" | awk '$6==100') <(zcat "$i" | awk '$6==100') | awk '$3 == $5 {print $0}' | $gzip > ${i%.gz}strain.gz
+				fi
 				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 				awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
 				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
@@ -2554,21 +2579,39 @@ else
 		if [[ ! -f "../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= ($5-($5*0.01)) {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
 				mv ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= ($5-($5*0.01)) {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi ) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
@@ -2999,21 +3042,39 @@ else
 		if [[ ! -f "../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-4 {print $0}' <(zcat "${i}" | awk '$6>=98') <(zcat "${i}" | awk '$6>=98') | awk '$3 >= ($5-($5*0.02))' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
 				mv ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= ($5-($5*0.02))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi
 		) &
@@ -3455,21 +3516,39 @@ else
 		if [[ ! -f "../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= ($5-($5*0.03))' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
 				mv ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= ($5-($5*0.03))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi
 		) &
@@ -3911,21 +3990,39 @@ else
 		if [[ ! -f "../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= ($5-($5*0.04))' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.tmp.gz &&
 				mv ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= ($5-($5*0.04))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi
 		) &
@@ -4367,21 +4464,39 @@ else
 		if [[ ! -f "../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.tmp.gz
 				mv ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi
 		) &
@@ -4820,21 +4935,39 @@ else
 		if [[ ! -f "../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz" ]]; then
 			if [[ "$taxids" == true ]]; then
 			  for emg in ${projdir}/taxids/*.txids; do
-					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
-					awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
-					wait
+					if [[ "$fullqlen_alignment" == "false" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
+					if [[ "$fullqlen_alignment" == "true" ]]; then
+						awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+						next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | \
+						awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+						awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' | gzip >> ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+						wait
+					fi
 			  done
 				zcat ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.tmp.gz
 				mv ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.tmp.gz ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 				wait
 			else
-				awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-				next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
-				awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
-				awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
-				wait
+				if [[ "$fullqlen_alignment" == "false" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
+				if [[ "$fullqlen_alignment" == "true" ]]; then
+					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
+					wait
+				fi
 			fi
 		fi
 		) &
