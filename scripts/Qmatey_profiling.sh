@@ -1254,15 +1254,15 @@ no_norm () {
 				:
 			else
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 				else
-					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					zcat "$i" 2> /dev/null | awk 'NR%2==0' | awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -v min="$minRD" '$1>=min{print $1"\t"$2}' | awk -v sample=${i%.f*} '{print ">"sample"_seq"NR"-"$1"\t"$2}' | gzip > ${i%.f*}_compressed.fasta.gz
 					wait
 				fi
 				wait
 				if [[ "$simulate_reads" == 1 ]]; then
-					zcat ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz
-					mv ../metagenome/haplotig/${i%.f*}_metagenome.tmp.fasta.gz ../metagenome/haplotig/${i%.f*}_metagenome.fasta.gz
+					zcat ${i%.f*}_compressed.fasta.gz | awk '{print $1"\n"$2}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
+					mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
 				else
 					if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 						minimumRD=4
@@ -1279,7 +1279,7 @@ no_norm () {
 						fi
 						printf "minimum read depth threshold(${i%.f*}): \t$minimumRD\n" >> ${projdir}/metagenome/minimumRD_empirical.txt
 						zcat ${i%.f*}_compressed.fasta.gz | awk '{gsub(/-/,"\t");}1' | awk -v pat="$minimumRD" '$2 >= pat' | awk '{print $1"-"$2"\n"$3}' | $gzip > ${i%.f*}_compressed.tmp.fasta.gz
-						mv ${i%.f*}_compressed.tmp.fasta.gz ${i%.f*}_compressed.fasta.gz
+						mv ${i%.f*}_compressed.tmp.fasta.gz ${projdir}/metagenome/haplotig/${i%.f*}_compressed.fasta.gz
 					fi
 				fi
 			fi ) &
@@ -1434,10 +1434,18 @@ if [[ "$fastMegaBLAST" == true ]]; then
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		for i in *.fasta.gz; do
-			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
-			wait
-		done
+		if [[ "$(ls *_compressed.fasta.gz 2>/dev/null | wc -l)" -gt 0 ]]; then
+			for i in *_compressed.fasta.gz; do
+				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+				wait
+			done
+		fi
+		if [[ "$(ls *_metagenome.fasta.gz 2>/dev/null | wc -l)" -gt 0 ]]; then
+			for i in *_metagenome.fasta.gz; do
+				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+				wait
+			done
+		fi
 		wait
 		awk '{A[$1]++}END{for(i in A)print i}' combined_compressed_metagenomes.tmp > combined_compressed_metagenomes_full.tmp
 		rm combined_compressed_metagenomes.tmp
@@ -1894,7 +1902,7 @@ else
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
-		for i in *.fasta.gz; do
+		for i in *_compressed.fasta.gz; do
 			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 			wait
 		done
