@@ -16,6 +16,7 @@ export bwa=${Qmatey_dir}/tools/bwa*/bwa && bwa=${bwa//'//'/'/'}
 export samtools=${Qmatey_dir}/tools/samtools*/samtools && samtools=${samtools//'//'/'/'}
 export picard=${Qmatey_dir}/tools/picard.jar && picard=${picard//'//'/'/'}
 export java=${Qmatey_dir}/tools/jdk8*/bin/java && java=${java//'//'/'/'}
+export cdhit=${Qmatey_dir}/tools/cd-hit*/cd-hit && cdhit=${cdhit//'//'/'/'}
 export blast=${Qmatey_dir}/tools/ncbi-blast*/bin/blastn && blast=${blast//'//'/'/'}
 if command -v pigz &>/dev/null; then
   export gzip=pigz

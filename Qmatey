@@ -351,13 +351,14 @@ if [[ "${db}" == "${db% *}" ]] && [[ ! -z ${db} ]]; then
   mkdir -p "$input_db"
   if [[ $(ls -A ${input_db}/* 2> /dev/null | wc -l ) -gt 0 ]]; then
     echo -e "${magenta}- $input_db database already exist. ${white}"
-    echo -e "${magenta}- it is recommended to update NCBI database every few weeks/months. ${white}"
+    echo -e "${magenta}- it is recommended to update NCBI database every few months. ${white}"
     echo -e "${magenta}- would you like to update your NCBI "${input_db/*\/}" database? ${white}"
     read -p "- y(YES) or n(NO) " -n 1 -r
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
       :
     else
       printf "\n"
+      echo -e "${magenta}- downloading NCBI database(s) might take a few hours? ${white}"
       echo -e "${white}- update of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
       sleep 60
       wait
@@ -372,6 +373,7 @@ if [[ "${db}" == "${db% *}" ]] && [[ ! -z ${db} ]]; then
       :
     else
       printf "\n"
+      echo -e "${magenta}- downloading NCBI database(s) might take a few hours? ${white}"
       echo -e "${white}- download of NCBI "${input_db/*\/}" database will start in 60 secs. <Ctrl+C> to abort update ${white}"
       sleep 60
       wait

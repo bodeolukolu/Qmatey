@@ -65,6 +65,24 @@ fi
 
 
 main () {
+  echo -e "${white}\n############################################## ${orange}\n- installing cd-hit ${white}\n##############################################${white}"
+  wget https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz &&
+  tar -zxvf cd-hit-v4.8.1-2019-0228.tar.gz &&
+  rm cd-hit-v4.8.1-2019-0228.tar.gz &&
+  cd cd-hit-v4.8.1-2019-0228 &&
+  make
+  cd ../
+}
+dirtool=jdk*
+if [ -d $dirtool ]; then
+  :
+else
+  echo -e "${white}- Performing installation of dependency (java 1.8)${white}"
+  main &>> ./log.out
+fi
+
+
+main () {
   echo -e "${white}\n############################################## ${orange}\n- installing latest version of BLAST ${white}\n##############################################${white}"
   wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.14.0/ncbi-blast-2.14.0+-x64-linux.tar.gz &&
   tar -zxvf ncbi-blast-2.14.0+-x64-linux.tar.gz; rm *tar.gz
