@@ -154,10 +154,10 @@ export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
   if [[ -z $reads_per_megablast ]]; then
-  	export reads_per_megablast=10000
+  	export reads_per_megablast=1000
   fi
 	if [[ -z $reads_per_megablast_burn_in ]]; then
-		export reads_per_megablast_burn_in=10000
+		export reads_per_megablast_burn_in=0
 	fi
 fi
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
@@ -168,7 +168,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	  	export reads_per_megablast=100
 	  fi
 		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=100
+			export reads_per_megablast_burn_in=0
 		fi
   fi
   if (echo $local_db | grep -q 'ref'); then
@@ -176,7 +176,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 			export reads_per_megablast=100
 		fi
 		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=100
+			export reads_per_megablast_burn_in=0
 		fi
   fi
   if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
@@ -184,7 +184,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	  	export reads_per_megablast=100
 	  fi
 		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=100
+			export reads_per_megablast_burn_in=0
 		fi
   fi
   if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
@@ -192,7 +192,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	  	export reads_per_megablast=100
 	  fi
 		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=100
+			export reads_per_megablast_burn_in=0
 		fi
   fi
   if [[ "$blast_location" == "custom" ]]; then
@@ -200,7 +200,7 @@ if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] ||
 	  	export reads_per_megablast=100
 	  fi
 		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=100
+			export reads_per_megablast_burn_in=0
 		fi
   fi
 fi
@@ -1490,104 +1490,104 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
 
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
-
-			# if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
-			if test ! -f ${projdir}/metagenome/haplotig/repseq_aln/repseq.txids; then
-				if [[ -d repseq_aln ]]; then
-					cd repseq_aln
-				else
-					mkdir repseq_aln; cd repseq_aln
-				fi
-				if test ! -f "representative_seq_retireved.txt"; then
-					awk 'NR%50000==1{close("combined_compressed_metagenomes_sub"i); i++}{print > "combined_compressed_metagenomes_sub"i}'  <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
-					wait $PIDsplit1
-					wait
-					for i in combined_compressed_metagenomes_sub*; do (
-						$cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A 32
+			if [[ "$reads_per_megablast_burn_in" -gt 0 ]]; then
+				if test ! -f ${projdir}/metagenome/haplotig/repseq_aln/repseq.txids ; then
+					if [[ -d repseq_aln ]]; then
+						cd repseq_aln
+					else
+						mkdir repseq_aln; cd repseq_aln
+					fi
+					if test ! -f "representative_seq_retireved.txt"; then
+						awk 'NR%50000==1{close("combined_compressed_metagenomes_sub"i); i++}{print > "combined_compressed_metagenomes_sub"i}'  <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+						wait $PIDsplit1
 						wait
-						rm "$i" "${i}"_clust.clstr &&
-						wait )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+						for i in combined_compressed_metagenomes_sub*; do (
+							$cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A 32
 							wait
-						fi
+							rm "$i" "${i}"_clust.clstr &&
+							wait )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+						wait
+						:> combined_compressed_metagenomes_repseq.txt
+						for i in $(ls *clust); do
+							grep -v '>' $i >> combined_compressed_metagenomes_repseq.txt &&
+							wait
+						done
+						wait
+						repseq_lineN=$(wc -l combined_compressed_metagenomes_repseq.txt | awk '{print $1}')
+						cat combined_compressed_metagenomes_repseq.txt | LC_ALL=C sort -T "${projdir}"/tmp | awk '{print ">"NR"\n"$1}' | gzip > combined_compressed_metagenomes_repseq.fasta.gz &&
+						rm *clust combined_compressed_metagenomes_repseq.txt
+						wait
+						printf "representative metagenome reads extracted completed (using cdhit to cluster sequences)\n" > representative_seq_retireved.txt &&
+						printf "total number of 32 bp fragments after clustering: $repseq_lineN\n" >> representative_seq_retireved.txt &&
+						wait
+					fi
+					if [[ -d splitccf ]]; then
+						cd splitccf
+					else
+						mkdir splitccf && cd splitccf && mkdir -p alignment
+						awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat ../combined_compressed_metagenomes_repseq.fasta.gz 2> /dev/null) & PIDsplit1=$!
+						wait $PIDsplit1
+						wait
+					fi
+					if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
+						rm ../../alignment/subfile*
+						mv ../../alignment/F* ./
+					fi
+					for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+						mv $ccf ./alignment/
+						cd ./alignment/
+						awk -v rpmb=$rpmb 'NR%rpmb==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+						wait $PIDsplit2
+						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 16 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 16 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							fi
+							wait
+							gzip "${sub}_out.blast" &&
+							rm "$sub" )&
+							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+								wait
+							fi
+						done
+						wait
+						rm $ccf &&
+						for subfile in *_out.blast.gz; do
+							cat "$subfile" >> ${ccf}.blast.gz &&
+							rm "$subfile" &&
+							wait
+						done
+						wait
+						cat "${ccf}".blast.gz >> ../combined_compressed.megablast.gz &&
+						rm "${ccf}".blast.gz &&
+						cd ../
+						wait
 					done
 					wait
-					:> combined_compressed_metagenomes_repseq.txt
-					wait
-					for i in $(ls *clust); do
-						grep -v '>' $i | fold -w 32 | sort | uniq >> combined_compressed_metagenomes_repseq.txt &&
-						wait
-					done
-					wait
-					cat combined_compressed_metagenomes_repseq.txt | LC_ALL=C sort -T "${projdir}"/tmp | awk '{print ">"NR"\n"$1}' | gzip > combined_compressed_metagenomes_repseq.fasta.gz &&
-					rm *clust combined_compressed_metagenomes_repseq.txt
-					wait
-					printf "representative metagenome reads extracted completed (using cdhit to cluster sequences)" > representative_seq_retireved.txt &&
+					cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf
+					rm ../combined_compressed_metagenomes_repseq.fasta.gz
+					zcat combined_compressed.megablast.gz | awk '{print $9}' | awk '{gsub(/;/,"\n");}1' | sort | uniq > ${projdir}/metagenome/repseq.txids &&
+					cp ${projdir}/metagenome/repseq.txids ${projdir}/metagenome/haplotig/repseq_aln/
+					cd ${projdir}/metagenome/ &&
+					mv All.txids Full.txids &&
+					mv repseq.txids All.txids &&
+					rm ../combined_compressed_metagenomes_repseq.fasta.gz &&
 					wait
 				fi
-				if [[ -d splitccf ]]; then
-					cd splitccf
-				else
-					mkdir splitccf && cd splitccf && mkdir -p alignment
-					awk 'NR%20000000==1{close("F"i); i++}{print > "F"i}'  <(zcat ../combined_compressed_metagenomes_repseq.fasta.gz 2> /dev/null) & PIDsplit1=$!
-					wait $PIDsplit1
-					wait
-				fi
-				if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
-					rm ../../alignment/subfile*
-					mv ../../alignment/F* ./
-				fi
-				for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
-					mv $ccf ./alignment/
-					cd ./alignment/
-					awk -v rpmb=$rpmb 'NR%rpmb==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
-					wait $PIDsplit2
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 16 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 16 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-							wait
-						fi
-						wait
-						gzip "${sub}_out.blast" &&
-						rm "$sub" )&
-						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
-							wait
-						fi
-					done
-					wait
-					rm $ccf &&
-					for subfile in *_out.blast.gz; do
-						cat "$subfile" >> ${ccf}.blast.gz &&
-						rm "$subfile" &&
-						wait
-					done
-					wait
-					cat "${ccf}".blast.gz >> ../combined_compressed.megablast.gz &&
-					rm "${ccf}".blast.gz &&
-					cd ../
-					wait
-				done
-				wait
-				cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf
-				rm ../combined_compressed_metagenomes_repseq.fasta.gz
-				zcat combined_compressed.megablast.gz | awk '{print $9}' | awk '{gsub(/;/,"\n");}1' | sort | uniq > ${projdir}/metagenome/repseq.txids &&
-				cp ${projdir}/metagenome/repseq.txids ${projdir}/metagenome/haplotig/repseq_aln/
-				cd ${projdir}/metagenome/ &&
-				mv All.txids Full.txids &&
-				mv repseq.txids All.txids &&
-				rm ../combined_compressed_metagenomes_repseq.fasta.gz &&
-				wait
 			fi
-
 
 			cd ${projdir}/metagenome/haplotig
 			mv ${projdir}/metagenome/alignment_w_subfile ${projdir}/metagenome/alignment 2> /dev/null
@@ -1596,7 +1596,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			else
 				mkdir splitccf; cd splitccf
 				cp ../combined_compressed_metagenomes.fasta.gz ./combined_compressed_metagenomes.fasta.gz
-				awk 'NR%20000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+				awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 				wait $PIDsplit1
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
