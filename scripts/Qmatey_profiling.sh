@@ -133,6 +133,9 @@ fi
 if [[ -z $fullqlen_alignment ]]; then
 	export fullqlen_alignment=false
 fi
+if [[ -z $burn_in_diagnostic_reads ]]; then
+	export burn_in_diagnostic_reads=false
+fi
 if [[ -z $min_strain_uniq ]]; then
 	export min_strain_uniq=1
 fi
@@ -1409,6 +1412,124 @@ else
 fi
 
 #################################################################################################################
+
+
+if [[ "$taxids" == true ]]; then
+	:> ${projdir}/metagenome/All.txids
+	for i in ${projdir}/taxids/*.txids; do
+		cat "$i" >> ${projdir}/metagenome/All.txids
+	done
+  sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv "${projdir}"/metagenome/All.tmp ${projdir}/metagenome/All.txids
+	wait
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
+	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
+	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp
+	cat ${projdir}/rankedlineage_edited.dmp | grep -i 'Viruses' > ${projdir}/rankedlineage_edited_viruses.txt
+	cat ${projdir}/rankedlineage_edited.dmp | grep -vi 'Viruses' > ${projdir}/rankedlineage_edited_other.txt
+	cat ${projdir}/rankedlineage_edited_other.txt | grep -i 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_uncultured.txt
+	cat ${projdir}/rankedlineage_edited_other.txt| grep -iv 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_cultured.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
+	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
+	wait
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
+	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
+	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
+	rm "${projdir}"/rankedlineage_edited_other*
+	wait
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
+	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
+	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
+	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
+else
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
+	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp
+	cat ${projdir}/rankedlineage_edited.dmp | grep -i 'Viruses' > ${projdir}/rankedlineage_edited_viruses.txt
+	cat ${projdir}/rankedlineage_edited.dmp | grep -vi 'Viruses' > ${projdir}/rankedlineage_edited_other.txt
+	cat ${projdir}/rankedlineage_edited_other.txt | grep -i 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_uncultured.txt
+	cat ${projdir}/rankedlineage_edited_other.txt| grep -iv 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_cultured.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
+	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
+	wait
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
+	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
+	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
+	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
+	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
+	rm "${projdir}"/rankedlineage_edited_other*
+	wait
+	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
+	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
+	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
+	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
+	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
+fi
+
+lineagedb=${projdir}/lineage_subset.txt
+if test -f $lineagedb; then
+	echo -e "${YELLOW}- Compiling subset lineage file"
+	if awk 'NR==1{/tax_id/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="tax_id") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > tax_id.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' tax_id.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm tax_id.txt
+	elif awk 'NR==1{/taxname/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="taxname") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > taxname.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$2] > 0' taxname.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm taxname.txt
+	elif awk 'NR==1{/genus/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="genus") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > genus.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$4] > 0' genus.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm genus.txt
+	elif awk 'NR==1{/family}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="family") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > family.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$5] > 0' family.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm family.txt
+	elif awk 'NR==1{/order/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="order") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > order.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$6] > 0' order.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm order.txt
+	elif awk 'NR==1{/class/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="class") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > class.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$7] > 0' class.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm class.txt
+	elif awk 'NR==1{/phylum/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="phylum") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > phylum.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$8] > 0' phylum.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm phylum.txt
+	elif awk 'NR==1{/kingdom/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="kingdom") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > kingdom.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$9] > 0' kingdom.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm kingdom.txt
+	elif awk 'NR==1{/domain/}' lineage_subset.txt;then
+		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="domain") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > domain.txt
+		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$10] > 0' domain.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm domain.txt
+	else
+		echo -e "${magenta}- lineage database is not formatted properly ${white}\n"
+		echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
+		read -p "- y(YES) or n(NO) " -n 1 -r
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			printf '\n'
+			exit 0
+		fi
+	fi
+fi
+
+if test -f "${projdir}/remove_taxa.txids"; then
+  awk 'NR==FNR {a[$1]} FNR!=NR && !($1 in a)' ${projdir}/remove_taxa.txids ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.temp &&
+  mv ${projdir}/rankedlineage_edited.temp ${projdir}/rankedlineage_edited.dmp &&
+  wait
+fi
+
+
+#################################################################################################################
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey MegaBLAST \n\e[97m########################################################\n"
 
 
@@ -1490,7 +1611,112 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
 
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
+
 			if [[ "$reads_per_megablast_burn_in" -gt 0 ]]; then
+			  if test ! -f ${projdir}/metagenome/haplotig/repseq_aln/repseq.txids ; then
+			    if [[ -d repseq_aln ]]; then
+			      cd repseq_aln
+			    else
+			      mkdir repseq_aln; cd repseq_aln
+			    fi
+			    if test ! -f "representative_seq_retireved.txt"; then
+						longestread=$(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null | wc -L | awk '{print $1}')
+						longestread=$((longestread*95/100))
+			      awk 'NR%50000==1{close("combined_compressed_metagenomes_sub"i); i++}{print > "combined_compressed_metagenomes_sub"i}'  <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
+			      wait $PIDsplit1
+			      wait
+			      for i in combined_compressed_metagenomes_sub*; do (
+			        $cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A $longestread
+			        wait
+			        rm "$i" "${i}"_clust.clstr &&
+			        wait )&
+			        if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+			          wait
+			        fi
+			      done
+			      wait
+			      :> combined_compressed_metagenomes_repseq.txt
+			      for i in $(ls *clust); do
+			        grep -v '>' $i >> combined_compressed_metagenomes_repseq.txt &&
+			        wait
+			      done
+			      wait
+			      repseq_lineN=$(wc -l combined_compressed_metagenomes_repseq.txt | awk '{print $1}')
+			      cat combined_compressed_metagenomes_repseq.txt | LC_ALL=C sort -T "${projdir}"/tmp | awk '{print ">"NR"\n"$1}' | gzip > combined_compressed_metagenomes_repseq.fasta.gz &&
+			      rm *clust combined_compressed_metagenomes_repseq.txt
+			      wait
+			      printf "extraction of representative metagenome reads completed (using cdhit to cluster sequences)\n" > representative_seq_retireved.txt &&
+			      wait
+			    fi
+			    if [[ -d splitccf ]]; then
+			      cd splitccf
+			    else
+			      mkdir splitccf && cd splitccf && mkdir -p alignment
+			      awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat ../combined_compressed_metagenomes_repseq.fasta.gz 2> /dev/null) & PIDsplit1=$!
+			      wait $PIDsplit1
+			      wait
+			    fi
+			    if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
+			      rm ../../alignment/subfile*
+			      mv ../../alignment/F* ./
+			    fi
+			    for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+			      mv $ccf ./alignment/
+			      cd ./alignment/
+			      awk -v rpmb=$rpmb 'NR%rpmb==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+			      wait $PIDsplit2
+			      for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							if test ! -f "${sub}_out.blast.gz"; then
+				        if [[ "$taxids" == true ]]; then
+				          ${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+				          -word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+				          wait
+				          if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				          wait
+				        else
+				          ${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+				          -word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+				          wait
+				          if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+				          wait
+				        fi
+								wait
+								gzip "${sub}_out.blast" &&
+								wait
+							fi
+							wait
+			        rm "$sub" )&
+			        if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
+			          wait
+			        fi
+			      done
+			      wait
+			      rm $ccf &&
+			      for subfile in *_out.blast.gz; do
+			        cat "$subfile" >> ${ccf}.blast.gz &&
+			        rm "$subfile" &&
+			        wait
+			      done
+			      wait
+			      cat "${ccf}".blast.gz >> ../combined_compressed.megablast.gz &&
+			      rm "${ccf}".blast.gz &&
+			      cd ../
+			      wait
+			    done
+			    wait
+			    cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf
+			    rm ../combined_compressed_metagenomes_repseq.fasta.gz
+			    zcat combined_compressed.megablast.gz | awk '{print $9}' | awk '{gsub(/;/,"\n");}1' | sort | uniq > ${projdir}/metagenome/repseq.txids &&
+			    cp ${projdir}/metagenome/repseq.txids ${projdir}/metagenome/haplotig/repseq_aln/
+			    cd ${projdir}/metagenome/ &&
+			    mv All.txids Full.txids &&
+			    mv repseq.txids All.txids &&
+			    rm ../combined_compressed_metagenomes_repseq.fasta.gz &&
+			    wait
+			  fi
+			fi
+
+			if [[ "$burn_in_diagnostic_reads" == "true" ]]; then
 				if test ! -f ${projdir}/metagenome/haplotig/repseq_aln/repseq.txids ; then
 					if [[ -d repseq_aln ]]; then
 						cd repseq_aln
@@ -1498,13 +1724,15 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						mkdir repseq_aln; cd repseq_aln
 					fi
 					if test ! -f "representative_seq_retireved.txt"; then
+						longestread=$(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null | wc -L | awk '{print $1}')
+						longestread=$((longestread*95/100))
 						awk 'NR%50000==1{close("combined_compressed_metagenomes_sub"i); i++}{print > "combined_compressed_metagenomes_sub"i}'  <(zcat ../combined_compressed_metagenomes.fasta.gz 2> /dev/null) & PIDsplit1=$!
 						wait $PIDsplit1
 						wait
 						for i in combined_compressed_metagenomes_sub*; do (
-							$cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A 32
+							$cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A $longestread
 							wait
-							rm "$i" "${i}"_clust.clstr &&
+							rm "$i" &&
 							wait )&
 							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 								wait
@@ -1512,52 +1740,63 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						done
 						wait
 						:> combined_compressed_metagenomes_repseq.txt
-						for i in $(ls *clust); do
-							grep -v '>' $i >> combined_compressed_metagenomes_repseq.txt &&
+						for i in $(ls *_clust); do
+							cat $i | gzip >> combined_compressed_metagenomes_repseq.fasta.gz &&
 							wait
 						done
 						wait
-						repseq_lineN=$(wc -l combined_compressed_metagenomes_repseq.txt | awk '{print $1}')
-						cat combined_compressed_metagenomes_repseq.txt | LC_ALL=C sort -T "${projdir}"/tmp | awk '{print ">"NR"\n"$1}' | gzip > combined_compressed_metagenomes_repseq.fasta.gz &&
+						for i in $(ls *_clust.clstr); do
+							cat $i >> combined_compressed_metagenomes_repseq.txt &&
+							wait
+						done
+						wait
+						awk '{gsub(/\./,""); print $1"\t"$3}' combined_compressed_metagenomes_repseq.txt | \
+						awk '{gsub(/^[0-9]\t/,"");}1' | awk -vRS='>Cluster' -vOFS="\t" '$1=$1""' > combined_compressed_metagenomes_repseq.clstr
+						wait
+						repseq_lineN=$(zcat combined_compressed_metagenomes_repseq.fasta.gz | wc -l | awk '{print $1}')
 						rm *clust combined_compressed_metagenomes_repseq.txt
 						wait
-						printf "representative metagenome reads extracted completed (using cdhit to cluster sequences)\n" > representative_seq_retireved.txt &&
-						printf "total number of 32 bp fragments after clustering: $repseq_lineN\n" >> representative_seq_retireved.txt &&
+						printf "representative metagenome reads extracted completed (used cdhit to cluster sequences)\n" > representative_seq_retireved.txt &&
+						printf "total number of representative reads after clustering: $repseq_lineN\n" >> representative_seq_retireved.txt &&
 						wait
 					fi
 					if [[ -d splitccf ]]; then
-						cd splitccf
+					cd splitccf
 					else
-						mkdir splitccf && cd splitccf && mkdir -p alignment
-						awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat ../combined_compressed_metagenomes_repseq.fasta.gz 2> /dev/null) & PIDsplit1=$!
-						wait $PIDsplit1
-						wait
+					mkdir splitccf && cd splitccf && mkdir -p alignment
+					awk 'NR%2000000==1{close("F"i); i++}{print > "F"i}'  <(zcat ../combined_compressed_metagenomes_repseq.fasta.gz 2> /dev/null) & PIDsplit1=$!
+					wait $PIDsplit1
+					wait
 					fi
 					if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
 						rm ../../alignment/subfile*
 						mv ../../alignment/F* ./
 					fi
-					for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
+					for ccf in $(ls F* | sort -T "${projdir}"/tmp -V); do
 						mv $ccf ./alignment/
 						cd ./alignment/
-						awk -v rpmb=$rpmb 'NR%rpmb==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
+						awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 						wait $PIDsplit2
 						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-							if [[ "$taxids" == true ]]; then
-								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
-								-word_size 16 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+							if test ! -f "${sub}_out.blast.gz"; then
+								if [[ "$taxids" == true ]]; then
+									${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+									-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+									wait
+									if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+									wait
+								else
+									${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
+									-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+									wait
+									if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+									wait
+								fi
 								wait
-								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-								wait
-							else
-								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
-								-word_size 16 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-								wait
-								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								gzip "${sub}_out.blast" &&
 								wait
 							fi
 							wait
-							gzip "${sub}_out.blast" &&
 							rm "$sub" )&
 							if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 								wait
@@ -1579,12 +1818,134 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					wait
 					cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf
 					rm ../combined_compressed_metagenomes_repseq.fasta.gz
-					zcat combined_compressed.megablast.gz | awk '{print $9}' | awk '{gsub(/;/,"\n");}1' | sort | uniq > ${projdir}/metagenome/repseq.txids &&
-					cp ${projdir}/metagenome/repseq.txids ${projdir}/metagenome/haplotig/repseq_aln/
-					cd ${projdir}/metagenome/ &&
-					mv All.txids Full.txids &&
-					mv repseq.txids All.txids &&
-					rm ../combined_compressed_metagenomes_repseq.fasta.gz &&
+
+					# if [[ "$burn_in_diagnostic_reads" == "species" ]]; then export cutback=2; fi
+					# if [[ "$burn_in_diagnostic_reads" == "genus" ]]; then export cutback=4; fi
+					# if [[ "$burn_in_diagnostic_reads" == "family" ]]; then export cutback=6; fi
+					# if [[ "$burn_in_diagnostic_reads" == "order" ]]; then export cutback=8; fi
+					# if [[ "$burn_in_diagnostic_reads" == "class" ]]; then export cutback=10; fi
+					# if [[ "$burn_in_diagnostic_reads" == "phylum" ]]; then export cutback=10; fi
+					if [[ "$taxids" == true ]]; then
+						for emg in ${projdir}/taxids/*.txids; do
+							if [[ "$fullqlen_alignment" == "false" ]]; then
+								awk -v pat=10 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+								next} $3 >= max[$1]-pat {print $0}' <(zcat combined_compressed.megablast.gz | awk '$6>=90') <(zcat combined_compressed.megablast.gz | awk '$6>=90') | awk '$3 >= 32 {print $0}' | \
+								awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+								awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' >> combined_compressed_repseq_sighits.txt
+								wait
+							fi
+							if [[ "$fullqlen_alignment" == "true" ]]; then
+								awk -v pat=10 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+								next} $3 >= max[$1]-pat {print $0}' <(zcat combined_compressed.megablast.gz | awk '$6>=90') <(zcat combined_compressed.megablast.gz | awk '$6>=90') | awk '$3 >= ($5-($5*0.05))' | \
+								awk 'NR==FNR {a[$1]++; next} $9 in a' $emg - | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+								awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | awk '{gsub(" ","\t",$0);}1' >> combined_compressed_repseq_sighits.txt
+								wait
+							fi
+						done
+						cat combined_compressed_repseq_sighits.txt | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - > combined_compressed_repseq_sighits.tmp
+						mv combined_compressed_repseq_sighits.tmp combined_compressed_repseq_sighits.txt
+						wait
+					else
+						if [[ "$fullqlen_alignment" == "false" ]]; then
+							awk -v pat="$cutback" 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+							next} $3 >= max[$1]-pat {print $0}' <(zcat combined_compressed.megablast.gz | awk '$6>=90') <(zcat combined_compressed.megablast.gz | awk '$6>=90') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+							awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+							awk '{gsub(" ","\t",$0);}1' >> combined_compressed_repseq_sighits.txt
+							wait
+						fi
+						if [[ "$fullqlen_alignment" == "true" ]]; then
+							awk -v pat="$cutback" 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
+							next} $3 >= max[$1]-pat {print $0}' <(zcat combined_compressed.megablast.gz | awk '$6>=90') <(zcat combined_compressed.megablast.gz | awk '$6>=90') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+							awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
+							awk '{gsub(" ","\t",$0);}1' >> combined_compressed_repseq_sighits.txt
+							wait
+						fi
+					fi
+					wait
+
+					awk -F '\t' 'NR>1{a[$10]++;b[$10]=$0}END{for(x in a)if(a[x]==1)print b[x]}' combined_compressed_repseq_sighits.txt > combined_compressed_repseq_unique_reads.txt &&
+					awk -F '\t' 'FNR==NR{a[$10]=1; next} {print $0}' combined_compressed_repseq_unique_reads.txt <(awk 'NR>1{print $0}' combined_compressed_repseq_sighits.txt) OFS='\t' > combined_compressed_repseq_dup.txt &&
+					awk -F '\t' '{print $7}' combined_compressed_repseq_dup.txt | awk -F '\t' '{print $1}' > combined_compressed_repseq_taxids_dup.txt &&
+					awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp combined_compressed_repseq_taxids_dup.txt | \
+					cut -f 2-11 -d$'\t' > combined_compressed_repseq_dup_inter.txt &&
+					# if [[ "$burn_in_diagnostic_reads" == "species" ]]; then
+					#   awk -F '\t'  '{print $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_dup_inter.txt > combined_compressed_repseq_taxa.txt &&
+					#   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_dup.txt) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' combined_compressed_repseq_taxa.txt) | \
+					#   awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > combined_compressed_repseq_duplicates.txt &&
+					#   awk -F '\t' '$11 != "NA"' OFS='\t' combined_compressed_repseq_duplicates.txt > combined_compressed_repseq_duptemp.txt &&
+					#   mv combined_compressed_repseq_duptemp.txt combined_compressed_repseq_duplicates.txt &&
+					#   rm combined_compressed_repseq_taxa.txt combined_compressed_repseq_dup.txt combined_compressed_repseq_dup_inter.txt &&
+					#   awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' combined_compressed_repseq_duplicates.txt > combined_compressed_repseq_inter.txt &&
+					#   awk -F '\t' '{print $2, $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' OFS='\t' combined_compressed_repseq_inter.txt > combined_compressed_repseq_inter2.txt &&
+					#   awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' combined_compressed_repseq_inter2.txt | sort -T "${projdir}"/tmp -k1,1  > combined_compressed_repseq_duplicate_count.txt &&
+					#   awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' combined_compressed_repseq_duplicate_count.txt | sort -T "${projdir}"/tmp -k1,1 > combined_compressed_repseq_multialign_reads.txt &&
+					#   awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' combined_compressed_repseq_multialign_reads.txt combined_compressed_repseq_inter2.txt | \
+					#   sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| \
+					#   awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > combined_compressed_repseq_OTU.txt &&
+					#   wait
+					#   awk -F '\t' '{print $7}' combined_compressed_repseq_unique_reads.txt | awk -F ';' '{print $1}' > combined_compressed_repseq_taxids_uniq.txt &&
+					#   awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp combined_compressed_repseq_taxids_uniq.txt | \
+					#   cut -f 2-11 -d$'\t' > combined_compressed_repseq_uniq_inter.txt &&
+					#   awk -F '\t'  '{print $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_uniq_inter.txt > combined_compressed_repseq_taxa.txt
+					#   paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_unique_reads.txt) <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8}' OFS='\t' combined_compressed_repseq_taxa.txt) | \
+					#   awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' OFS='\t' > combined_compressed_repseq_unique_uncultured.txt &&
+					#   awk -F '\t' '$11 != "NA"' OFS='\t' combined_compressed_repseq_unique_uncultured.txt > combined_compressed_repseq_reptemp.txt &&
+					#   :> combined_compressed_repseq_unique_uncultured.txt &&
+					#   mv combined_compressed_repseq_reptemp.txt combined_compressed_repseq_unique_uncultured.txt 2> /dev/null
+					#   rm combined_compressed_repseq_taxa.txt 2> /dev/null &&
+					#   mv combined_compressed_repseq_unique_uncultured.txt combined_compressed_repseq_unique_sequences.txt 2> /dev/null &&
+					#   rm *_inter.txt *_inter2.txt *_duplicate_count.txt *_multialign_reads.txt *_duplicates.txt 2> /dev/null
+					#   cat combined_compressed_repseq_OTU.txt combined_compressed_repseq_unique_sequences.txt > combined_compressed_repseq_complete_reads.txt
+					#   echo -e "${YELLOW}- compiling taxonomic information"
+					#   awk -F '\t' '{ for(i=1;i<=NF;i++){if(i==NF){printf("%s\n",$NF);}else {printf("%s\t",$i)}}}' combined_compressed_repseq_complete_reads.txt > combined_compressed_repseq_sighits_temp.txt
+					#   echo $'abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain' | \
+					#   cat - combined_compressed_repseq_sighits_temp.txt > combined_compressed_repseq_sighits_temp2.txt
+					# fi
+					wait
+				  awk -F '\t'  '{print $8, $9, $10}' OFS='\t' combined_compressed_repseq_dup_inter.txt > combined_compressed_repseq_taxa.txt &&
+				  paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_dup.txt) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' combined_compressed_repseq_taxa.txt) | \
+				  awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > combined_compressed_repseq_duplicates.txt &&
+				  awk -F '\t' '$11 != "NA"' OFS='\t' combined_compressed_repseq_duplicates.txt > combined_compressed_repseq_duptemp.txt &&
+				  mv combined_compressed_repseq_duptemp.txt combined_compressed_repseq_duplicates.txt &&
+				  rm combined_compressed_repseq_taxa.txt combined_compressed_repseq_dup.txt combined_compressed_repseq_dup_inter.txt &&
+				  awk -F '\t' '{print $1, $10"~"$11, $2, $3, $4, $5, $6, $7, $8, $9, $12, $13}' OFS='\t' combined_compressed_repseq_duplicates.txt > combined_compressed_repseq_inter.txt &&
+				  awk -F '\t' '{print $2, $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' OFS='\t' combined_compressed_repseq_inter.txt > combined_compressed_repseq_inter2.txt &&
+				  awk -F '\t' '{dups[$1]++} END {for (num in dups) {print num}}' combined_compressed_repseq_inter2.txt | sort -T "${projdir}"/tmp -k1,1  > combined_compressed_repseq_duplicate_count.txt &&
+				  awk -F '~' '{a[$1]++;b[$1]=$0}END{for(x in a)if(a[x]==1)print b[x]}' combined_compressed_repseq_duplicate_count.txt | sort -T "${projdir}"/tmp -k1,1 > combined_compressed_repseq_multialign_reads.txt &&
+				  awk -F '\t'  'FNR==NR {a[$1]; next}; $1 in a' combined_compressed_repseq_multialign_reads.txt combined_compressed_repseq_inter2.txt | \
+				  sort -T "${projdir}"/tmp -u -k1,1 | awk 'gsub("~","\t",$0)'| \
+				  awk -F '\t' '{print $3, $4, $5, $6, $7, $8, $9, $10, $11, $1, $2, $12, $13}' OFS='\t' > combined_compressed_repseq_OTU.txt &&
+				  awk -F '\t' '{print $8";"}' combined_compressed_repseq_unique_reads.txt | awk -F ';' '{print $1}' > combined_compressed_repseq_taxids_uniq.txt &&
+				  awk -F'\t' 'NR==FNR{a[$1]=$0;next} {print $0, ($1 in a ? a[$1]:"NA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA")}' OFS='\t' ${projdir}/rankedlineage_edited.dmp combined_compressed_repseq_taxids_uniq.txt | \
+				  cut -f 2-11 -d$'\t' > combined_compressed_repseq_uniq_inter.txt &&
+				  awk -F '\t'  '{print $8, $9, $10}' OFS='\t' combined_compressed_repseq_uniq_inter.txt > combined_compressed_repseq_taxa.txt
+				  paste <(awk -F '\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' OFS='\t' combined_compressed_repseq_unique_reads.txt) <(awk -F '\t' '{print $1, $2, $3}' OFS='\t' combined_compressed_repseq_taxa.txt) | \
+				  awk -F'\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' OFS='\t' > combined_compressed_repseq_unique_uncultured.txt &&
+				  awk -F '\t' '$11 != "NA"' OFS='\t' combined_compressed_repseq_unique_uncultured.txt > combined_compressed_repseq_reptemp.txt &&
+				  :> combined_compressed_repseq_unique_uncultured.txt &&
+				  mv combined_compressed_repseq_reptemp.txt combined_compressed_repseq_unique_uncultured.txt 2> /dev/null
+				  rm combined_compressed_repseq_taxa.txt 2> /dev/null &&
+				  mv combined_compressed_repseq_unique_uncultured.txt combined_compressed_repseq_unique_sequences.txt 2> /dev/null &&
+				  rm *_inter.txt *_inter2.txt *_duplicate_count.txt *_multialign_reads.txt *_duplicates.txt 2> /dev/null
+				  cat combined_compressed_repseq_OTU.txt combined_compressed_repseq_unique_sequences.txt > combined_compressed_repseq_complete_reads.txt
+				  echo -e "${YELLOW}- compiling taxonomic information"
+				  awk -F '\t' '{ for(i=1;i<=NF;i++){if(i==NF){printf("%s\n",$NF);}else {printf("%s\t",$i)}}}' combined_compressed_repseq_complete_reads.txt > combined_compressed_repseq_sighits_temp.txt
+				  echo $'abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\tphylum\tkingdom\tdomain' | \
+				  cat - combined_compressed_repseq_sighits_temp.txt > combined_compressed_repseq_sighits_temp2.txt
+				  wait
+					awk -F '\t' '{gsub(/ /,"_");print}' combined_compressed_repseq_sighits_temp2.txt > combined_compressed_repseq_sighits.txt
+					rm *_complete_reads.txt *_sighits_temp.txt *_unique_reads.txt *_unique_sequences.txt *_sighits_temp2.txt *_OTU.txt
+					rm *_reptemp.txt *_taxids_dup.txt *_taxids_uniq.txt
+					mv ${projdir}/metagenome/haplotig/combined_compressed_metagenomes.fasta.gz ${projdir}/metagenome/haplotig/combined_compressed_metagenomes_full.fasta.gz &&
+					awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' <(zcat ${projdir}/metagenome/haplotig/combined_compressed_metagenomes_full.fasta.gz) | \
+					gzip > ${projdir}/metagenome/haplotig/combined_compressed_metagenomes.tmp.gz &&
+					cat combined_compressed_repseq_sighits.txt | awk 'NR>1{gsub(/Query_/,"",$9); print $9}' | sort | uniq | awk '{print ">"$1}' | \
+					awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - ../combined_compressed_metagenomes_repseq.clstr | awk '{gsub(/\t/,"\n");}1'  | \
+					awk -F '\t' 'NR==FNR{a[$0];next} $1 in a' - <(zcat ${projdir}/metagenome/haplotig/combined_compressed_metagenomes.tmp.gz) | \
+					awk '{gsub(/\t/,"\n");}1' | gzip > ${projdir}/metagenome/haplotig/combined_compressed_metagenomes.fasta.gz &&
+					rm ${projdir}/metagenome/haplotig/combined_compressed_metagenomes.tmp.gz &&
+					rm combined_compressed_repseq_sighits.txt &&
+					rm ${projdir}/metagenome/haplotig/repseq_aln/splitccf/combined_compressed.megablast.gz &&
 					wait
 				fi
 			fi
@@ -1601,7 +1962,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
-				rm ../../alignment/subfile*
+				ls ../../alignment/subfile* | grep -v .gz$ | xargs rm
 				mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
@@ -1628,21 +1989,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+						if test ! -f "${sub}_out.blast.gz"; then
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							fi
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							gzip "${sub}_out.blast" &&
 							wait
 						fi
 						wait
-						gzip "${sub}_out.blast" &&
 						rm "$sub" )&
 						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 							wait
@@ -1667,21 +2032,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+						if test ! -f "${sub}_out.blast.gz"; then
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							fi
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							gzip "${sub}_out.blast" &&
 							wait
 						fi
 						wait
-						gzip "${sub}_out.blast" &&
 						rm "$sub" )&
 						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 							wait
@@ -1855,7 +2224,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			  rm combined_compressed_metagenomes.fasta.gz
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
-			  rm ../../alignment/subfile*
+			  ls ../../alignment/subfile* | grep -v .gz$ | xargs rm
 			  mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
@@ -1881,21 +2250,25 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+						if test ! -f "${sub}_out.blast.gz"; then
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							fi
 							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
-							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							gzip "${sub}_out.blast" &&
 							wait
 						fi
 						wait
-						gzip "${sub}_out.blast" &&
 						rm "$sub" )&
 						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 							wait
@@ -1920,20 +2293,23 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					awk -v rpm=$rpm 'NR%rpm==1{close("subfile"i); i++}{print > "subfile"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
 					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
-						if [[ "$taxids" == true ]]; then
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+						if test ! -f "${sub}_out.blast.gz"; then
+							if [[ "$taxids" == true ]]; then
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							else
+								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+								-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
+								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+								wait
+							fi
 							wait
-						else
-							${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-							-word_size 28 -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
-							wait
-							if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
+							gzip "${sub}_out.blast" &&
 							wait
 						fi
-						wait
-						gzip "${sub}_out.blast" &&
 						rm "$sub" )&
 						if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 							wait
@@ -2284,123 +2660,8 @@ else
 fi
 
 
+
 #################################################################################################################
-
-
-if [[ "$taxids" == true ]]; then
-	:> ${projdir}/metagenome/All.txids
-	for i in ${projdir}/taxids/*.txids; do
-		cat "$i" >> ${projdir}/metagenome/All.txids
-	done
-  sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv "${projdir}"/metagenome/All.tmp ${projdir}/metagenome/All.txids
-	wait
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
-	awk -F'\t' 'NR==FNR{a[$1]=$0;next} ($1) in a{print a[$1]}' ${projdir}/rankedlineage_tabdelimited.dmp ${projdir}/metagenome/All.txids | \
-	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp
-	cat ${projdir}/rankedlineage_edited.dmp | grep -i 'Viruses' > ${projdir}/rankedlineage_edited_viruses.txt
-	cat ${projdir}/rankedlineage_edited.dmp | grep -vi 'Viruses' > ${projdir}/rankedlineage_edited_other.txt
-	cat ${projdir}/rankedlineage_edited_other.txt | grep -i 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_uncultured.txt
-	cat ${projdir}/rankedlineage_edited_other.txt| grep -iv 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_cultured.txt
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
-	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
-	wait
-	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
-	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
-	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
-	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
-	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
-	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
-	rm "${projdir}"/rankedlineage_edited_other*
-	wait
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
-	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
-	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
-	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
-else
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
-	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp
-	cat ${projdir}/rankedlineage_edited.dmp | grep -i 'Viruses' > ${projdir}/rankedlineage_edited_viruses.txt
-	cat ${projdir}/rankedlineage_edited.dmp | grep -vi 'Viruses' > ${projdir}/rankedlineage_edited_other.txt
-	cat ${projdir}/rankedlineage_edited_other.txt | grep -i 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_uncultured.txt
-	cat ${projdir}/rankedlineage_edited_other.txt| grep -iv 'uncultured\|unclassified\|unidentified\|Candidatus' > ${projdir}/rankedlineage_edited_other_cultured.txt
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_cultured.txt | awk -F' ' '$1~/^[a-z]/{$0="NA"}1' | cut -f1,2 -d' ' | \
-	awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_cultured.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
-	wait
-	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
-	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
-	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_uncultured_species.txt | cut -f1,2 -d' ' | \
-	paste - ${projdir}/rankedlineage_edited_other_uncultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA" && $1~/Candidatus/ {$5=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
-	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
-	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
-	rm "${projdir}"/rankedlineage_edited_other*
-	wait
-	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
-	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
-	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
-	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
-	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
-fi
-
-lineagedb=${projdir}/lineage_subset.txt
-if test -f $lineagedb; then
-	echo -e "${YELLOW}- Compiling subset lineage file"
-	if awk 'NR==1{/tax_id/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="tax_id") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > tax_id.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$1] > 0' tax_id.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm tax_id.txt
-	elif awk 'NR==1{/taxname/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="taxname") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > taxname.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$2] > 0' taxname.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm taxname.txt
-	elif awk 'NR==1{/genus/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="genus") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > genus.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$4] > 0' genus.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm genus.txt
-	elif awk 'NR==1{/family}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="family") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > family.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$5] > 0' family.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm family.txt
-	elif awk 'NR==1{/order/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="order") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > order.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$6] > 0' order.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm order.txt
-	elif awk 'NR==1{/class/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="class") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > class.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$7] > 0' class.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm class.txt
-	elif awk 'NR==1{/phylum/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="phylum") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > phylum.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$8] > 0' phylum.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm phylum.txt
-	elif awk 'NR==1{/kingdom/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="kingdom") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > kingdom.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$9] > 0' kingdom.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm kingdom.txt
-	elif awk 'NR==1{/domain/}' lineage_subset.txt;then
-		awk -F '\t' 'NR==1{for(i=1; i<=NF; i++) if ($i=="domain") {a[i]++;} } { for (i in a) printf "%s\t", $i; printf "\n"}' lineage_db.txt > domain.txt
-		awk -F '\t' 'NR==FNR{c[$1]++;next};c[$10] > 0' domain.txt ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.dmp && rm domain.txt
-	else
-		echo -e "${magenta}- lineage database is not formatted properly ${white}\n"
-		echo -e "${magenta}- Do you wish to continue running Qmatey? ${white}\n"
-		read -p "- y(YES) or n(NO) " -n 1 -r
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			printf '\n'
-			exit 0
-		fi
-	fi
-fi
-
-if test -f "${projdir}/remove_taxa.txids"; then
-  awk 'NR==FNR {a[$1]} FNR!=NR && !($1 in a)' ${projdir}/remove_taxa.txids ${projdir}/rankedlineage_edited.dmp > ${projdir}/rankedlineage_edited.temp &&
-  mv ${projdir}/rankedlineage_edited.temp ${projdir}/rankedlineage_edited.dmp &&
-  wait
-fi
-
 cd "${projdir}"/metagenome/alignment
 if [[ "$(ls ./uncultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 	for i in $(ls *haplotig.megablast.gz); do
@@ -2412,7 +2673,6 @@ if [[ "$(ls ./cultured/*haplotig.megablast.gz | wc -l)" -lt 1 ]]; then
 		mv "$i" ./cultured/"${i}"
 	done
 fi
-
 
 #################################################################################################################
 strain_level() {
@@ -5134,7 +5394,6 @@ else
   cd "${projdir}"/metagenome/sighits/sighits_phylum
   for i in $(ls *_dup.txt.gz);do (
   	awk -F '\t' '{print $8";"}' <(zcat "${i}") | awk -F ';' '{print $1}' > ${i%_dup*}_taxids_dup.txt
-
 		) &
 		if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
 			wait

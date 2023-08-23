@@ -169,8 +169,8 @@ Using a text editor, save a file containing any of the following variables as 'c
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|original input data: RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
 |HDsubsample|false|high-density subsampling reads based on combinations motifs flanking reads|string|Optional|
-|subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false|string|Optional|
-|subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false|string|Optional|
+|subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false. specify different REnase instead of true|string|Optional|
+|subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false. specify different REnase instead of true|string|Optional|
 |shotgun_min_read_length|100|minimum read length after subsampling|string|Optional|
 
 **Simulation parameters**
@@ -229,7 +229,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
 |fullqlen_alignment|false|full query length should be consumed/aligned, but allowing for upto 5% mismatch|true or false|Optional|
 |reads_per_megablast|1000 or 100|batch size of sequences per thread during MegaBLAST: 1000 for RRS/WGS and 100 for 16S/ITS/amplicon|integer|Optional|
-|reads_per_megablast_burn_in|0|reduces database by performing burn-in MegaBLAST run. Increases recall rate and speed but lowers precision|integer|Optional|
+|reads_per_megablast_burn_in|0|reduces database by performing burn-in MegaBLAST run. To use parameter, suggested value is 1000 |integer|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
