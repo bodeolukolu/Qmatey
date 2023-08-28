@@ -143,7 +143,7 @@ if [[ -z $maxindel ]]; then
 	export maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	export max_target=100000
+	export max_target=10000
 fi
 if [[ -z "$cross_taxon_validation" ]]; then
 	export cross_taxon_validation=true
@@ -1657,8 +1657,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			      wait
 			    fi
 			    if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
-			      rm ../../alignment/subfile*
-			      mv ../../alignment/F* ./
+			      ls ./alignment/subfile* | xargs rm
+			      mv ./alignment/F* ./
 			    fi
 			    for ccf in $(ls * | sort -T "${projdir}"/tmp -V); do
 			      mv $ccf ./alignment/
@@ -1962,7 +1962,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
-				ls ../../alignment/subfile* | grep -v .gz$ | xargs rm
+				ls ../../alignment/subfile* | xargs rm
 				mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
