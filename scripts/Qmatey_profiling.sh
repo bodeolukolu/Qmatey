@@ -118,10 +118,15 @@ if [[ -z $sunburst_taxlevel ]]; then
 else
 	export run_sunburst=true
 fi
-if [[ -z $compositional_corr ]]; then
+if [[ -z $CCLasso_corr ]]; then
 	export run_corr=false
 else
 	export run_corr=true
+fi
+if [[ -z $spearman_corr ]]; then
+	export run_Spearman_corr=false
+else
+	export run_Spearman_corr=true
 fi
 if [[ "$minRD" -gt 0 ]]; then
 	export zminRD=false
@@ -143,7 +148,7 @@ if [[ -z $maxindel ]]; then
 	export maxindel=100
 fi
 if [[ -z $max_target ]]; then
-	export max_target=10000
+	export max_target=5000
 fi
 if [[ -z "$cross_taxon_validation" ]]; then
 	export cross_taxon_validation=true
@@ -5966,15 +5971,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~  strain ]] && test -f $strain_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && test -f $strain_level_mean; then
+					if [[ "$CCLasso_corr" =~  strain || "$spearman_corr" =~  strain ]]; then
+						if [[ "$CCLasso_corr" =~  strain ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  strain ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -5995,9 +6004,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ strain ]] && test -f $strain_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ strain ]] && test -f $strain_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/strain_level_corr.R" "$strain_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6008,8 +6017,8 @@ correlogram() {
 			fi
 		fi
 		wait
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results/
 	done
 	wait
@@ -6031,15 +6040,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]] && test -f $species_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && test -f $species_level_mean; then
+					if [[ "$CCLasso_corr" =~  species || "$spearman_corr" =~  species ]]; then
+						if [[ "$CCLasso_corr" =~  species ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  species ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6060,9 +6073,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ species ]] && test -f $species_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ species ]] && test -f $species_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/species_level_corr.R" "$species_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6073,8 +6086,8 @@ correlogram() {
 			fi
 		fi
 		wait
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -6096,15 +6109,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]] && test -f $genus_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && test -f $genus_level_mean; then
+					if [[ "$CCLasso_corr" =~  genus || "$spearman_corr" =~  genus ]]; then
+						if [[ "$CCLasso_corr" =~  genus ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  genus ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6125,9 +6142,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ genus ]] && test -f $genus_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ genus ]] && test -f $genus_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/genus_level_corr.R" "$genus_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6138,8 +6155,8 @@ correlogram() {
 			fi
 		fi
 		wait
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -6162,15 +6179,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]] && test -f $family_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && test -f $family_level_mean; then
+					if [[ "$CCLasso_corr" =~  family || "$spearman_corr" =~  family ]]; then
+						if [[ "$CCLasso_corr" =~  family ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  family ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6191,9 +6212,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ family ]] && test -f $family_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ family ]] && test -f $family_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/family_level_corr.R" "$family_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6204,8 +6225,8 @@ correlogram() {
 			fi
 		fi
 		wait
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -6228,15 +6249,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]] && test -f $order_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && test -f $order_level_mean; then
+					if [[ "$CCLasso_corr" =~  order || "$spearman_corr" =~  order ]]; then
+						if [[ "$CCLasso_corr" =~  order ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  order ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6257,9 +6282,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ order ]] && test -f $order_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ order ]] && test -f $order_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/order_level_corr.R" "$order_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6270,8 +6295,8 @@ correlogram() {
 			fi
 		fi
 		wait
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -6294,15 +6319,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]] && test -f $class_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ class ]] && test -f $class_level_mean; then
+					if [[ "$CCLasso_corr" =~  class || "$spearman_corr" =~  class ]]; then
+						if [[ "$CCLasso_corr" =~  class ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  class ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6323,9 +6352,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ class ]] && test -f $class_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ class ]] && test -f $class_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/class_level_corr.R" "$class_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6337,8 +6366,8 @@ correlogram() {
 		fi
 		wait
 		cd "${projdir}"/metagenome/results/class_level
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
@@ -6361,15 +6390,19 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]] && test -f $phylum_level_mean; then
-					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
-						)&
-					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
-						 wait
-					 fi
-					done
-					wait
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ phylum ]] && test -f $phylum_level_mean; then
+					if [[ "$CCLasso_corr" =~  phylum || "$spearman_corr" =~  phylum ]]; then
+						if [[ "$CCLasso_corr" =~  phylum ]] ; then corr_CCLasso=true; fi
+						if [[ "$spearman_corr" =~  phylum ]] ; then corr_spearman=true; fi
+						for min_perc in ${min_percent_sample//,/ }; do (
+							Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
+							)&
+						 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+							 wait
+						 fi
+						done
+						wait
+					fi
 				fi
 			fi
 		else
@@ -6390,9 +6423,9 @@ correlogram() {
 					min_percent_sample=5,10,20
 				fi
 
-				if [[ "$total_no_samples" -ge 24 ]] && [[ "$compositional_corr" =~ phylum ]] && test -f $phylum_level_mean; then
+				if [[ "$total_no_samples" -ge 24 ]] && [[ "$CCLasso_corr" =~ phylum ]] && test -f $phylum_level_mean; then
 					for min_perc in ${min_percent_sample//,/ }; do (
-						Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "${Qmatey_dir}/tools/R" 2>/dev/null
+						Rscript "${Qmatey_dir}/scripts/phylum_level_corr.R" "$phylum_level_mean" "$min_perc" "$min_pos_corr" "$max_neg_corr" "$corr_CCLasso" "$corr_spearman" "${Qmatey_dir}/tools/R" 2>/dev/null
 						)&
 					 if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
 						 wait
@@ -6404,13 +6437,13 @@ correlogram() {
 		fi
 		wait
 		cd "${projdir}"/metagenome/results/phylum_level
-		mkdir -p compositional_correlation
-		mv *corr.tiff ./compositional_correlation/ 2> /dev/null
+		mkdir -p CCLasso_correlation
+		mv *corr.tiff ./CCLasso_correlation/ 2> /dev/null
 		cd "${projdir}"/metagenome/results
 	done
 	wait
 }
-if [[ "$run_corr" == true ]]; then
+if [[ "$run_corr" == true || "$run_spearmancorr" == true ]]; then
 	correlogram &>> ${projdir}/log.out
 fi
 

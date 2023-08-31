@@ -210,7 +210,8 @@ Using a text editor, save a file containing any of the following variables as 'c
 |min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
 |min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
 |max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
-
+|spearman_corr|na|Options: strain,species,genus,family,order,class,phylum|comma delimited string(s). Faster than CCLasso|Optional|
+|CCLasso_corr|na|Options: strain,species,genus,family,order,class,phylum|comma delimited string(s). Analysis might take hours to days|Optional|
 
 
 **Visualizations**
@@ -218,7 +219,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |:-------------|:-------------|:-------------|:-------------|:----------------|
 |sunburst_taxlevel|na|strain,species,genus,family,order,class|comma delimited string(s)|Optional|
 |sunburst_nlayers|na|phylum,genus,species shown in sunburst|comma delimited string(s)|Optional|
-|compositional_corr|na|strain,species,genus,family,order,class,phylum|comma delimited string(s)|Optional|
+
 
 
 
@@ -278,6 +279,8 @@ map_taxids=NA
 ### Taxonomic_Profiling_and_Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
+spearman_corr=strain,species,genus,family,order,class,phylum
+CCLasso_corr=strain,species,genus,family,order,class,phylum
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
@@ -287,7 +290,7 @@ max_neg_corr=0.1,0.2,0.3
 ####################################################
 sunburst_taxlevel=strain,species,genus,family,order,class
 sunburst_nlayers=phylum,genus,species
-compositional_corr=strain,species,genus,family,order,class,phylum
+
 
 
 ### Advanced_Parameters

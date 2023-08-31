@@ -37,6 +37,8 @@ map_taxids=NA
 # Taxonomic_Profiling_and_Filtering
 ####################################################
 taxonomic_level=strain,species,genus,family,order,class,phylum
+spearman_corr=strain,species,genus,family,order,class,phylum
+CCLasso_corr=strain,species,genus,family,order,class,phylum
 min_percent_sample=10,20
 min_pos_corr=0.1,0.2,0.3
 max_neg_corr=0.1,0.2,0.3
@@ -45,7 +47,7 @@ max_neg_corr=0.1,0.2,0.3
 ####################################################
 sunburst_taxlevel=strain,species,genus,family,order,class
 sunburst_nlayers=phylum,genus,species
-compositional_corr=strain,species,genus,family,order,class,phylum
+
 
 # Advanced_Parameters
 ####################################################
