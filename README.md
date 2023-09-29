@@ -229,8 +229,8 @@ Using a text editor, save a file containing any of the following variables as 'c
 |nodes|1|number of nodes|integer|Optional|
 |minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
 |fullqlen_alignment|false|full query length should be consumed/aligned, but allowing for upto 5% mismatch|true or false|Optional|
-|reads_per_megablast|1000 or 100|batch size of sequences per thread during MegaBLAST: 1000 for RRS/WGS and 100 for 16S/ITS/amplicon|integer|Optional|
-|reads_per_megablast_burn_in|0|reduces database by performing burn-in MegaBLAST run. To use parameter, suggested value is 1000 |integer|Optional|
+|reads_per_megablast|10000|batch size of sequences per thread during MegaBLAST: if burn-in=0, default is 1000 and 100 for RRS/WGS and 16S/ITS/amplicon data, respectively|integer|Optional|
+|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run|integer|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
@@ -298,9 +298,8 @@ sunburst_nlayers=phylum,genus,species
 nodes=1
 minRD=0
 fullqlen_alignment=false
-reads_per_megablast=1000
-reads_per_megablast_burn_in=0
-genome_scaling=true
+reads_per_megablast=10000
+reads_per_megablast_burn_in=10000
 zero_inflated=0.01
 exclude_rRNA=false
 annotate_seq=false
