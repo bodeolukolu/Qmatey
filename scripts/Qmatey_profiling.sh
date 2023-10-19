@@ -1137,9 +1137,10 @@ ref_norm () {
 				rm "${i%.bam}"_microbiome_coverage.txt
 			done
 			wait
-			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2,"\t",$4,"\t",$2+$4}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\n') - > coverage_normalize.txt &&
-			maximum=$(sort -T "${projdir}"/tmp -Vr -k3,3 coverage_normalize.txt | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
-			awk -v maximum=$maximum 'NR>1{print $1,maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - > coverage_normalization_factor.txt &&
+			awk 'BEGIN{OFS="\t"} NR==FNR{a[$1]=$0;next} ($1) in a{print $0, a[$1]}' host_coverage.txt microbiome_coverage.txt | awk '{print $1,"\t",$2,"\t",$4,"\t",$2+$4,"\t",($2/($2+$4))*100}' | cat <(printf 'Sample_ID\t#_metagenome_reads\t#_Host_reads\t#_total_reads\tpercent_metagenome\n') - > coverage_normalize.txt &&
+			maximum=$(sort -T "${projdir}"/tmp -Vr -k3,3 coverage_normalize.txt | awk '!($3 == 0)' | awk 'NF > 0' | awk 'NR==1{print $3; exit}')
+			awk -v maximum=$maximum 'NR>1 && $3>0{print $1"\t"maximum/$3}' coverage_normalize.txt | cat <(printf 'Sample_ID\tNormalization_factor\n') - | \
+			cat - <(awk 'NR>1 && $3==0{print $1"\t"$3}' coverage_normalize.txt) > coverage_normalization_factor.txt &&
 			awk 'NR>1{print $1,"\t",($2/$4)*100,"\t",($3/$4)*100}' coverage_normalize.txt | cat <(printf 'Sample_ID\tPercent_Metagenome\tPercent_Host\n') - > ./results/metagenome_derived_perc.txt &&
 			rm host_coverage.txt microbiome_coverage.txt &&
 			wait
