@@ -333,6 +333,7 @@ simulate_reads () {
 		wait
 		cd ../
 	done
+	wait
 
 	minfrag=${fragment_size_range%,*}
 	maxfrag=${fragment_size_range#*,}
@@ -406,6 +407,7 @@ simulate_reads () {
 				rm -rf "*tmp*" 2> /dev/null
 				wait
 			done
+			wait
 			cat gcov*_${unsim} > ${unsim}
 			rm gcov*_${unsim}
 			rm hold*  2> /dev/null
@@ -428,6 +430,7 @@ simulate_reads () {
 					done
 					gzip -c hold2_${unsim%.gz} >> ${unsim}.tmp && rm hold2_${unsim%.gz}
 				done
+				wait
 
 				zcat ${unsim}.tmp | grep -v '>' | sed 's/[^'"$RE1a"']*\('"$RE1a"'.*\)/\1/' | sed 's!'"$RE1a"'[^'"$RE1a"']*$!'"$RE1a"'!' | \
 				sed 's/[^'"$RE1b"']*\('"$RE1b"'.*\)/\1/' | sed 's!'"$RE1b"'[^'"$RE1b"']*$!'"$RE1b"'!' | \
@@ -441,6 +444,7 @@ simulate_reads () {
 				awk -v minfrag=$minfrag 'BEGIN{OFS="\t"} {if ($1 >= minfrag) {print $0}}' | awk '{print ">read"NR"_"$1"\t"$2}' | $gzip > gcov${g}_${unsim} &&
 				rm *.tmp
 			done
+			wait
 			cat gcov*_${unsim} > ${unsim}
 			rm gcov*_${unsim}
 			rm hold*
@@ -473,6 +477,7 @@ simulate_reads () {
 			rm hold*
 		fi
 	done
+	wait
 
 	for unsim in *.fasta.gz; do
 		awk '{print $2}' <(zcat ${unsim}) | awk -v len=$max_read_length '{print substr($0,1,len)}' | awk '{print length"\t"$1}' | \
@@ -481,6 +486,7 @@ simulate_reads () {
 		awk '{print ">read"NR"_fraglength"$1"\n"$2}' | $gzip > ../samples/${unsim%.fasta.gz}_R2.fasta.gz &&
 		wait
 	done
+	wait
 
 	# cd "${projdir}"/simulate_genomes/
 	# for simdir in */ ; do
@@ -573,6 +579,7 @@ else
 					wait
 				fi
 			done
+			wait
 		fi
 	fi
 
@@ -595,6 +602,7 @@ else
 					wait
 				fi
 			done
+			wait
 		fi
 	fi
 
@@ -617,6 +625,7 @@ else
 					wait
 				fi
 			done
+			wait
 		fi
 	fi
 
@@ -638,6 +647,7 @@ else
 					wait
 				fi
 			done
+			wait
 		fi
 	fi
 
@@ -695,6 +705,7 @@ else
 				wait
 			fi
 		done
+		wait
 
 		if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
 			for i in $(ls *.f*); do (
@@ -728,12 +739,17 @@ else
 			done
 			wait
 
-			for lenfile in *_length_distribution.txt; do cat "$lenfile" >> length_distribution.txt && rm "$lenfile"; done
+			for lenfile in $(find . -name "*_length_distribution.txt"); do
+				cat "$lenfile" >> length_distribution.txt &&
+				rm "$lenfile" &&
+				wait
+			done
 			wait
 			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
 			mv tmp.txt length_distribution.txt
 			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 			rm length_distribution.txt
+			wait
 
 
 			for i in $(ls *.f*); do (
@@ -791,6 +807,7 @@ else
 				wait
 			fi
 		done
+		wait
 		for i in $(ls *.R2.fasta.gz); do
 			if test -f $i; then
 				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
@@ -798,6 +815,7 @@ else
 				wait
 			fi
 		done
+		wait
 
 		# if subsampling of WGS reads is not false, subsample with in silico qRRS
 		if [[ "$subsample_shotgun_R1" != false ]]; then
@@ -886,12 +904,17 @@ else
 			done
 			wait
 
-			for lenfile in *_length_distribution.txt; do cat $lenfile >> length_distribution.txt && rm "$lenfile"; done
+			for lenfile in $(find . -name "*_length_distribution.txt"); do
+				cat $lenfile >> length_distribution.txt &&
+				rm "$lenfile" &&
+				wait
+			done
 			wait
 			awk '{print length($0)}' length_distribution.txt | sort -T "${projdir}"/tmp -n > tmp.txt
 			mv tmp.txt length_distribution.txt
 			export max_seqread_len=$(awk '{all[NR] = $0} END{print all[int(NR*0.75 - 0.5)]}' length_distribution.txt)
 			rm length_distribution.txt
+			wait
 
 
 			for i in $(ls *.f*); do (
