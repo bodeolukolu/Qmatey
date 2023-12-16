@@ -230,7 +230,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
 |fullqlen_alignment|false|full query length should be consumed/aligned, but allowing for upto 5% mismatch|true or false|Optional|
 |reads_per_megablast|10000|batch size of sequences per thread during MegaBLAST: if burn-in=0, default is 1000 and 100 for RRS/WGS and 16S/ITS/amplicon data, respectively|integer|Optional|
-|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run|integer|Optional|
+|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run. if set to 0, burn-in will not be performed |integer|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
