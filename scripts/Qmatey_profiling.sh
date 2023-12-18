@@ -1601,6 +1601,23 @@ if [[ "$fastMegaBLAST" == true ]]; then
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
 		if [[ "$(ls *_compressed.fasta.gz 2>/dev/null | wc -l)" -gt 0 ]]; then
+			for i in $(ls *_compressed.fasta.gz); do (
+				zcat $i | awk '{gsub(/AAAAAAAAAA$/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");}1' | \
+				awk '{gsub(/CCCCCCCCCC$/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");}1' | \
+				awk '{gsub(/GGGGGGGGGG$/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");}1' | \
+				awk '{gsub(/TTTTTTTTTT$/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");}1' | \
+				awk '{gsub(/^AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");}1' | \
+				awk '{gsub(/^CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");}1' | \
+				awk '{gsub(/^GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");}1' | \
+				awk '{gsub(/^TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");}1' | \
+				awk '{gsub(/AAAAA~/,"~");gsub(/CCCCC~/,"~");gsub(/GGGGG~/,"~");gsub(/TTTTT~/,"~");gsub(/~AAAAA/,"~");gsub(/~CCCCC/,"~");gsub(/~GGGGG/,"~");gsub(/~TTTTT/,"~");}1' | \
+				awk '{gsub(/AA~/,"~");gsub(/CC~/,"~");gsub(/GG~/,"~");gsub(/TT~/,"~");gsub(/~AA/,"~");gsub(/~CC/,"~");gsub(/~GG/,"~");gsub(/~TT/,"~");gsub(/AA~/,"~");gsub(/CC~/,"~");gsub(/GG~/,"~");gsub(/TT~/,"~");gsub(/~AA/,"~");gsub(/~CC/,"~");gsub(/~GG/,"~");gsub(/~TT/,"~");}1' | \
+				awk '{gsub(/A~/,"~");gsub(/C~/,"~");gsub(/G~/,"~");gsub(/T~/,"~");gsub(/~A/,"~");gsub(/~C/,"~");gsub(/~G/,"~");gsub(/~T/,"~");gsub(/~/,"");}1' | gzip > ${i}.tmp &&
+				mv ${i}.tmp $i ) &
+				if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+					wait
+				fi
+			done
 			for i in $(ls *_compressed.fasta.gz); do
 				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp &&
 				mv $i ${i%*_compressed.fasta.gz}_metagenome.fasta.gz &&
@@ -1665,8 +1682,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			      for i in combined_compressed_metagenomes_sub*; do (
 			        $cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A $longestread
 			        wait
-			        rm "$i" "${i}"_clust.clstr &&
-			        wait )&
+			        rm "$i" "${i}"_clust.clstr )&
 			        if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
 			          wait
 			        fi
@@ -2573,6 +2589,23 @@ else
 	cd "${projdir}"/metagenome/haplotig
 	if test ! -f combined_compressed_metagenomes.fasta.gz; then
 		# find . -name "*.fasta.gz" | xargs zcat | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | awk '{print ">"NR"\n"$1}' > combined_compressed_metagenomes.fasta
+		for i in $(ls *_compressed.fasta.gz); do (
+			zcat $i | awk '{gsub(/AAAAAAAAAA$/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");gsub(/AAAAAAAAAA~/,"A~");}1' | \
+			awk '{gsub(/CCCCCCCCCC$/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");gsub(/CCCCCCCCCC~/,"C~");}1' | \
+			awk '{gsub(/GGGGGGGGGG$/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");gsub(/GGGGGGGGGG~/,"G~");}1' | \
+			awk '{gsub(/TTTTTTTTTT$/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");gsub(/TTTTTTTTTT~/,"T~");}1' | \
+			awk '{gsub(/^AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");gsub(/~AAAAAAAAAA/,"~A");}1' | \
+			awk '{gsub(/^CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");gsub(/~CCCCCCCCCC/,"~C");}1' | \
+			awk '{gsub(/^GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");gsub(/~GGGGGGGGGG/,"~G");}1' | \
+			awk '{gsub(/^TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");gsub(/~TTTTTTTTTT/,"~T");}1' | \
+			awk '{gsub(/AAAAA~/,"~");gsub(/CCCCC~/,"~");gsub(/GGGGG~/,"~");gsub(/TTTTT~/,"~");gsub(/~AAAAA/,"~");gsub(/~CCCCC/,"~");gsub(/~GGGGG/,"~");gsub(/~TTTTT/,"~");}1' | \
+			awk '{gsub(/AA~/,"~");gsub(/CC~/,"~");gsub(/GG~/,"~");gsub(/TT~/,"~");gsub(/~AA/,"~");gsub(/~CC/,"~");gsub(/~GG/,"~");gsub(/~TT/,"~");gsub(/AA~/,"~");gsub(/CC~/,"~");gsub(/GG~/,"~");gsub(/TT~/,"~");gsub(/~AA/,"~");gsub(/~CC/,"~");gsub(/~GG/,"~");gsub(/~TT/,"~");}1' | \
+			awk '{gsub(/A~/,"~");gsub(/C~/,"~");gsub(/G~/,"~");gsub(/T~/,"~");gsub(/~A/,"~");gsub(/~C/,"~");gsub(/~G/,"~");gsub(/~T/,"~");gsub(/~/,"");}1' | gzip > ${i}.tmp &&
+			mv ${i}.tmp $i ) &
+			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
+				wait
+			fi
+		done
 		for i in $(ls *_compressed.fasta.gz); do
 			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
 			wait
