@@ -12,6 +12,7 @@ Qmatey is a quantitative metagenomic/microbiome taxonomic binning and profiling 
 * Exact-matching at strain Level
 * Exact-matching of consensus sequence (EMC) at species- to phylum-level.
 * User-defined parameters for strain to phylum level taxonomic classification.
+- Multiple nucleotide databases can be specified for a run.
 * Input data: amplicon sequencing (e.g. 16S/ITS), shotgun/WGS, reduced representation sequencing (RRS/qRRS).
 * Simulates metagenome sequencing/profiling (complete/partial digest or shotgun/WGS libraries).
 * Data compression and indexing improves speed by hundreds to thousands of times.
@@ -19,7 +20,7 @@ Qmatey is a quantitative metagenomic/microbiome taxonomic binning and profiling 
 * Relative abundance based on spike-in/host sequences (recommended).
 - Minimize false positive and false negative rates.
 * implements a novel "cross-taxon validation" method.
-- correlation network based on CCLasso method (asensitive to compositional data/multi-way interactions).
+- correlation network based on CCLasso (sensitive to compositional data/multi-way interactions) and Spearman corrlation method.
 * QC-plots to evaluate the predictive accuracy of profiles.
 * Various visualizations.
 
@@ -123,6 +124,7 @@ rm nt*.tar.gz
 ```
 
 Your database directory should now have the desired, uncompressed database files, and ready to use.
+To perform megablast with multiple databases, provide uncompressed database files in the same directory.
 
 
 # Limit search to taxon
@@ -229,13 +231,13 @@ Using a text editor, save a file containing any of the following variables as 'c
 |nodes|1|number of nodes|integer|Optional|
 |minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
 |fullqlen_alignment|false|full query length should be consumed/aligned, but allowing for upto 5% mismatch|true or false|Optional|
-|reads_per_megablast|10000|batch size of sequences per thread during MegaBLAST: if burn-in=0, default is 1000 and 100 for RRS/WGS and 16S/ITS/amplicon data, respectively|integer|Optional|
-|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run. if set to 0, burn-in will not be performed |integer|Optional|
+|reads_per_megablast|na|batch size of reads/thread. Default: 1000/10000 (reads_per_megablast_burn_in=0/10000) for RRS/WGS and 100 for 16S/ITS/amplicon data|integer|Optional|
+|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run. Default=0 for custom databases (i.e. no burn-in) |integer|Optional|
 |zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
 |exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
 |annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
 
-**Note: na indicates that variable is user-defined or hard-coded/computed intuitively, as well as a function of ploidy.*
+**Note: na indicates that variable is user-defined or intuitively hard-coded/computed.*
 
 Below is an example of a configuration file:
 

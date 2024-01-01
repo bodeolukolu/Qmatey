@@ -189,25 +189,29 @@ else
 fi
 
 taxids="$(grep taxids config.sh | grep -v "map")"
+blast_location="$(grep blast_location config.sh)"
+blast_location=${blast_location//*=}
 taxids=${taxids//*=}
 if [[ -z $taxids ]]; then
 	$taxids=true
 fi
-if [[ $taxids == true ]] && [[ ! -d ./taxids ]]; then
-	echo -e "${magenta}- taxids directory does not exist ${white}\n"
-	echo -e "${magenta}- to subset MegaBLAST with list of taxids, provide files containing list of tax_ids ${white}\n"
-	echo -e "${magenta}- else, set taxids=false in config.sh file ${white}\n"
-	echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}\n"
-	sleep 5; exit 0
-fi
-if [[ $taxids == true ]] && [[ -d ./taxids ]]; then
-	if [[ -z "$(ls -A ./taxids)" ]]; then
-		echo -e "${magenta}- taxids directory is empty ${white}\n"
-		echo -e "${magenta}- to subset MegaBLAST with list of tax_ids, provide files containing list of tax_ids ${white}\n"
-		echo -e "${magenta}- else, set taxids=false in config.sh file ${white}\n"
-		echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}\n"
-		sleep 5; exit 0
-	fi
+if [[ "$blast_location" != "custom" ]]; then
+  if [[ $taxids == true ]] && [[ ! -d ./taxids ]]; then
+  	echo -e "${magenta}- taxids directory does not exist ${white}\n"
+  	echo -e "${magenta}- to subset MegaBLAST with list of taxids, provide files containing list of tax_ids ${white}\n"
+  	echo -e "${magenta}- else, set taxids=false in config.sh file ${white}\n"
+  	echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}\n"
+  	sleep 5; exit 0
+  fi
+  if [[ $taxids == true ]] && [[ -d ./taxids ]]; then
+  	if [[ -z "$(ls -A ./taxids)" ]]; then
+  		echo -e "${magenta}- taxids directory is empty ${white}\n"
+  		echo -e "${magenta}- to subset MegaBLAST with list of tax_ids, provide files containing list of tax_ids ${white}\n"
+  		echo -e "${magenta}- else, set taxids=false in config.sh file ${white}\n"
+  		echo -e "${magenta}- Qmatey will quit in 5 seconds ${white}\n"
+  		sleep 5; exit 0
+  	fi
+  fi
 fi
 
 cd samples

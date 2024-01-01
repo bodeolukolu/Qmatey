@@ -20,35 +20,50 @@ fi
 
 # Create custom database from user-provided fasta file and file mapping identifiers/header to taxids
 if [[ "$blast_location" == "custom" ]]; then
-	if test ! -f db_created.txt; then
-		if [[ -z $input_dbfasta ]]; then
-			echo -e "${magenta}- \n- Please provide fasta file(s) required to create custom database  ${white}\n"
+	export taxids=false
+	custom_db=${input_dbfasta##*/}
+	custom_db=${custom_db%.f*}
+	if test ! -f db_created.txt || test ! -d $custom_db; then
+		if [[ -z $input_dbfasta ]] || test ! -f $input_dbfasta; then
+			echo -e "${magenta}- \n- Please provide fasta file(s) required to create custom database or specify correct directory ${white}\n"
+			echo -e "${magenta}- \n- Please provide files mapping fasta sequences to taxid(s) or specify correct directory ${white}\n" > ${projdir}/job_killed
 			exit 0
 		fi
-		if [[ -z $map_taxids ]]; then
-			echo -e "${magenta}- \n- Please provide files mapping fasta sequences to taxid(s)  ${white}\n"
+		if [[ -z $map_taxids ]] || test ! -f $map_taxids; then
+			echo -e "${magenta}- \n- Please provide files mapping fasta sequences to taxid(s) or specify correct directory ${white}\n"
+			echo -e "${magenta}- \n- Please provide files mapping fasta sequences to taxid(s) or specify correct directory ${white}\n" > ${projdir}/job_killed
 			exit 0
 		fi
 		cd "${projdir}"
 		echo -e "$1 \e[31m Creating custom database"
-		custom_db=${input_dbfasta%.f*}
+		# cp ${input_dbfasta} $custom_db
+		# cp ${map_taxids} $custom_db
 		mkdir -p "$custom_db"
-		cd $custom_db && cp ${input_dbfasta} ./
-		custom_db=${custom_db}/${input_dbfasta##*/}
+		# cd $custom_db
+		# custom_db_dir=${custom_db}/${custom_db}
 		if [[ $(file $input_dbfasta 2> /dev/null | awk -F' ' '{print $2}') == gzip ]]; then
-			export title_db=${input_dbfasta##*/}
-			export custom_db=${custom_db%.gz}
-			zcat *.f* | ${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/makeblastdb -in - -out $custom_db -title ${title_db%.gz} -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			export title_db=${custom_db}
+			export custom_db=${custom_db}
+			zcat $input_dbfasta | ${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/makeblastdb -in - -out ${custom_db} -title $title_db -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			mv ${custom_db}.* ${custom_db}/ &&
+			mv ${custom_db}/$input_dbfasta ${projdir}/ 2> /dev/null
+			# rm ${input_dbfasta##*/} ${map_taxids##*/}
 		else
-			${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/makeblastdb -in *.f* -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/makeblastdb -in $input_dbfasta -out $custom_db -title $title_db -parse_seqids -blastdb_version 5 -taxid_map $map_taxids -dbtype nucl
+			mv ${custom_db}.* ${custom_db}/
+			mv ${custom_db}/${input_dbfasta##*/} ${projdir}/
+			# rm ${input_dbfasta##*/} ${map_taxids##*/}
 		fi
-		cd "${projdir}"
+		# cd "${projdir}"
 		touch db_created.txt
+		export custom_db=${projdir}/${custom_db}/${custom_db}
+		# export custom_db=${projdir}/${custom_db}/${custom_db}/${custom_db}
 	else
-		custom_db=${input_dbfasta%.f*}/${input_dbfasta##*/}
-		export custom_db=${custom_db%.gz}
+		export custom_db=${projdir}/${custom_db}/${custom_db}
 	fi
+	echo custom_db: $custom_db
 fi
+
 
 
 cd "${projdir}"
@@ -161,57 +176,39 @@ mkdir -p "${projdir}"/tmp
 export TMPDIR="${projdir}"/tmp
 
 if [[ "$library_type" =~ "RRS" ]] || [[ "$library_type" =~ "rrs" ]] || [[ "$library_type" == "WGS" ]] || [[ "$library_type" == "wgs" ]] || [[ "$library_type" == "SHOTGUN" ]] || [[ "$library_type" == "shotgun" ]]; then
-  if [[ -z $reads_per_megablast ]]; then
-  	export reads_per_megablast=1000
-  fi
 	if [[ -z $reads_per_megablast_burn_in ]]; then
-		export reads_per_megablast_burn_in=10000
+		export reads_per_megablast=10000
+	fi
+	if [[ $reads_per_megablast_burn_in -eq 10000 ]] && [[ -z $reads_per_megablast ]]; then
+		export reads_per_megablast=10000
+	fi
+	if [[ -z $reads_per_megablast ]]; then
+		export reads_per_megablast=1000
 	fi
 fi
+
 if [[ "$library_type" =~ "amplicon" ]] || [[ "$library_type" =~ "Amplicon" ]] || [[ "$library_type" =~ "AMPLICON" ]] || [[ "$library_type" =~ "16S" ]] || [[ "$library_type" =~ "16s" ]]|| [[ "$library_type" =~ "ITS" ]] || [[ "$library_type" =~ "its" ]]; then
   export min_strain_uniq=1
 	export exclude_rRNA=false
-	if (echo $local_db | grep -q 'nt'); then
-		if [[ -z $reads_per_megablast ]]; then
-	  	export reads_per_megablast=100
-	  fi
-		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=10000
-		fi
-  fi
-  if (echo $local_db | grep -q 'ref'); then
-		if [[ -z $reads_per_megablast ]]; then
-			export reads_per_megablast=100
-		fi
-		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=10000
-		fi
-  fi
-  if (echo $local_db | grep -q '16S') || (echo $local_db | grep -q '18S') || (echo $local_db | grep -q '28S') || (echo $local_db | grep -q 'ITS'); then
-		if [[ -z $reads_per_megablast ]]; then
-	  	export reads_per_megablast=100
-	  fi
-		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=10000
-		fi
-  fi
-  if (echo $local_db | grep -q '16s') || (echo $local_db | grep -q '18s') || (echo $local_db | grep -q '28s') || (echo $local_db | grep -q 'ITs'); then
-		if [[ -z $reads_per_megablast ]]; then
-	  	export reads_per_megablast=100
-	  fi
-		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=10000
-		fi
-  fi
-  if [[ "$blast_location" == "custom" ]]; then
-		if [[ -z $reads_per_megablast ]]; then
-	  	export reads_per_megablast=100
-	  fi
-		if [[ -z $reads_per_megablast_burn_in ]]; then
-			export reads_per_megablast_burn_in=10000
-		fi
-  fi
+	if [[ -z $reads_per_megablast_burn_in ]]; then
+		export reads_per_megablast=10000
+	fi
+	if [[ -z $reads_per_megablast ]]; then
+		export reads_per_megablast=100
+	fi
 fi
+
+if [[ "$blast_location" == "custom" ]]; then
+	if [[ $reads_per_megablast_burn_in -eq 10000 ]]; then
+		if [[ -z $reads_per_megablast ]]; then
+			export reads_per_megablast=1000
+		fi
+	fi
+	if [[ -z $reads_per_megablast ]]; then
+		export reads_per_megablast=1000
+	fi
+fi
+
 if [[ -z $min_percent_sample ]]; then
 	export min_percent_sample=5,10,20
 fi
@@ -232,7 +229,9 @@ if [[ -z "$(ls -A ./samples)" ]]; then
 	if [[ -d ./simulate_genomes ]]; then
 		:
 	else
-		echo -e "$1 \e[31m samples folder is empty, Qmatey will exit"; sleep 10; exit 0
+		echo -e "$1 \e[31m samples folder is empty, Qmatey will exit"
+		echo -e "$1 \e[31m samples folder is empty, Qmatey will exit" > ${projdir}/job_killed
+		sleep 10; exit 0
 	fi
 else
 	:
@@ -299,6 +298,8 @@ if [[ -d metagenome_ref_normalize ]]; then
 	if [[ -d metagenome_no_normalize ]]; then
 		echo -e "${magenta}- Reference-normalized and non-normalized directories both exist ${white}\n"
 		echo -e "${magenta}- Manually rename 1 the 2 existing metagenome-directories to metagenome ${white}\n"
+		echo -e "${magenta}- Reference-normalized and non-normalized directories both exist ${white}\n" > ${projdir}/job_killed
+		echo -e "${magenta}- Manually rename 1 the 2 existing metagenome-directories to metagenome ${white}\n" >> ${projdir}/job_killed
 		sleep 10; exit 0
 	fi
 fi
@@ -524,6 +525,7 @@ if [[ "$simulate_reads" == 1 ]]; then
 	if [[ "$(ls ./samples/*.f* | wc -l)" -gt 0 ]]; then
 		echo -e "${magenta}- samples directory/folder contains fasta/fastq files. Delete samples directory/folder before running simulation ${white}\n"
 		echo -e "${magenta}- Qmatey will quit in 10 seconds ${white}\n"
+		echo -e "${magenta}- samples directory/folder contains fasta/fastq files. Delete samples directory/folder before running simulation ${white}\n" > ${projdir}/job_killed
 		sleep 10 && exit 1
 	else
 		echo -e "${magenta}- generating sequence reads for simulated metagenome profiling of synthetic/mock community ${white}\n"
@@ -656,6 +658,7 @@ else
 	sampno=$(ls -1 | wc -l)
 	if [[ "$sampno" == "0" ]]; then
 		echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n"
+		echo -e "${magenta}- \n- samples folder is empty, exiting pipeline ${white}\n" > ${projdir}/job_killed
 		exit 0
 	fi
 	echo filename_formatted > filename_formatted.txt
@@ -673,17 +676,17 @@ else
 			fi
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.fastq.gz}.fasta.gz
+					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.f*}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk 'NR%2==0' <(zcat "$i") | gzip > "${i}".tmp.gz && mv "${i}".tmp.gz "${i}"
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.fastq}.fasta.gz
+					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.f*}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
-					awk 'NR%2==0' $i | gzip > "${i}".tmp.gz && mv "${i}".tmp.gz "${i}".gz
+					awk 'NR%2==0' $i | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz "${i}".gz
 				fi
 			fi ) &
 			if [[ $(jobs -r -p | wc -l) -ge $gN ]]; then
@@ -691,14 +694,14 @@ else
 			fi
 		done
 		wait
-		for i in $(ls *_R2.fasta.gz); do
+		for i in $(ls *_R2.fasta.gz 2> /dev/null); do
 			if test -f $i; then
 				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta &&
 				rm "$i" && mv ${i%_R2.fasta.gz}.tmp.fasta ${i%_R2.fasta.gz}.fasta.gz
 				wait
 			fi
 		done
-		for i in $(ls *.R2.fasta.gz); do
+		for i in $(ls *.R2.fasta.gz 2> /dev/null); do
 			if test -f $i; then
 				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
 				rm "$i" && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
@@ -780,14 +783,14 @@ else
 			fi
 			if [[ $(file $i 2> /dev/null) =~ gzip ]]; then
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.fastq.gz}.fasta.gz
+					awk 'NR%2==0' <(zcat "$i") | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.f*}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk 'NR%2==0' <(zcat "$i") | gzip > "${i}".tmp.gz && mv "${i}".tmp.gz "${i}"
 				fi
 			else
 				if [[ "${fa_fq}" == "@" ]]; then
-					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.fastq}.fasta.gz
+					awk 'NR%2==0' $i | awk 'NR%2==1' | gzip > "${i}".tmp.gz && rm "$i" && mv "${i}".tmp.gz ${i%.f*}.fasta.gz
 				fi
 				if [[ "${fa_fq}" == ">" ]]; then
 					awk 'NR%2==0' $i | gzip > "${i}".tmp.gz && mv "${i}".tmp.gz "${i}".gz
@@ -800,7 +803,7 @@ else
 		wait
 
 		# concatenate R1 and R2 reads
-		for i in $(ls *_R2.fasta.gz); do
+		for i in $(ls *_R2.fasta.gz 2> /dev/null); do
 			if test -f $i; then
 				cat "$i" ${i%_R2.fasta.gz}.fasta.gz > ${i%_R2.fasta.gz}.tmp.fasta.gz &&
 				rm "$i" && mv ${i%_R2.fasta.gz}.tmp.fasta.gz ${i%_R2.fasta.gz}.fasta.gz
@@ -808,7 +811,7 @@ else
 			fi
 		done
 		wait
-		for i in $(ls *.R2.fasta.gz); do
+		for i in $(ls *.R2.fasta.gz 2> /dev/null); do
 			if test -f $i; then
 				cat "$i" ${i%.R2.fasta.gz}.fasta.gz > ${i%.R2.fasta.gz}.tmp.fasta.gz &&
 				rm "$i" && mv ${i%.R2.fasta.gz}.tmp.fasta.gz ${i%.R2.fasta.gz}.fasta.gz
@@ -953,6 +956,7 @@ if [[ -d "pe" ]]; then
 		fi
 	else
 		echo -e "${magenta}- samples' PE fastq filenames requires formatting (i.e. needs to end in "_R1.fastq" or ".R1.fastq" and "_R2.fastq" or ".R2.fastq") ${white}\n"
+		echo -e "${magenta}- samples' PE fastq filenames requires formatting (i.e. needs to end in "_R1.fastq" or ".R1.fastq" and "_R2.fastq" or ".R2.fastq") ${white}\n" > ${projdir}/job_killed
 		sleep 5 && exit 0
 	fi
 else
@@ -1442,12 +1446,13 @@ fi
 
 #################################################################################################################
 
-
+cd "${projdir}"
 if [[ "$taxids" == true ]]; then
 	:> ${projdir}/metagenome/All.txids
 	for i in ${projdir}/taxids/*.txids; do
 		cat "$i" >> ${projdir}/metagenome/All.txids
 	done
+
   sort -T "${projdir}"/tmp ${projdir}/metagenome/All.txids | uniq > ${projdir}/metagenome/All.tmp && mv "${projdir}"/metagenome/All.tmp ${projdir}/metagenome/All.txids
 	wait
 	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
@@ -1462,8 +1467,7 @@ if [[ "$taxids" == true ]]; then
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
-	wait
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt &&
 	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
 	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
@@ -1472,15 +1476,14 @@ if [[ "$taxids" == true ]]; then
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
 	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
-	rm "${projdir}"/rankedlineage_edited_other*
-	wait
+	rm "${projdir}"/rankedlineage_edited_other* &&
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
 	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
 	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
-	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
+	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp 2> /dev/null
 else
-	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' > ${projdir}/rankedlineage_tabdelimited.dmp &&
+	awk 'NR>1{gsub(/\t\t/,"\tNA\t"); print}' ${Qmatey_dir}/tools/rankedlineage.dmp | awk '{gsub(/[|]/,""); print}' | awk '{gsub(/\t\t/,"\t"); print}' | \
 	cat <(printf "tax_id\ttaxname\tspecies\tgenus\tfamily\torder\tclass\tphylum\tkingdom\tdomain\n") - > ${projdir}/rankedlineage_edited.dmp
 	cat ${projdir}/rankedlineage_edited.dmp | grep -i 'Viruses' > ${projdir}/rankedlineage_edited_viruses.txt
 	cat ${projdir}/rankedlineage_edited.dmp | grep -vi 'Viruses' > ${projdir}/rankedlineage_edited_other.txt
@@ -1491,8 +1494,7 @@ else
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_species.txt
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_other_uncultured.txt | cut -f1,2,3 -d' ' | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_other_uncultured.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA" && $1~/Candidatus/ {$4=$1}1' | \
-	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt
-	wait
+	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_species.txt &&
 	awk -F'\t' '{print $3}' ${projdir}/rankedlineage_edited_other_cultured_species.txt | cut -f1 -d' ' | \
 	paste - ${projdir}/rankedlineage_edited_other_cultured_species.txt | awk -F'\t' 'BEGIN{OFS="\t"} $5=="NA"{$5=$1}1' | \
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_cultured_genus.txt
@@ -1501,13 +1503,12 @@ else
 	awk -F'\t' '{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_other_uncultured_genus.txt
 	cat ${projdir}/rankedlineage_edited_other_cultured_genus.txt ${projdir}/rankedlineage_edited_other_uncultured_genus.txt > ${projdir}/rankedlineage_edited_other_genus.txt
 	mv "${projdir}"/rankedlineage_edited_other_genus.txt ${projdir}/rankedlineage_edited_final.txt
-	rm "${projdir}"/rankedlineage_edited_other*
-	wait
+	rm "${projdir}"/rankedlineage_edited_other* &&
 	awk -F'\t' '{print $2}' ${projdir}/rankedlineage_edited_viruses.txt | awk '{gsub(/taxname/,"species");}1' | paste - ${projdir}/rankedlineage_edited_viruses.txt | \
 	awk -F'\t' 'BEGIN{OFS="\t"} $4=="NA"{$4=$1}1' | awk -F'\t' 'NR>1{print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11}' > ${projdir}/rankedlineage_edited_viruses_species.txt
 	cat ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_edited_viruses_species.txt > ${projdir}/temp
 	mv "${projdir}"/temp ${projdir}/rankedlineage_edited.dmp
-	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt ${projdir}/rankedlineage_tabdelimited.dmp
+	rm "${projdir}"/rankedlineage_edited_viruses* ${projdir}/rankedlineage_edited_final.txt
 fi
 
 lineagedb=${projdir}/lineage_subset.txt
@@ -1561,8 +1562,21 @@ fi
 #################################################################################################################
 echo -e "\e[97m########################################################\n \e[38;5;210mQmatey MegaBLAST \n\e[97m########################################################\n"
 
+cd ${projdir}
+local_db=$(awk '{gsub(/,/," ")}1' <<< "$local_db")
+local_dblist=$local_db
+if [[ "$local_db" =~ " " ]]; then
+	local_db=$(awk '{gsub(/ /,"~ ~");}1' <<< $local_db | tr '~' '"')
+	local_db=$(echo \"$local_db\")
+	local_dblistdir=$(echo ${local_dblist} | tr ' ' '\n' | head -n1)
+	local_dblistdir=${local_dblistdir%/*}
+	dblists=$(awk -v dir=$local_dblistdir '{gsub(dir,"");gsub(/ /,"_");gsub(/\//,"");}1' <<< ${local_dblist})
+	printf "TITLE all my databases\n" > ${local_dblistdir}/${dblists}.nal
+	printf "DBLIST $local_db \n" | awk -v dir=$local_dblistdir '{gsub(dir,"");gsub(/\//,"");}1' >> ${local_dblistdir}/${dblists}.nal
+	local_db=${local_dblistdir}/${dblists}
+fi
+echo -e "${magenta}- database: $local_dblist ${white}\n"
 
-local_db=$( echo $local_db | awk '{gsub(/,/," ")}1' )
 
 if (echo $local_db | grep -q 'nt'); then
 	if [[ -z $percid ]]; then
@@ -1645,6 +1659,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		for i in ${projdir}/taxids/*.txids; do
 			cat "$i" >> ${projdir}/metagenome/All.txids
 		done
+
 		wait
 		# awk -F'\t' '!seen[$4]++' ${projdir}/rankedlineage_edited.dmp | awk '{print $1}' |
 		awk -F'\t' '$4!=p {if(p)print ""; p=$4; l=NR+0} NR<=l; END {print ""}' ${projdir}/rankedlineage_edited.dmp | awk '{print $1}' | \
@@ -1659,11 +1674,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 		mv ${projdir}/metagenome/alignment ${projdir}/metagenome/alignment_w_subfile
 	fi
 
-
-
 	if [[ "$blast_location" =~ "local" ]]; then
 		echo -e "${YELLOW}- performing local BLAST"
-
 		if [[ -z "$(ls -R ${projdir}/metagenome/alignment/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]] && [[ -z "$(ls -R ${projdir}/metagenome/alignment/cultured/ 2> /dev/null | grep combined_compressed.megablast.gz)" ]]; then
 
 			if [[ "$reads_per_megablast_burn_in" -gt 0 ]]; then
@@ -2449,7 +2461,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
 								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 								wait
 							else
@@ -2488,7 +2501,8 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
-								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast" wait
+								-word_size 28 -taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
+								wait
 								if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 								wait
 							else
@@ -2936,9 +2950,9 @@ else
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
 					next} $3 >= max[$1] {print $0}' <(zcat "$i" | awk '$6==100') <(zcat "$i" | awk '$6==100') | awk '$3 == $5 {print $0}' | $gzip > ${i%.gz}strain.gz
 				fi
-				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
+				awk 'gsub(" ","_",$0)1' <(zcat ${i%.gz}strain.gz) | awk -F'\t' '{print $1"___"$9}' | sort -T "${projdir}"/tmp | uniq | awk 'BEGIN{OFS="\t"}{gsub(/___/,"\t");}1' | awk '{print $1}' | \
 				awk '{!seen[$0]++}END{for (i in seen) print seen[i], i}' | awk -F ' ' '{print $2"\t"$1}' | awk '$2 == 1' | awk '{print $1}' > ${i%_haplotig.megablast.gz}_exactmatch.txt
-				awk 'gsub(" ","_",$0)' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
+				awk 'gsub(" ","_",$0)1' <(zcat ${i%.gz}strain.gz) | awk -F'\t' 'NR==FNR {a[$1]; next} $1 in a {print; delete a[$1]}' ${i%_haplotig.megablast.gz}_exactmatch.txt - | \
 				awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | awk 'BEGIN{OFS="\t"}{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | \
 				cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_strain/${i%_haplotig.megablast.gz}_sighits.txt.gz &&
 				rm "${i%_haplotig.megablast.gz}"_exactmatch.txt "${i%.gz}"strain.gz
@@ -3196,14 +3210,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= ($5-($5*0.01)) {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-2 {print $0}' <(zcat "$i" | awk '$6>=99') <(zcat "$i" | awk '$6>=99') | awk '$3 >= ($5-($5*0.01)) {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_species/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -3659,14 +3673,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= ($5-($5*0.02))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-4 {print $0}' <(zcat "$i" | awk '$6>=98') <(zcat "$i" | awk '$6>=98') | awk '$3 >= ($5-($5*0.02))' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_genus/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -4133,14 +4147,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= ($5-($5*0.03))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-6 {print $0}' <(zcat "$i" | awk '$6>=97') <(zcat "$i" | awk '$6>=97') | awk '$3 >= ($5-($5*0.03))' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_family/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -4607,14 +4621,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= ($5-($5*0.04))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-8 {print $0}' <(zcat "$i" | awk '$6>=96') <(zcat "$i" | awk '$6>=96') | awk '$3 >= ($5-($5*0.04))' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_order/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -5081,14 +5095,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_class/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
@@ -5552,14 +5566,14 @@ else
 			else
 				if [[ "$fullqlen_alignment" == "false" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= 32 {print $0}' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
 				fi
 				if [[ "$fullqlen_alignment" == "true" ]]; then
 					awk 'NR == FNR {if (FNR == 1 || $3 > max[$1]) max[$1] = $3
-					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
+					next} $3 >= max[$1]-10 {print $0}' <(zcat "$i" | awk '$6>=95') <(zcat "$i" | awk '$6>=95') | awk '$3 >= ($5-($5*0.05))' | awk 'gsub(" ","_",$0)1' | awk 'BEGIN{OFS="\t"}{gsub(/-/,"\t",$1); print}' | \
 					awk '{print $2,$3,$5,$6,$7,$8,$9,$10,$11,$1}' | cat <(printf "abundance\tsseqid\tqstart\tqcovs\tpident\tqseq\tsseq\tstaxids\tstitle\tqseqid\n") - | \
 					awk '{gsub(" ","\t",$0);}1' | gzip > ../sighits/sighits_phylum/${i%_haplotig.megablast.gz}_sighits.txt.gz
 					wait
