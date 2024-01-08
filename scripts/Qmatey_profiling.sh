@@ -866,6 +866,8 @@ else
 					if [[ "$HDsubsample" == true ]]; then
 						grep "^$RE1a.*$RE1a$\|^$RE1b.*$RE1b$\|^$RE1c.*$RE1c$\|^$RE1d.*$RE1d$\|^$RE2a.*$RE2a$\|^$RE2b.*$RE2b$\|^$RE2c.*$RE2c$\|^$RE2d.*$RE2d$" ${i%.f*}_chopped.txt > ${i%.f*}.tmp1.txt &&
 						sleep 2
+					else
+						touch ${i%.f*}.tmp1.txt
 					fi
 					grep "^$RE1a.*$RE2a$\|^$RE1a.*$RE2b$\|^$RE1a.*$RE2c$\|^$RE1a.*$RE2d$\|^$RE1b.*$RE2a$\|^$RE1b.*$RE2b$\|^$RE1b.*$RE2c$\|^$RE1b.*$RE2d$" ${i%.f*}_chopped.txt 2> /dev/null > ${i%.f*}.tmp2.txt &&
 					sleep 2
@@ -877,6 +879,7 @@ else
 					sleep 2
 					wait
 					rm "${i%.f*}"_chopped.txt
+
 					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm "${i%.f*}".tmp1.txt ${i%.f*}.tmp2.txt
 					wait
@@ -1724,7 +1727,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			      wait
 			    fi
 			    if [[ -n "$(ls ./alignment/subfile* 2> /dev/null)" ]]; then
-			      ls ./alignment/subfile* | xargs rm
+			      ls ./alignment/subfile* 2> /dev/null | xargs rm
 			      mv ./alignment/F* ./
 			    fi
 					cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf/
@@ -1734,16 +1737,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			      cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf/alignment/
 			      awk -v pat="$ccf" -v rpmb="$rpmb" 'NR%rpmb==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 			      wait $PIDsplit2
-						if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-							Nsize=$(ls *subfile* | wc -l)
+						if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+							Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 							nbatch=$(($Nsize / $threads))
 							nsize=$(($nbatch * $threads))
-							for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+							for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 						fi
-						if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-							for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+						if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+							for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 						fi
-			      for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+			      for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 							if test ! -f "${sub}_out.blast.gz"; then
 				        if [[ "$taxids" == true ]]; then
 				          ${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
@@ -1785,9 +1788,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			    wait
 
 					cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf/alignment/
-					if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-						for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-						for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+						for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+						for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 							if test ! -f "${sub}_out.blast.gz"; then
 								if [[ "$taxids" == true ]]; then
 									${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 95 -max_target_seqs $max_target -evalue 0.01 \
@@ -1845,16 +1848,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 							cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf/alignment/
 							awk -v pat="$ccf" -v rpmb="$rpmb" 'NR%rpmb==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 							wait $PIDsplit2
-							if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-								Nsize=$(ls *subfile* | wc -l)
+							if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+								Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 								nbatch=$(($Nsize / $threads))
 								nsize=$(($nbatch * $threads))
-								for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+								for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 							fi
-							if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-								for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+							if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+								for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 							fi
-							for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+							for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 								if test ! -f "${sub}_out.blast.gz"; then
 									if [[ "$taxids" == true ]]; then
 										${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
@@ -1895,9 +1898,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 						wait
 
 						cd ${projdir}/metagenome/haplotig/repseq_aln/splitccf/alignment/
-						if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-							for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-							for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+						if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+							for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+							for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 								if test ! -f "${sub}_out.blast.gz"; then
 									if [[ "$taxids" == true ]]; then
 										${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity 90 -max_target_seqs $max_target -evalue 0.01 \
@@ -1968,7 +1971,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				rm combined_compressed_metagenomes.fasta.gz
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
-				ls ../../alignment/subfile* | xargs rm
+				ls ../../alignment/subfile* 2> /dev/null | xargs rm
 				mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
@@ -1994,16 +1997,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd "${projdir}"/metagenome/alignment
 					awk -v pat="$ccf" -v rpm="$rpm" 'NR%rpm==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-						Nsize=$(ls *subfile* | wc -l)
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+						Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 						nbatch=$(($Nsize / $threads))
 						nsize=$(($nbatch * $threads))
-						for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+						for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 					fi
-					if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-						for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+						for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 					fi
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2041,9 +2044,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 
 				cd "${projdir}"/metagenome/alignment
-				if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-					for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+					for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2087,16 +2090,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd ../../alignment
 					awk -v pat="$ccf" -v rpm="$rpm" 'NR%rpm==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-						Nsize=$(ls *subfile* | wc -l)
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+						Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 						nbatch=$(($Nsize / $threads))
 						nsize=$(($nbatch * $threads))
-						for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+						for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 					fi
-					if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-						for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+						for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 					fi
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2135,9 +2138,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 
 				cd "${projdir}"/metagenome/alignment
-				if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-					for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+					for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2331,7 +2334,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			  rm combined_compressed_metagenomes.fasta.gz
 			fi
 			if [[ -n "$(ls ../../alignment/subfile* 2> /dev/null)" ]]; then
-			  ls ../../alignment/subfile* | grep -v .gz$ | xargs rm
+			  ls ../../alignment/subfile* 2> /dev/null | grep -v .gz$ | xargs rm
 			  mv ../../alignment/F* ./
 			fi
 			if [[ $nodes -gt 1 ]]; then
@@ -2356,16 +2359,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd "${projdir}"/metagenome/alignment
 					awk -v pat="$ccf" -v rpm="$rpm" 'NR%rpm==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-						Nsize=$(ls *subfile* | wc -l)
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+						Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 						nbatch=$(($Nsize / $threads))
 						nsize=$(($nbatch * $threads))
-						for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+						for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 					fi
-					if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-						for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+						for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 					fi
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2402,9 +2405,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				done
 				wait
 
-				if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-					for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+					for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2448,16 +2451,16 @@ if [[ "$fastMegaBLAST" == true ]]; then
 					cd ../../alignment
 					awk -v pat="$ccf" -v rpm="$rpm" 'NR%rpm==1{close(pat"_subfile"pat"_"i); i++}{print > pat"_subfile"pat"_"i}' $ccf & PIDsplit2=$!
 					wait $PIDsplit2
-					if [[ "$(ls *subfile* | wc -l)" -gt "$threads" ]]; then
-						Nsize=$(ls *subfile* | wc -l)
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt "$threads" ]]; then
+						Nsize=$(ls *subfile* 2> /dev/null | wc -l)
 						nbatch=$(($Nsize / $threads))
 						nsize=$(($nbatch * $threads))
-						for subf in $(ls *subfile* | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
+						for subf in $(ls *subfile* 2> /dev/null | sort -V | head -n $nsize); do mv $subf ${subf#*_}; done
 					fi
-					if [[ "$(ls *subfile* | wc -l)" -le "$threads" ]]; then
-						for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
+					if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -le "$threads" ]]; then
+						for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
 					fi
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
@@ -2495,9 +2498,9 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				wait
 
 				cd "${projdir}"/metagenome/alignment
-				if [[ "$(ls *subfile* | wc -l)" -gt 0 ]]; then
-					for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
-					for sub in $(ls subfile* | sort -T "${projdir}"/tmp -V); do (
+				if [[ "$(ls *subfile* 2> /dev/null | wc -l)" -gt 0 ]]; then
+					for subf in $(ls *subfile* 2> /dev/null | sort -V); do mv $subf ${subf#*_}; done
+					for sub in $(ls subfile* 2> /dev/null | sort -T "${projdir}"/tmp -V); do (
 						if test ! -f "${sub}_out.blast.gz"; then
 							if [[ "$taxids" == true ]]; then
 								${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $custom_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \

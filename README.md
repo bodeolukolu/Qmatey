@@ -4,7 +4,7 @@
 
 
 # Introduction
-Qmatey is a quantitative metagenomic/microbiome taxonomic binning and profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact matching algorithm for strain-level profiling. For species to phylum level profiling, it implements exact-matching of consensus sequence (EMC) that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome assemblies.
+Qmatey (v0.5.1) is a quantitative metagenomic/microbiome taxonomic binning and profiling pipeline. Using the NCBI MegaBLAST, it implements a fast exact matching algorithm for strain-level profiling. For species to phylum level profiling, it implements exact-matching of consensus sequence (EMC) that is unique to each taxa (e.g. at species-level, valid hits will match uniquely to each species name; at genus-level, valid hits will match uniquely to each genus name). Qmatey can also perform simulation of mock/synthetic communities using their whole genome assemblies.
 
 
 ## Features
@@ -170,7 +170,7 @@ Using a text editor, save a file containing any of the following variables as 'c
 |cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
 |samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
 |lib_type|RRS|original input data: RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
-|HDsubsample|false|high-density subsampling reads based on combinations motifs flanking reads|string|Optional|
+|HDsubsample|false|high-density subsampling uses reads with all combination of motifs flanking reads|string|Optional|
 |subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false. specify different REnase instead of true|string|Optional|
 |subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false. specify different REnase instead of true|string|Optional|
 |shotgun_min_read_length|100|minimum read length after subsampling|string|Optional|
