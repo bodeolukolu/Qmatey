@@ -716,7 +716,7 @@ else
 				if [[ "$i" == *"_compressed.f"* ]]; then
 					:
 				else
-					zcat "$i" | grep -v '>' | awk '{print substr($0,1,150)}' | awk 'length >=64' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
+					zcat "$i" | grep -v '>' | awk '{print substr($0,1,150)}' | awk 'length >=32' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
 					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
@@ -760,7 +760,7 @@ else
 				if [[ "$i" == *"_compressed.f"* ]]; then
 					:
 				else
-					zcat "$i" | grep -v '>' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk 'length >=64' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
+					zcat "$i" | grep -v '>' | awk -v max=$max_seqread_len '{print substr($0,1,max)}' | awk 'length >=32' | awk -v frag="$frag" '{print ">"frag"_"NR"\n"$0}' | \
 					gzip > ${i%.f*}_tmp.fasta.gz && mv ${i%.f*}_tmp.fasta.gz $i
 					wait
 				fi
@@ -880,12 +880,12 @@ else
 					wait
 					rm "${i%.f*}"_chopped.txt
 
-					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
+					cat ${i%.f*}.tmp1.txt ${i%.f*}.tmp2.txt | awk 'length >=32' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.fasta.gz &&
 					rm "${i%.f*}".tmp1.txt ${i%.f*}.tmp2.txt
 					wait
 				fi
 				if [[ "$subsample_shotgun_R1" == false ]]; then
-					zcat "$i" | grep -v '>' | awk 'length >=64' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
+					zcat "$i" | grep -v '>' | awk 'length >=32' | awk '{print ">frag"NR"\n"$0}' | $gzip > ${i%.f*}.tmp.fasta.gz &&
 					mv ${i%.f*}.tmp.fasta.gz $i
 				fi
 			fi ) &
