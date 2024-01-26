@@ -1,0 +1,80 @@
+***showing pipeline help below: scroll through and q(quit) to exit pipeline help***
+
+**General parameters**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|threads|na|number of cores/processors|integer|Optional|
+|cluster|false|run on compute cluster node (default: slurm) or workstation|true or false|Optional|
+|samples_alt_dir|false|links samples in separate directory to project directory|true or false|Optional|
+|lib_type|RRS|original input data: RRS (reduced representation sequence e.g. GBS), WGS (shotgun whole genome sequence), or 16S/ITS/amplicon|string|required|
+|HDsubsample|false|high-density subsampling uses reads with all combination of motifs flanking reads|string|Optional|
+|subsample_shotgun_R1|true|subsample reads based on? REnase motifs, true(ATGCAT) or false. specify different REnase instead of true|string|Optional|
+|subsample_shotgun_R2|true|subsample reads based on? REnase motifs, true(CATG) or false. specify different REnase instead of true|string|Optional|
+|shotgun_min_read_length|100|minimum read length after subsampling|string|Optional|
+
+**Simulation parameters**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|simulation_lib|complete_digest|generate sequence reads in silico (complete_digest, partial_digest, or shotgun)|string|Optional|
+|simulation_motif_R1|ATGCAT|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
+|simulation_motif_R2|CATG|genome fragmentation based on: (i) REnase site motif(s) or (ii) random |string|Optional|
+|fragment_size_range|64,600|minimum and maximum genomic fragment size (comma-separated)|string|Optional|
+|max_read_length|150|maximum read length for each of R1 and/or R2 reads |string|Optional|
+|gcov|3|whole genome sequencing coverage |string|Optional|
+
+
+**Normalzation**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|normalization|na|to compute relative abundance using various methods|true or false|Optional|
+
+
+**MegaBLAST**
+
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|blast_location|na|local,remote, or custom|string|required|
+|local_db|na|directory: ./ncbi_db/nt/nt |comma delimited string(s)|required|
+|taxids|na|files mapping fasta sequences to taxid(s)|true or false|Optional|
+|input_dbfasta|na|provide fasta file if custom database|string|Optional|
+|map_taxids|na|provide files mapping fasta sequences to taxid(s) if custom database|string|Optional|
+
+
+**Taxonomic_Profiling_and_Filtering**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|taxonomic_level|na|strain,species,genus,family,order,class,phylum|string|Optional|
+|min_percent_sample|5,10,20|percentage of missing hits per sample allowed|comma delimited integer(s)|Optional|
+|min_pos_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
+|max_neg_corr|0.1,0.2,0.3|correlation coefficient threshold(s)|comma delimited decimal number(s)|Optional|
+|spearman_corr|na|Options: strain,species,genus,family,order,class,phylum|comma delimited string(s). Faster than CCLasso|Optional|
+|CCLasso_corr|na|Options: strain,species,genus,family,order,class,phylum|comma delimited string(s). Analysis might take hours to days|Optional|
+
+
+**Visualizations**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|sunburst_taxlevel|na|strain,species,genus,family,order,class|comma delimited string(s)|Optional|
+|sunburst_nlayers|na|phylum,genus,species shown in sunburst|comma delimited string(s)|Optional|
+
+
+
+
+**Advanced parameters**
+|Variable      |Default       |Usage         |Input         |required/Optional|
+|:-------------|:-------------|:-------------|:-------------|:----------------|
+|nodes|1|number of nodes|integer|Optional|
+|minRD|0|threshold excludes reads with erroneous base call(s); default (0=auto) is determined based on read depth distribution|integer|Optional|
+|fullqlen_alignment|false|full query length should be consumed/aligned, but allowing for upto 5% mismatch|true or false|Optional|
+|reads_per_megablast|na|batch size of reads/thread. Default: 1000/10000 (reads_per_megablast_burn_in=0/10000) for RRS/WGS and 100 for 16S/ITS/amplicon data|integer|Optional|
+|reads_per_megablast_burn_in|10000|reduces database size by performing burn-in MegaBLAST run. Default=0 for custom databases (i.e. no burn-in) |integer|Optional|
+|zero_inflated|0.01|exclude samples with proportion of zero taxa <= value|integer|Optional|
+|exclude_rRNA|true|exclude rRNA for qRRS/WGS data|true or false|Optional|
+|annotate_seq|false|generates gene ids and their abundance|true or false|Optional|
+
+**Note: na indicates that variable is user-defined or intuitively hard-coded/computed.*
+
+***press q(quit) to exit pipeline help***
