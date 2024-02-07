@@ -73,7 +73,7 @@ main () {
   make
   cd ../
 }
-dirtool=jdk*
+dirtool=cd-hit*
 if [ -d $dirtool ]; then
   :
 else
@@ -207,8 +207,9 @@ echo -e "${blue}\n############################################## \n- installing 
     R -e 'install.packages("plotme.tar", dependencies = TRUE, repos = NULL, type="source", lib="./")'
     rm plotme.tar
   fi
-
-  git clone https://github.com/huayingfang/CCLasso.git
+  dirtool=CCLasso; if [ ! -d $dirtool ]; then
+    git clone https://github.com/huayingfang/CCLasso.git
+  fi
 
   cd ../
 }

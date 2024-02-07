@@ -54,6 +54,7 @@ if [[ "$1" == "install" ]]; then
   wait; exit 0
 fi
 
+projdir="$( cd -- "$(dirname "$1 ")" >/dev/null 2>&1 ; pwd -P )/"
 export projdir="$( cd -- "$(dirname "$1 ")" >/dev/null 2>&1 ; pwd -P )/"
 if [[ ! -d "$Qmatey_dir/tools" ]]; then
   mkdir -p $Qmatey_dir/tools
@@ -61,9 +62,43 @@ if [[ ! -d "$Qmatey_dir/tools" ]]; then
   bash $Qmatey_dir/scripts/install.sh
 fi
 if [[ -d "$Qmatey_dir/tools" ]] && [[ -z $(ls -A "$Qmatey_dir/tools") ]] ; then
+  mkdir -p $Qmatey_dir/tools
   cd $Qmatey_dir/tools
   bash $Qmatey_dir/scripts/install.sh
 fi
+
+cd $Qmatey_dir/tools
+if [ ! -d bwa* ]; then echo -e "${magenta}- BWA is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d samtools* ]; then echo -e "${magenta}- samtools is not installated or properly installed\n- Consider checking dependencies and re-running install command ${white}"; fi
+if [ ! -d samtools* ]; then echo -e "${magenta}- else, GBSapp will attempt using the system-installed verion of samtools\n\n ${white}"; fi
+if [ ! -f picard* ]; then echo -e "${magenta}- PICARD is not installated or properly installed\n- Consider re-running install command\n\n ${white}"; fi
+if [ ! -d jdk* ]; then echo -e "${magenta}- Java jdk8 is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d cd-hit* ]; then echo -e "${magenta}- cd-hit is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ncbi-blast* ]; then echo -e "${magenta}- NCBI-BLAST is not installated or properly installed\n- Consider re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/plotly* ]; then echo -e "${magenta}- R-package plotly is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/plotly ]; then echo -e "${magenta}- R-package plotly is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/htmlwidgets ]; then echo -e "${magenta}- R-package htmlwidgets is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/data.table ]; then echo -e "${magenta}- R-package data.table is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/plyr ]; then echo -e "${magenta}- R-package plyr is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/dplyr ]; then echo -e "${magenta}- R-package dplyr is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/rlang ]; then echo -e "${magenta}- R-package rlang is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/generics ]; then echo -e "${magenta}- R-package generics is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/tidyselect ]; then echo -e "${magenta}- R-package tidyselect is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/Rcpp ]; then echo -e "${magenta}- R-package Rcpp is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/reshape2 ]; then echo -e "${magenta}- R-package reshape2 is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/ggplot2 ]; then echo -e "${magenta}- R-package ggplot2 is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/fansi ]; then echo -e "${magenta}- R-package fansi is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/ggcorrplot ]; then echo -e "${magenta}- R-package ggcorrplot is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/stringi ]; then echo -e "${magenta}- R-package stringi is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/stringr ]; then echo -e "${magenta}- R-package stringr is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/magrittr ]; then echo -e "${magenta}- R-package magrittr is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/infotheo ]; then echo -e "${magenta}- R-package infotheo is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/gtools ]; then echo -e "${magenta}- R-package gtools is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/gtable ]; then echo -e "${magenta}- R-package gtable is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/assertthat ]; then echo -e "${magenta}- R-package assertthat is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/plotme ]; then echo -e "${magenta}- R-package plotme is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+if [ ! -d ./R/CCLasso ]; then echo -e "${magenta}- R-package  is not installated or properly installed\n- Consider checking dependencies and re-running install command\n\n ${white}"; fi
+
 
 
 # if [ "${Qmatey_dir:0:1}" = "." ]; then
