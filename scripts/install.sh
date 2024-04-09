@@ -84,8 +84,8 @@ fi
 
 main () {
   echo -e "${white}\n############################################## ${orange}\n- installing latest version of BLAST ${white}\n##############################################${white}"
-  wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.14.0/ncbi-blast-2.14.0+-x64-linux.tar.gz &&
-  tar -zxvf ncbi-blast-2.14.0+-x64-linux.tar.gz; rm *tar.gz
+  wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.14.1/ncbi-blast-2.14.1+-x64-linux.tar.gz &&
+  tar -zxvf ncbi-blast-2.14.1+-x64-linux.tar.gz; rm *tar.gz
 }
 dirtool=ncbi-blast*
 if [ -d $dirtool ]; then

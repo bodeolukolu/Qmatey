@@ -42,7 +42,7 @@ for get_species_taxids in ${taxids[@]}; do
 	if [[ -z ${projdir}/taxids/${get_species_taxids}.txids ]]; then
 		:
 	else
-		~/Documents/tools/Qmatey/tools/ncbi-blast-2.12.0+/bin/get_species_taxids.sh -t ${get_species_taxids} > ${get_species_taxids}.txids
+		~/Documents/tools/Qmatey/tools/ncbi-blast-2.14.1+/bin/get_species_taxids.sh -t ${get_species_taxids} > ${get_species_taxids}.txids
 	fi
 done
 

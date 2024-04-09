@@ -315,7 +315,9 @@ annotate_seq=false
 
 
 ## Select Article Referencing Qmatey
-1. manuscript in preparation
+1.	Adams AK, Kristy BD, Gorman M, Balint-Kurti P, Yencho GC, and Olukolu BA. (2023) Qmatey: An automated pipeline for fast exact matching-based alignment and strain-level taxonomic binning and profiling of metagenomes. Briefings in Bioinformatics. 24 (6): bbad351.
+
+2. Adams A, Landry D., Sykes V, Rickman T, Cham A, Timling A, Kelly H, McBeath JH, and Olukolu BA (2024) Maize Kernel-Associated Metagenomes Reveal Potential Microbe-Microbe Interactions that Underlie Fusarium Ear Rot Disease. Phytobiomes. doi.org/10.1094/PBIOMES-07-23-0074-R
 
 
 ## Troubleshooting
@@ -349,6 +351,11 @@ While the installation of samtools are automated, the installation requires some
 - This might be due to specifing values greater than available resources
 - Re-submit job with appropriate values or modify header of the Qmatey_run.sh batch file.
 - If using compute cluster managers other than SLURM, header of Qmatey_run.sh batch can also be modified to fit the syntax of the cluster manager been used.
+```
+**Problem with amount of memory and/or processors/cores specified:**<br />
+```
+- If BLAST search fails after updating NCBI database, consider updating the list of taxids in the taxids directory.
+- You can use script in the Generate_taxids.sh file to update the taxid list.
 ```
 ## Versioning
 Versioning will follow major.minor.patch <a href="https://semver.org">semantic versioning format</a>.

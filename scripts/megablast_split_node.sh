@@ -60,13 +60,13 @@ blast () {
 			fi
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 					wait
 				else
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
@@ -96,13 +96,13 @@ blast () {
 			for subf in $(ls *subfile* | sort -V); do mv $subf ${subf#*_}; done
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 					wait
 				else
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
@@ -140,13 +140,13 @@ blast () {
 			wait $PIDsplit2
 			for sub in $(ls subfile* | sort -V); do (
 				if [[ "$taxids" == true ]]; then
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-taxidlist ${projdir}/metagenome/All.txids -outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
 					wait
 				else
-					${Qmatey_dir}/tools/ncbi-blast-2.14.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
+					${Qmatey_dir}/tools/ncbi-blast-2.15.0+/bin/blastn -task megablast -query $sub -db $local_db -num_threads 1 -perc_identity $percid -max_target_seqs $max_target -evalue 0.01 \
 					-outfmt "6 qseqid sseqid length qstart qlen pident qseq sseq staxids stitle" -out "${sub}_out.blast"
 					wait
 					if grep -qE 'Killed.*ncbi.*blastn.*megablast' ${projdir}/log.out; then printf "\nreduce parameter value for <reads_per_meagablast>, \nand then resubmit job to continue with megablast alignment\n" > ${projdir}/Megablast_killed_readme.txt; trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT; fi
