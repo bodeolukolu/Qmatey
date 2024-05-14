@@ -1,0 +1,30 @@
+#!/usr/bin/env Rscript
+
+args <- commandArgs(trailingOnly = TRUE)
+args
+libdir <- args[1]
+.libPaths( c( .libPaths(), libdir) )
+
+if(!require("plotlyGeoAssets")) install.packages("plotlyGeoAssets", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("plotly")) install.packages("plotly", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("htmlwidgets")) install.packages("htmlwidgets", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("data.table")) install.packages("data.table", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("plyr")) install.packages("plyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("dplyr")) install.packages("dplyr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("rlang")) install.packages("rlang", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("generics")) install.packages("generics", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("tidyselect")) install.packages("tidyselect", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("Rcpp")) install.packages("Rcpp", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("reshape2")) install.packages("reshape2", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("fansi")) install.packages("fansi", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("ggcorrplot")) install.packages("ggcorrplot", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("stringi")) install.packages("stringi", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("stringr")) install.packages("stringr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("magrittr")) install.packages("magrittr", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("infotheo")) install.packages("infotheo", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("gtools")) install.packages("gtools", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("gtable")) install.packages("gtable", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("assertthat")) install.packages("assertthat", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("")) install.packages("", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")
+if(!require("plotme")) install.packages("plotme", dependencies = TRUE, repos="http://cran.r-project.org", lib="./")

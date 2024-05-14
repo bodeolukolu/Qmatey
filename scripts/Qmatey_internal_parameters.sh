@@ -47,3 +47,7 @@ if [[ "$slurm_module" =~ "Module"  ]]; then
     R --version
   fi
 fi
+
+cd $Qmatey_dir/tools/R
+Rscript ../../scripts/check_R_tools.R "${Qmatey_dir}/tools/R"
+cd $projdir
