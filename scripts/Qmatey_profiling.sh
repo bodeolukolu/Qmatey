@@ -995,13 +995,13 @@ else
 		for i in $(ls *.fa*); do
       if test -f "$i"; then
   			n=">${i%.fa*}_"
-  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,n); print}' >> master_ref.fasta
       fi
 		done
 		for i in $(ls *.fna); do
       if test -f "$i"; then
   			n=">${i%.fa*}_"
-  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,">"n); print}' >> master_ref.fasta
+  			awk '{ sub("\r$",""); print}' $i | awk -v n="$n" '{gsub(/>/,n); print}' >> master_ref.fasta
       fi
 		done
 		wait
