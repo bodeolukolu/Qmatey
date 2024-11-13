@@ -1695,7 +1695,7 @@ if [[ "$fastMegaBLAST" == true ]]; then
 			      wait $PIDsplit1
 			      wait
 			      for i in combined_compressed_metagenomes_sub*; do (
-			        $cdhit -i "$i" -o "${i}"_clust -M 500 -c 0.95 -g 1 -T 1 -A $longestread
+							$cd_hit_est -i "$i" -o "${i}"_clust -c 0.95 -n 10 -g 0 -M 500 -T 1 -A $longestread
 			        wait
 			        rm "$i" "${i}"_clust.clstr )&
 			        if [[ $(jobs -r -p | wc -l) -ge $threads ]]; then
