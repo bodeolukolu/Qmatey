@@ -1134,6 +1134,7 @@ ref_norm () {
 			#Aligning compressed sample files (read-depth accounted for) to the master reference genomes
 			#Exludes all host/reference genome data from the samples -- leaving only metagenomic reads
 			echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
+			printf 'Sample\tTotal(Spike+Metagenome)\tMetagenome\tMetagenome(perc)\n' > ${projdir}/metagenome/read_count_aligned.txt &&
 			for i in $(ls *_compressed.fasta.gz); do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
@@ -1145,7 +1146,11 @@ ref_norm () {
 					$samtools view -S -b ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam
 					#$java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
-					$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
+					$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt &&
+					metagcount=$($samtools view -S -F0x4 ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam | awk '{print $1}' | awk '{gsub(/-/,"\t"); print $2}' | paste -sd+ | bc) &&
+					totalcount=$($samtools view -S ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam | awk '{print $1}' | awk '{gsub(/-/,"\t"); print $2}' | paste -sd+ | bc) &&
+					metagperc=$((metagcount*100/totalcount)) &&
+					printf "${i%_compressed.fasta.gz}""\t""${totalcount}""\t""${metagcount}""\t""${metagperc}""\n"  >> ${projdir}/metagenome/read_count_aligned.txt &&
 					rm "${projdir}"/metagenome/${i%_compressed.fasta.gz}.sam
 				fi
 			done
@@ -1179,6 +1184,7 @@ ref_norm () {
 		if [[ "${norm_method}" == samples ]]; then
 			#Exludes all host/reference genome data from the samples -- leaving only metagenomic reads
 			echo -e "${YELLOW}- aligning sample reads to normalization reference genome${WHITE}"
+			printf 'Sample\tTotal(Host+Metagenome)\tMetagenome\tMetagenome(percent)\n' > ${projdir}/metagenome/read_count_aligned.txt &&
 			for i in $(ls *_compressed.fasta.gz); do
 				if test ! -f ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt; then
 					cd "${projdir}"/norm_ref
@@ -1191,6 +1197,11 @@ ref_norm () {
 					# $java -XX:ParallelGCThreads=$gthreads -jar $picard SortSam I= ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam O= ${projdir}/metagenome/${i%_compressed.fasta.gz}.bam SORT_ORDER=coordinate && \
 					printf '\n###---'${i%.f*}'---###\n' > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
 					$samtools flagstat ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam > ${projdir}/metagenome/results/ref_aligned_summaries/${i%_compressed.fasta.gz}_summ.txt && \
+					metagcount=$($samtools view -S -F0x4 ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam | awk '{print $1}' | awk '{gsub(/-/,"\t"); print $2}' | paste -sd+ | bc) &&
+					totalcount=$($samtools view -S ${projdir}/metagenome/${i%_compressed.fasta.gz}.sam | awk '{print $1}' | awk '{gsub(/-/,"\t"); print $2}' | paste -sd+ | bc) &&
+					metagperc=$((metagcount*100/totalcount)) &&
+					printf "${i%_compressed.fasta.gz}""\t""${totalcount}""\t""${metagcount}""\t""${metagperc}""\n"  >> ${projdir}/metagenome/read_count_aligned.txt &&
+
 					rm "${projdir}"/metagenome/${i%_compressed.fasta.gz}.sam &&
 					wait
 				fi
