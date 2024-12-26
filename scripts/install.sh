@@ -8,8 +8,8 @@ orange='\e[38;5;210m'
 ######################################################################################################################################################
 main () {
   echo -e "${white}\n############################################## ${orange}\n- downloading and installing BWA ${white}\n##############################################${white}"
-  wget https://sourceforge.net/projects/bio-bwa/files/latest/download &&
-  tar -vxjf download*; rm download*; cd bwa*; make; cd ..
+  git clone https://github.com/lh3/bwa.git
+  cd bwa; make; cd ..
 }
 dirtool=bwa*
 if [ -d $dirtool ]; then
