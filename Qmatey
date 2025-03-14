@@ -24,7 +24,7 @@ if [[ "$1" == "" ]]; then
 fi
 if [[ "$1" == "-v" || "$1" == "--version" ]]; then
   echo -e "${yellow}\n\tProgram:	Qmatey"
-  echo -e "${yellow}\tVersion:	0.5.1"
+  echo -e "${yellow}\tVersion:	0.5.2"
   echo -e "${yellow}\tDescription:	Quantitative Metagenomic Alignment and Taxonomic Exact-matching"
   echo -e "${yellow}\tDevelopers:	Alison K. Adams (UTK, TN), Brandon Kristy (ORNL, TN), and Bode A. Olukolu (UTK, TN)\n"
   echo -e "${yellow}\tContact:	Bode Olukolu <bolukolu@utk.edu>\n"

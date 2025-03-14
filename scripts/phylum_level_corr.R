@@ -11,7 +11,7 @@ library(ggplot2, quietly=T)
 library(ggcorrplot, quietly=T)
 library(reshape2, quietly=T)
 library(gtools, quietly=T)
-source(paste(libdir,"/CCLasso/R/cclasso.R",sep=""))
+source(paste(libdir,"fastCCLasso.R",sep=""))
 
 
 perc <- as.numeric(perc)
@@ -30,7 +30,8 @@ metag <- data.frame(t(metag))
 taxa <- colnames(metag)
 
 if (args[5] == "true"){
-  res_ccl_metag <- cclasso(x = metag, counts = T, k_cv=5, n_boot=100)
+  res_ccl_metag <- fastCCLasso(xx = metag, isCnt = T, pseudo = 0.5, k_cv = 5, 
+                               lam_min_ratio = 1E-4, k_max = 20, n_boot=1000)
   metag_corr <- res_ccl_metag$cor_w; row.names(metag_corr) <- taxa; colnames(metag_corr) <- taxa
   metag_pmat <- res_ccl_metag$p_vals; row.names(metag_pmat) <- taxa; colnames(metag_pmat) <- taxa
   axis_density <- 2000/nrow(metag_corr)

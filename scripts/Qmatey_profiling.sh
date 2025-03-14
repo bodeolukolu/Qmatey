@@ -1636,26 +1636,26 @@ if [[ "$fastMegaBLAST" == true ]]; then
 				fi
 			done
 			for i in $(ls *_compressed.fasta.gz); do
-				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp &&
+				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | gzip >> combined_compressed_metagenomes.tmp.gz &&
 				mv $i ${i%*_compressed.fasta.gz}_metagenome.fasta.gz &&
 				wait
 			done
 		fi
 		if [[ "$(ls *_metagenome.fasta.gz 2>/dev/null | wc -l)" -gt 0 ]]; then
 			for i in $(ls *_metagenome.fasta.gz); do
-				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+				zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | gzip >> combined_compressed_metagenomes.tmp.gz
 				wait
 			done
 		fi
 		wait
-		awk '{A[$1]++}END{for(i in A)print i}' combined_compressed_metagenomes.tmp > combined_compressed_metagenomes_full.tmp
-		rm combined_compressed_metagenomes.tmp
-		LC_ALL=C sort -T "${projdir}"/tmp combined_compressed_metagenomes_full.tmp > combined_compressed_metagenomes_tmp.fasta
+		awk '{A[$1]++}END{for(i in A)print i}' <(zcat combined_compressed_metagenomes.tmp) | gzip > combined_compressed_metagenomes_full.tmp.gz
+		rm combined_compressed_metagenomes.tmp.gz
+		LC_ALL=C sort -T "${projdir}"/tmp <(zcat ombined_compressed_metagenomes_full.tmp.gz) | gzip > combined_compressed_metagenomes_tmp.fasta.gz
 		wait
-		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
+		rm combined_compressed_metagenomes_full.tmp.gz
+		awk '{print ">"NR"\n"$1}' <(zcat combined_compressed_metagenomes_tmp.fasta) | $gzip > combined_compressed_metagenomes.fasta.gz
 		wait
-		rm combined_compressed_metagenomes_full.tmp
-		rm combined_compressed_metagenomes_tmp.fasta
+		rm combined_compressed_metagenomes_tmp.fasta.gz
 	fi
 
 	if [[ "$taxids" == true ]]; then
@@ -2624,17 +2624,18 @@ else
 			fi
 		done
 		for i in $(ls *_compressed.fasta.gz); do
-			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' >> combined_compressed_metagenomes.tmp
+			zcat $i | grep -v '^>' | awk '{A[$1]++}END{for(i in A)print i}' | gzip >> combined_compressed_metagenomes.tmp.gz
 			wait
 		done
 		wait
-		awk '{A[$1]++}END{for(i in A)print i}' combined_compressed_metagenomes.tmp > combined_compressed_metagenomes_full.tmp
-		rm combined_compressed_metagenomes.tmp
-		LC_ALL=C sort -T "${projdir}"/tmp combined_compressed_metagenomes_full.tmp > combined_compressed_metagenomes_tmp.fasta
+		awk '{A[$1]++}END{for(i in A)print i}' <(zcat combined_compressed_metagenomes.tmp.gz) | gzip > combined_compressed_metagenomes_full.tmp.gz
+		rm combined_compressed_metagenomes.tmp.gz
+		LC_ALL=C sort -T "${projdir}"/tmp <(zcat combined_compressed_metagenomes_full.tmp.gz) | gzip > combined_compressed_metagenomes_tmp.fasta.gz
 		wait
-		awk '{print ">"NR"\n"$1}' combined_compressed_metagenomes_tmp.fasta | $gzip > combined_compressed_metagenomes.fasta.gz
-		rm combined_compressed_metagenomes_full.tmp
-		rm combined_compressed_metagenomes_tmp.fasta
+		rm combined_compressed_metagenomes_full.tmp.gz
+		awk '{print ">"NR"\n"$1}' (zcat combined_compressed_metagenomes_tmp.fasta.gz) | $gzip > combined_compressed_metagenomes.fasta.gz
+		wait
+		rm combined_compressed_metagenomes_tmp.fasta.gz
 	fi
 
 	if [[ "$taxids" == true ]]; then

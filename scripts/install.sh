@@ -215,3 +215,18 @@ echo -e "${blue}\n############################################## \n- installing 
 }
 echo -e "${white}- Checking and performing installation of R-packages ${white}"
 main &>> ./log.out
+
+
+main () {
+  echo -e "${white}\n############################################## ${orange}\n- downloading source code for fastCCLasso ${white}\n##############################################${white}"
+  cd R
+  wget https://github.com/ShenZhang-Statistics/fastCCLasso/raw/refs/heads/main/RCode/fastCCLasso.R
+  cd ../
+}
+filetool=fastCCLasso.R
+if [ -f $filetool ]; then
+  :
+else
+  echo -e "${white}- Performing installation of dependency (BLAST) ${white}"
+  main &>> ./log.out
+fi
