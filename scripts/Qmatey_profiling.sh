@@ -2633,7 +2633,7 @@ else
 		LC_ALL=C sort -T "${projdir}"/tmp <(zcat combined_compressed_metagenomes_full.tmp.gz) | gzip > combined_compressed_metagenomes_tmp.fasta.gz
 		wait
 		rm combined_compressed_metagenomes_full.tmp.gz
-		awk '{print ">"NR"\n"$1}' (zcat combined_compressed_metagenomes_tmp.fasta.gz) | $gzip > combined_compressed_metagenomes.fasta.gz
+		awk '{print ">"NR"\n"$1}' <(zcat combined_compressed_metagenomes_tmp.fasta.gz) | $gzip > combined_compressed_metagenomes.fasta.gz
 		wait
 		rm combined_compressed_metagenomes_tmp.fasta.gz
 	fi
